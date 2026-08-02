@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { overviewFn } from "@/lib/dreamoz.functions";
 import { SiteLayout } from "@/components/SiteLayout";
+import type { SiteOverview } from "@/lib/dreamoz.types";
 
 export const Route = createFileRoute("/contact")({
   loader: () => overviewFn(),
@@ -25,7 +26,7 @@ export const Route = createFileRoute("/contact")({
 });
 
 function Contact() {
-  const { member, logo } = Route.useLoaderData();
+  const { member, logo } = Route.useLoaderData() as SiteOverview;
 
   const socials = [
     ["LinkedIn", member.linkedinProfile],

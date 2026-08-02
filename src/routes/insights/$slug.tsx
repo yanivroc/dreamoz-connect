@@ -1,6 +1,8 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { articleFn, overviewFn } from "@/lib/dreamoz.functions";
 import { SiteLayout } from "@/components/SiteLayout";
+import type { SiteOverview } from "@/lib/dreamoz.types";
+import type { ArticleDetail } from "@/lib/dreamoz.functions";
 
 export const Route = createFileRoute("/insights/$slug")({
   loader: async ({ params }) => {
@@ -39,7 +41,10 @@ export const Route = createFileRoute("/insights/$slug")({
 });
 
 function Article() {
-  const { article, overview } = Route.useLoaderData();
+  const { article, overview } = Route.useLoaderData() as {
+    article: ArticleDetail;
+    overview: SiteOverview;
+  };
 
   return (
     <SiteLayout logo={overview.logo} name={overview.member.memberFullName}>

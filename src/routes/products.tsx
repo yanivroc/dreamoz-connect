@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { overviewFn } from "@/lib/dreamoz.functions";
 import { SiteLayout } from "@/components/SiteLayout";
+import type { SiteOverview } from "@/lib/dreamoz.types";
 import { PostCard } from "@/components/PostCard";
 
 export const Route = createFileRoute("/products")({
@@ -26,7 +27,7 @@ export const Route = createFileRoute("/products")({
 });
 
 function Products() {
-  const { member, logo, products } = Route.useLoaderData();
+  const { member, logo, products } = Route.useLoaderData() as SiteOverview;
 
   return (
     <SiteLayout logo={logo} name={member.memberFullName}>
