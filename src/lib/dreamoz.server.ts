@@ -59,6 +59,15 @@ export function stripHtml(html: string | null | undefined): string {
     .trim();
 }
 
+export function sanitizeHtml(html: string | null | undefined): string {
+  if (!html) return "";
+  const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
+  const inner = bodyMatch ? bodyMatch[1] : html;
+  return inner
+    .replace(/<\/?(html|head|body|meta|title|link)[^>]*>/gi, "")
+    .trim();
+}
+
 function toCard(post: Post): ArticleCard {
   const text = stripHtml(post.metaDesc) || stripHtml(post.bizDesc);
   return {
@@ -85,7 +94,7 @@ async function loadAll() {
 }
 
 function servicePosts(webs: Web[]): Post[] {
-  const wanted = ["services", "growth", "brand", "feature", "innovate"];
+  const wanted = ["services", "growth", "brand", "innovate"];
   const out: Post[] = [];
   for (const web of webs) {
     for (const page of web.webPages ?? []) {
@@ -136,7 +145,7 @@ export async function getArticle(slug: string) {
   if (!post) return null;
   return {
     title: post.bizCustomTitle?.trim() || post.bizName,
-    html: post.bizDesc ?? "",
+    html: sanitizeHtml(post.bizDesc),
     plain: stripHtml(post.bizDesc),
     metaDesc: stripHtml(post.metaDesc),
     date: post.createDateTime,
