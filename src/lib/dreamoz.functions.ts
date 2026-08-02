@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import type { ArticleCard, Member, SiteOverview } from "./dreamoz.types";
 import {
   getOverview,
   getArticles,
@@ -7,22 +8,33 @@ import {
   getContactInfo,
 } from "./dreamoz.server";
 
-export const overviewFn = createServerFn({ method: "GET" }).handler(async () =>
-  getOverview(),
+export type ArticleDetail = {
+  title: string;
+  html: string;
+  plain: string;
+  metaDesc: string;
+  date: string;
+  categories: string[];
+  images: string[];
+  link: string | null;
+};
+
+export const overviewFn = createServerFn({ method: "GET" }).handler(
+  async (): Promise<SiteOverview> => getOverview(),
 );
 
-export const articlesFn = createServerFn({ method: "GET" }).handler(async () =>
-  getArticles(),
+export const articlesFn = createServerFn({ method: "GET" }).handler(
+  async (): Promise<ArticleCard[]> => getArticles(),
 );
 
-export const productsFn = createServerFn({ method: "GET" }).handler(async () =>
-  getProducts(),
+export const productsFn = createServerFn({ method: "GET" }).handler(
+  async (): Promise<ArticleCard[]> => getProducts(),
 );
 
-export const contactFn = createServerFn({ method: "GET" }).handler(async () =>
-  getContactInfo(),
+export const contactFn = createServerFn({ method: "GET" }).handler(
+  async (): Promise<Member> => getContactInfo(),
 );
 
 export const articleFn = createServerFn({ method: "GET" })
   .inputValidator((data: { slug: string }) => data)
-  .handler(async ({ data }) => getArticle(data.slug));
+  .handler(async ({ data }): Promise<ArticleDetail | null> => getArticle(data.slug));
