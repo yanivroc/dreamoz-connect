@@ -1,70 +1,13 @@
+import type {
+  Member,
+  Post,
+  Web,
+  ArticleCard,
+  SiteOverview,
+} from "./dreamoz.types";
+
 const BASE = "https://dreamoz.com.au";
 const MEDIA_BASE = "https://dreamoztech.com/";
-
-export type Pic = {
-  picPath: string | null;
-  picThumbPath: string | null;
-  picDescription: string | null;
-  displayOrder: number;
-};
-
-export type Category = { categoryTitle: string; categoryDisplayTitle: string };
-
-export type Post = {
-  bizName: string;
-  bizDesc: string;
-  bizCustomTitle: string | null;
-  bizDisplayTitle: string;
-  bizEmail: string | null;
-  bizWeb: string | null;
-  bizMobilePhone: string | null;
-  postType: string | null;
-  metaDesc: string | null;
-  metaKey: string | null;
-  createDateTime: string;
-  pics: Pic[];
-  categories: Category[];
-};
-
-export type Member = {
-  memberFullName: string | null;
-  memberEmail: string | null;
-  description: string | null;
-  profilePicture: string | null;
-  address: string | null;
-  suburb: string | null;
-  state: string | null;
-  postCode: string | null;
-  country: string | null;
-  mobileNumber: string | null;
-  landLine: string | null;
-  metaDesc: string | null;
-  metaKey: string | null;
-  facebookProfile: string | null;
-  twitterProfile: string | null;
-  instagramProfile: string | null;
-  youtubeProfile: string | null;
-  linkedinProfile: string | null;
-  bizLat: string | null;
-  bizLong: string | null;
-  customerName: string | null;
-};
-
-export type WebPage = {
-  pageTitle: string;
-  pageUrl: string;
-  description: string | null;
-  posts: Post[];
-};
-
-export type Web = {
-  webTitle: string;
-  domainName: string | null;
-  description: string | null;
-  logoImage: string | null;
-  webDisplayPath: string;
-  webPages: WebPage[];
-};
 
 export function mediaUrl(path: string | null | undefined): string | null {
   if (!path) return null;
@@ -88,7 +31,6 @@ async function getToken(): Promise<string> {
   if (!res.ok) throw new Error(`Token request failed (${res.status})`);
   const json = (await res.json()) as { token?: string };
   if (!json.token) throw new Error("No token returned by API");
-  // Token is valid ~30min; refresh a little earlier.
   cachedToken = { value: json.token, expires: Date.now() + 20 * 60 * 1000 };
   return json.token;
 }
@@ -102,17 +44,111 @@ async function apiGet<T>(path: string): Promise<T> {
   return (await res.json()) as T;
 }
 
-export async function fetchMember(): Promise<Member> {
-  const data = await apiGet<{ member: Member }>("Member/Get");
-  return data.member;
+export function stripHtml(html: string | null | undefined): string {
+  if (!html) return "";
+  return html
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&[a-z]+;/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
-export async function fetchPosts(): Promise<Post[]> {
-  const data = await apiGet<{ posts: Post[] }>("Member/Posts");
-  return data.posts ?? [];
+function toCard(post: Post): ArticleCard {
+  const text = stripHtml(post.metaDesc) || stripHtml(post.bizDesc);
+  return {
+    slug: post.bizDisplayTitle,
+    title: post.bizCustomTitle?.trim() || post.bizName,
+    excerpt: text.slice(0, 190),
+    image: mediaUrl(post.pics?.[0]?.picThumbPath || post.pics?.[0]?.picPath),
+    date: post.createDateTime,
+    categories: (post.categories ?? []).map((c) => c.categoryTitle),
+  };
 }
 
-export async function fetchWebs(): Promise<Web[]> {
-  const data = await apiGet<{ webs: Web[] }>("Member/Webs");
-  return data.webs ?? [];
+async function loadAll() {
+  const [memberRes, postsRes, websRes] = await Promise.all([
+    apiGet<{ member: Member }>("Member/Get"),
+    apiGet<{ posts: Post[] }>("Member/Posts"),
+    apiGet<{ webs: Web[] }>("Member/Webs"),
+  ]);
+  return {
+    member: memberRes.member,
+    posts: postsRes.posts ?? [],
+    webs: websRes.webs ?? [],
+  };
+}
+
+function servicePosts(webs: Web[]): Post[] {
+  const wanted = ["services", "growth", "brand", "feature", "innovate"];
+  const out: Post[] = [];
+  for (const web of webs) {
+    for (const page of web.webPages ?? []) {
+      if (wanted.includes(page.pageUrl?.toLowerCase() ?? "")) {
+        out.push(...(page.posts ?? []).slice(0, 2));
+      }
+    }
+  }
+  return out;
+}
+
+export async function getOverview(): Promise<SiteOverview> {
+  const { member, posts, webs } = await loadAll();
+  const logo = mediaUrl(webs[0]?.logoImage) ?? mediaUrl(member.profilePicture);
+  return {
+    member,
+    logo,
+    services: servicePosts(webs).map(toCard).slice(0, 6),
+    articles: posts
+      .filter((p) => p.postType === "Tech")
+      .map(toCard)
+      .slice(0, 12),
+    products: posts
+      .filter((p) => p.postType === "Products")
+      .map(toCard)
+      .slice(0, 12),
+  };
+}
+
+export async function getArticles() {
+  const { posts } = await loadAll();
+  return posts.filter((p) => p.postType === "Tech").map(toCard);
+}
+
+export async function getProducts() {
+  const { posts } = await loadAll();
+  return posts.filter((p) => p.postType === "Products").map(toCard);
+}
+
+export async function getArticle(slug: string) {
+  const { posts, webs } = await loadAll();
+  const webPosts = webs.flatMap((w) =>
+    (w.webPages ?? []).flatMap((p) => p.posts ?? []),
+  );
+  const post = [...posts, ...webPosts].find(
+    (p) => p.bizDisplayTitle?.toLowerCase() === slug.toLowerCase(),
+  );
+  if (!post) return null;
+  return {
+    title: post.bizCustomTitle?.trim() || post.bizName,
+    html: post.bizDesc ?? "",
+    plain: stripHtml(post.bizDesc),
+    metaDesc: stripHtml(post.metaDesc),
+    date: post.createDateTime,
+    categories: (post.categories ?? []).map((c) => c.categoryTitle),
+    images: (post.pics ?? [])
+      .map((p) => mediaUrl(p.picPath))
+      .filter((v): v is string => Boolean(v)),
+    link: post.bizWeb || null,
+  };
+}
+
+export async function getContactInfo() {
+  const { member } = await loadAll();
+  return member;
 }
