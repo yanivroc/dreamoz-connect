@@ -62,7 +62,7 @@ export function stripHtml(html: string | null | undefined): string {
 export function sanitizeHtml(html: string | null | undefined): string {
   if (!html) return "";
   const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-  const inner = bodyMatch ? bodyMatch[1] : html;
+  const inner = (bodyMatch?.[1] ?? html) as string;
   return inner
     .replace(/<\/?(html|head|body|meta|title|link)[^>]*>/gi, "")
     .trim();
