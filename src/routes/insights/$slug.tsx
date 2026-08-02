@@ -67,7 +67,7 @@ function Article() {
           <img
             src={article.images[0]}
             alt={article.title}
-            className="mt-8 w-full rounded-xl border border-border/70"
+            className="mt-8 max-h-96 w-full rounded-xl border border-border/70 object-cover"
           />
         ) : null}
         <div
