@@ -5,7 +5,7 @@ import type { SiteOverview } from "@/lib/dreamoz.types";
 
 export const Route = createFileRoute("/contact")({
   loader: () => overviewFn(),
-  head: () => ({
+  head: ({ loaderData }) => ({
     meta: [
       { title: "Contact DreamozTech — Melbourne Software Team" },
       {
@@ -20,13 +20,16 @@ export const Route = createFileRoute("/contact")({
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      ...(loaderData?.member?.metaKey
+        ? [{ name: "keywords", content: loaderData.member.metaKey.replace(/\s+/g, " ").trim() }]
+        : []),
     ],
   }),
   component: Contact,
 });
 
 function Contact() {
-  const { member, logo } = Route.useLoaderData() as SiteOverview;
+  const { member } = Route.useLoaderData() as SiteOverview;
 
   const socials = [
     ["LinkedIn", member.linkedinProfile],
@@ -37,7 +40,7 @@ function Contact() {
   ].filter(([, url]) => Boolean(url)) as [string, string][];
 
   return (
-    <SiteLayout logo={logo} name={member.memberFullName}>
+    <SiteLayout member={member}>
       <section className="hero-surface border-b border-border/60">
         <div className="mx-auto max-w-6xl px-5 py-20">
           <h1 className="text-4xl font-bold md:text-5xl">Let's build something</h1>

@@ -5,7 +5,7 @@ import type { SiteOverview } from "@/lib/dreamoz.types";
 
 export const Route = createFileRoute("/services")({
   loader: () => overviewFn(),
-  head: () => ({
+  head: ({ loaderData }) => ({
     meta: [
       { title: "Services — DreamozTech Software Development" },
       {
@@ -20,16 +20,19 @@ export const Route = createFileRoute("/services")({
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      ...(loaderData?.member?.metaKey
+        ? [{ name: "keywords", content: loaderData.member.metaKey.replace(/\s+/g, " ").trim() }]
+        : []),
     ],
   }),
   component: Services,
 });
 
 function Services() {
-  const { member, logo, services } = Route.useLoaderData() as SiteOverview;
+  const { member, services } = Route.useLoaderData() as SiteOverview;
 
   return (
-    <SiteLayout logo={logo} name={member.memberFullName}>
+    <SiteLayout member={member}>
       <section className="hero-surface border-b border-border/60">
         <div className="mx-auto max-w-6xl px-5 py-20">
           <h1 className="text-4xl font-bold md:text-5xl">Services</h1>

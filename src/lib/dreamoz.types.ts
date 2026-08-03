@@ -2,6 +2,16 @@ export type Pic = {
   picPath: string | null;
   picThumbPath: string | null;
   picDescription: string | null;
+  picUrl?: string | null;
+  displayOrder: number;
+};
+
+export type Video = { videoPath: string | null };
+
+export type Attribute = {
+  title: string;
+  value: string;
+  attributeType: string | null;
   displayOrder: number;
 };
 
@@ -20,6 +30,8 @@ export type Post = {
   metaKey: string | null;
   createDateTime: string;
   pics: Pic[];
+  videos: Video[];
+  attributes: Attribute[];
   categories: Category[];
 };
 
@@ -63,13 +75,25 @@ export type Web = {
   webPages: WebPage[];
 };
 
+export type MediaImage = {
+  src: string;
+  thumb: string | null;
+  caption: string | null;
+};
+
 export type ArticleCard = {
   slug: string;
   title: string;
   excerpt: string;
   image: string | null;
+  images: MediaImage[];
+  videos: string[];
+  attributes: Attribute[];
   date: string;
   categories: string[];
+  link: string | null;
+  metaDesc: string;
+  metaKey: string;
 };
 
 export type SiteOverview = {

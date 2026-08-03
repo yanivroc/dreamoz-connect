@@ -1,8 +1,10 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { articleFn, overviewFn } from "@/lib/dreamoz.functions";
 import { SiteLayout } from "@/components/SiteLayout";
+import { MediaSlider } from "@/components/MediaSlider";
 import type { SiteOverview } from "@/lib/dreamoz.types";
 import type { ArticleDetail } from "@/lib/dreamoz.functions";
+import { formatDate } from "@/lib/format";
 
 export const Route = createFileRoute("/insights/$slug")({
   loader: async ({ params }) => {
@@ -14,16 +16,18 @@ export const Route = createFileRoute("/insights/$slug")({
     return { article, overview };
   },
   head: ({ loaderData }) => {
-    const title = loaderData?.article.title ?? "Article";
+    const article = loaderData?.article;
+    const title = article?.title ?? "Article";
     const desc =
-      loaderData?.article.metaDesc ||
-      loaderData?.article.plain.slice(0, 150) ||
-      "DreamozTech article";
-    const image = loaderData?.article.images[0];
+      article?.metaDesc || article?.plain.slice(0, 150) || "DreamozTech article";
+    const image = article?.images[0]?.src;
     return {
       meta: [
         { title: `${title} — DreamozTech` },
         { name: "description", content: desc },
+        ...(article?.metaKey
+          ? [{ name: "keywords", content: article.metaKey }]
+          : []),
         { property: "og:title", content: title },
         { property: "og:description", content: desc },
         { property: "og:type", content: "article" },
@@ -47,7 +51,7 @@ function Article() {
   };
 
   return (
-    <SiteLayout logo={overview.logo} name={overview.member.memberFullName}>
+    <SiteLayout member={overview.member}>
       <article className="mx-auto max-w-3xl px-5 py-16">
         <Link to="/insights" className="text-sm text-primary hover:underline">
           ← All insights
@@ -56,20 +60,37 @@ function Article() {
           {article.title}
         </h1>
         <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-          <span>{new Date(article.date).toLocaleDateString()}</span>
+          <span>{formatDate(article.date)}</span>
           {article.categories.map((c) => (
             <span key={c} className="rounded-full border border-border px-2.5 py-0.5">
               {c}
             </span>
           ))}
         </div>
-        {article.images[0] ? (
-          <img
-            src={article.images[0]}
-            alt={article.title}
-            className="mt-8 max-h-96 w-full rounded-xl border border-border/70 object-cover"
+
+        <div className="mt-8">
+          <MediaSlider
+            images={article.images}
+            videos={article.videos}
+            title={article.title}
           />
-        ) : null}
+        </div>
+
+        {article.attributes.length > 0 && (
+          <dl className="mt-8 grid gap-4 rounded-xl border border-border/70 bg-surface p-6 shadow-card sm:grid-cols-2">
+            {article.attributes.map((a) => (
+              <div key={a.title}>
+                <dt className="text-xs uppercase tracking-wide text-muted-foreground">
+                  {a.title}
+                </dt>
+                <dd className="text-base font-semibold text-foreground">
+                  {a.title.toLowerCase().includes("price") ? `$${a.value}` : a.value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        )}
+
         <div
           className="prose-api mt-10"
           dangerouslySetInnerHTML={{ __html: article.html }}

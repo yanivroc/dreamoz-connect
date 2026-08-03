@@ -6,7 +6,7 @@ import { PostCard } from "@/components/PostCard";
 
 export const Route = createFileRoute("/insights/")({
   loader: () => overviewFn(),
-  head: () => ({
+  head: ({ loaderData }) => ({
     meta: [
       { title: "Insights — DreamozTech Engineering Blog" },
       {
@@ -21,16 +21,19 @@ export const Route = createFileRoute("/insights/")({
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      ...(loaderData?.member?.metaKey
+        ? [{ name: "keywords", content: loaderData.member.metaKey.replace(/\s+/g, " ").trim() }]
+        : []),
     ],
   }),
   component: Insights,
 });
 
 function Insights() {
-  const { member, logo, articles } = Route.useLoaderData() as SiteOverview;
+  const { member, articles } = Route.useLoaderData() as SiteOverview;
 
   return (
-    <SiteLayout logo={logo} name={member.memberFullName}>
+    <SiteLayout member={member}>
       <section className="hero-surface border-b border-border/60">
         <div className="mx-auto max-w-6xl px-5 py-20">
           <h1 className="text-4xl font-bold md:text-5xl">Insights</h1>
