@@ -26,7 +26,7 @@ export const Route = createFileRoute("/contact")({
 });
 
 function Contact() {
-  const { member, logo } = Route.useLoaderData() as SiteOverview;
+  const { member } = Route.useLoaderData() as SiteOverview;
 
   const socials = [
     ["LinkedIn", member.linkedinProfile],
@@ -37,7 +37,7 @@ function Contact() {
   ].filter(([, url]) => Boolean(url)) as [string, string][];
 
   return (
-    <SiteLayout logo={logo} name={member.memberFullName}>
+    <SiteLayout member={member}>
       <section className="hero-surface border-b border-border/60">
         <div className="mx-auto max-w-6xl px-5 py-20">
           <h1 className="text-4xl font-bold md:text-5xl">Let's build something</h1>

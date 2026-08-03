@@ -28,11 +28,11 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  const { member, logo, services, articles, products } =
+  const { member, services, articles, products } =
     Route.useLoaderData() as SiteOverview;
 
   return (
-    <SiteLayout logo={logo} name={member.memberFullName}>
+    <SiteLayout member={member}>
       <section className="hero-surface border-b border-border/60">
         <div className="mx-auto grid max-w-6xl gap-10 px-5 py-24 md:grid-cols-[1.15fr_0.85fr] md:items-center">
           <div>
