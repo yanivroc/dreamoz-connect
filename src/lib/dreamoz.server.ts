@@ -68,17 +68,41 @@ export function sanitizeHtml(html: string | null | undefined): string {
     .trim();
 }
 
+export function videoSrc(html: string | null | undefined): string | null {
+  if (!html) return null;
+  const m = html.match(/src=["']([^"']+)["']/i);
+  return m?.[1] ?? null;
+}
+
 function toCard(post: Post): ArticleCard {
   const text = stripHtml(post.metaDesc) || stripHtml(post.bizDesc);
+  const images = (post.pics ?? [])
+    .slice()
+    .sort((a, b) => a.displayOrder - b.displayOrder)
+    .map((p) => ({
+      src: mediaUrl(p.picPath) ?? mediaUrl(p.picThumbPath) ?? "",
+      thumb: mediaUrl(p.picThumbPath),
+      caption: p.picDescription ?? null,
+    }))
+    .filter((p) => Boolean(p.src));
   return {
     slug: post.bizDisplayTitle,
     title: post.bizCustomTitle?.trim() || post.bizName,
     excerpt: text.slice(0, 190),
-    image: mediaUrl(post.pics?.[0]?.picThumbPath || post.pics?.[0]?.picPath),
+    image: images[0]?.thumb ?? images[0]?.src ?? null,
+    images,
+    videos: (post.videos ?? [])
+      .map((v) => videoSrc(v.videoPath))
+      .filter((v): v is string => Boolean(v)),
+    attributes: post.attributes ?? [],
     date: post.createDateTime,
     categories: (post.categories ?? []).map((c) => c.categoryTitle),
+    link: post.bizWeb?.trim() || null,
+    metaDesc: stripHtml(post.metaDesc),
+    metaKey: (post.metaKey ?? "").replace(/\s+/g, " ").trim(),
   };
 }
+
 
 async function loadAll() {
   const [memberRes, postsRes, websRes] = await Promise.all([
