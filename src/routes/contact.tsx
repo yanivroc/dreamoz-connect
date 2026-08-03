@@ -5,7 +5,7 @@ import type { SiteOverview } from "@/lib/dreamoz.types";
 
 export const Route = createFileRoute("/contact")({
   loader: () => overviewFn(),
-  head: () => ({
+  head: ({ loaderData }) => ({
     meta: [
       { title: "Contact DreamozTech — Melbourne Software Team" },
       {
@@ -20,6 +20,9 @@ export const Route = createFileRoute("/contact")({
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      ...(loaderData?.member?.metaKey
+        ? [{ name: "keywords", content: loaderData.member.metaKey.replace(/\s+/g, " ").trim() }]
+        : []),
     ],
   }),
   component: Contact,

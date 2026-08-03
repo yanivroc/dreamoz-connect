@@ -6,7 +6,7 @@ import { PostCard } from "@/components/PostCard";
 
 export const Route = createFileRoute("/insights/")({
   loader: () => overviewFn(),
-  head: () => ({
+  head: ({ loaderData }) => ({
     meta: [
       { title: "Insights — DreamozTech Engineering Blog" },
       {
@@ -21,6 +21,9 @@ export const Route = createFileRoute("/insights/")({
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      ...(loaderData?.member?.metaKey
+        ? [{ name: "keywords", content: loaderData.member.metaKey.replace(/\s+/g, " ").trim() }]
+        : []),
     ],
   }),
   component: Insights,
