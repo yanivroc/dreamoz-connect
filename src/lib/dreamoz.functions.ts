@@ -1,5 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
-import type { ArticleCard, Member, SiteOverview } from "./dreamoz.types";
+import type {
+  ArticleCard,
+  Attribute,
+  MediaImage,
+  Member,
+  SiteOverview,
+} from "./dreamoz.types";
 import {
   getOverview,
   getArticles,
@@ -13,11 +19,16 @@ export type ArticleDetail = {
   html: string;
   plain: string;
   metaDesc: string;
+  metaKey: string;
   date: string;
   categories: string[];
-  images: string[];
+  images: MediaImage[];
+  videos: string[];
+  attributes: Attribute[];
+  postType: string | null;
   link: string | null;
 };
+
 
 export const overviewFn = createServerFn({ method: "GET" }).handler(
   async (): Promise<SiteOverview> => getOverview(),
