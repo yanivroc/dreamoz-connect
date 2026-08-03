@@ -167,19 +167,23 @@ export async function getArticle(slug: string) {
     (p) => p.bizDisplayTitle?.toLowerCase() === slug.toLowerCase(),
   );
   if (!post) return null;
+  const card = toCard(post);
   return {
-    title: post.bizCustomTitle?.trim() || post.bizName,
+    title: card.title,
     html: sanitizeHtml(post.bizDesc),
     plain: stripHtml(post.bizDesc),
-    metaDesc: stripHtml(post.metaDesc),
-    date: post.createDateTime,
-    categories: (post.categories ?? []).map((c) => c.categoryTitle),
-    images: (post.pics ?? [])
-      .map((p) => mediaUrl(p.picPath))
-      .filter((v): v is string => Boolean(v)),
-    link: post.bizWeb || null,
+    metaDesc: card.metaDesc,
+    metaKey: card.metaKey,
+    date: card.date,
+    categories: card.categories,
+    images: card.images,
+    videos: card.videos,
+    attributes: card.attributes,
+    postType: post.postType,
+    link: card.link,
   };
 }
+
 
 export async function getContactInfo() {
   const { member } = await loadAll();
