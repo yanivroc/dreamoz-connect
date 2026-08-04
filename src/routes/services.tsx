@@ -44,8 +44,8 @@ function Services() {
       </section>
 
       <section className="mx-auto max-w-6xl space-y-16 px-5 py-16">
-        {servicePages.map((page) => (
-          <div key={page.title}>
+        {servicePages.map((page, i) => (
+          <div key={`${page.title}-${i}`}>
             <h2 className="text-2xl font-bold">{page.title}</h2>
             {page.html ? (
               <div
@@ -57,7 +57,7 @@ function Services() {
               <div className="mt-8 grid gap-6 md:grid-cols-2">
                 {page.posts.map((s) => (
                   <article
-                    key={page.title + s.slug + s.title}
+                    key={`${page.title}-${i}-${s.slug}-${s.title}`}
                     className="rounded-xl border border-border/70 bg-surface p-7 shadow-card"
                   >
                     <h3 className="text-lg font-semibold">{s.title}</h3>
