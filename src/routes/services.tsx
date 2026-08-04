@@ -29,10 +29,11 @@ export const Route = createFileRoute("/services")({
 });
 
 function Services() {
-  const { member, services } = Route.useLoaderData() as SiteOverview;
+  const { member, servicePages, logo, favicon } =
+    Route.useLoaderData() as SiteOverview;
 
   return (
-    <SiteLayout member={member}>
+    <SiteLayout member={member} logo={logo} favicon={favicon}>
       <section className="hero-surface border-b border-border/60">
         <div className="mx-auto max-w-6xl px-5 py-20">
           <h1 className="text-4xl font-bold md:text-5xl">Services</h1>
@@ -42,27 +43,45 @@ function Services() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-5 py-16">
-        <div className="grid gap-6 md:grid-cols-2">
-          {services.map((s) => (
-            <article
-              key={s.slug + s.title}
-              className="rounded-xl border border-border/70 bg-surface p-7 shadow-card"
-            >
-              <h2 className="text-xl font-semibold">{s.title}</h2>
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                {s.excerpt}
-              </p>
-            </article>
-          ))}
-        </div>
-        {member.description ? (
-          <div
-            className="prose-api mt-16 max-w-3xl"
-            dangerouslySetInnerHTML={{ __html: member.description }}
-          />
-        ) : null}
+      <section className="mx-auto max-w-6xl space-y-16 px-5 py-16">
+        {servicePages.map((page) => (
+          <div key={page.title}>
+            <h2 className="text-2xl font-bold">{page.title}</h2>
+            {page.html ? (
+              <div
+                className="prose-api mt-4 max-w-3xl"
+                dangerouslySetInnerHTML={{ __html: page.html }}
+              />
+            ) : null}
+            {page.posts.length > 0 && (
+              <div className="mt-8 grid gap-6 md:grid-cols-2">
+                {page.posts.map((s) => (
+                  <article
+                    key={page.title + s.slug + s.title}
+                    className="rounded-xl border border-border/70 bg-surface p-7 shadow-card"
+                  >
+                    <h3 className="text-lg font-semibold">{s.title}</h3>
+                    <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                      {s.excerpt}
+                    </p>
+                    {s.link ? (
+                      <a
+                        href={s.link}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-4 inline-flex text-sm font-semibold text-primary hover:underline"
+                      >
+                        Learn more ↗
+                      </a>
+                    ) : null}
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
       </section>
+
     </SiteLayout>
   );
 }
