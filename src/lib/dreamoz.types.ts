@@ -26,6 +26,8 @@ export type Post = {
   bizWeb: string | null;
   bizMobilePhone: string | null;
   postType: string | null;
+  bizEnable?: boolean;
+  bizPublic?: boolean;
   metaDesc: string | null;
   metaKey: string | null;
   createDateTime: string;
@@ -66,11 +68,19 @@ export type WebPage = {
   posts: Post[];
 };
 
+export type ServicePage = {
+  title: string;
+  html: string;
+  posts: ArticleCard[];
+};
+
 export type Web = {
   webTitle: string;
   domainName: string | null;
   description: string | null;
   logoImage: string | null;
+  logoFavicon: string | null;
+  emailId: string | null;
   webDisplayPath: string;
   webPages: WebPage[];
 };
@@ -99,7 +109,10 @@ export type ArticleCard = {
 export type SiteOverview = {
   member: Member;
   logo: string | null;
+  favicon: string | null;
+  email: string | null;
+  webTitle: string | null;
+  servicePages: ServicePage[];
   services: ArticleCard[];
   articles: ArticleCard[];
-  products: ArticleCard[];
 };
