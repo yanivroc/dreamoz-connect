@@ -3,6 +3,7 @@ import type {
   Post,
   Web,
   ArticleCard,
+  ServicePage,
   SiteOverview,
 } from "./dreamoz.types";
 
@@ -117,13 +118,27 @@ async function loadAll() {
   };
 }
 
-function servicePosts(webs: Web[]): Post[] {
-  const wanted = ["services", "growth", "brand", "innovate"];
-  const out: Post[] = [];
+const SERVICE_PAGES = ["about", "growth", "feature", "services"];
+
+function isPublicPost(p: Post): boolean {
+  return p.bizEnable !== false && p.bizPublic !== false;
+}
+
+function isInsight(p: Post): boolean {
+  const t = (p.postType ?? "").toLowerCase();
+  return (t === "tech" || t === "blog") && isPublicPost(p);
+}
+
+function servicePages(webs: Web[]): ServicePage[] {
+  const out: ServicePage[] = [];
   for (const web of webs) {
     for (const page of web.webPages ?? []) {
-      if (wanted.includes(page.pageUrl?.toLowerCase() ?? "")) {
-        out.push(...(page.posts ?? []).slice(0, 2));
+      if (SERVICE_PAGES.includes((page.pageTitle ?? "").trim().toLowerCase())) {
+        out.push({
+          title: page.pageTitle,
+          html: sanitizeHtml(page.description),
+          posts: (page.posts ?? []).filter(isPublicPost).map(toCard),
+        });
       }
     }
   }
@@ -132,30 +147,23 @@ function servicePosts(webs: Web[]): Post[] {
 
 export async function getOverview(): Promise<SiteOverview> {
   const { member, posts, webs } = await loadAll();
-  const logo = mediaUrl(webs[0]?.logoImage) ?? mediaUrl(member.profilePicture);
+  const web = webs[0];
+  const pages = servicePages(webs);
   return {
     member,
-    logo,
-    services: servicePosts(webs).map(toCard).slice(0, 6),
-    articles: posts
-      .filter((p) => p.postType === "Tech")
-      .map(toCard)
-      .slice(0, 12),
-    products: posts
-      .filter((p) => p.postType === "Products")
-      .map(toCard)
-      .slice(0, 12),
+    logo: mediaUrl(web?.logoImage) ?? mediaUrl(member.profilePicture),
+    favicon: mediaUrl(web?.logoFavicon),
+    email: web?.emailId?.trim() || member.memberEmail,
+    webTitle: web?.webTitle ?? null,
+    servicePages: pages,
+    services: pages.flatMap((p) => p.posts).slice(0, 6),
+    articles: posts.filter(isInsight).map(toCard).slice(0, 12),
   };
 }
 
 export async function getArticles() {
   const { posts } = await loadAll();
-  return posts.filter((p) => p.postType === "Tech").map(toCard);
-}
-
-export async function getProducts() {
-  const { posts } = await loadAll();
-  return posts.filter((p) => p.postType === "Products").map(toCard);
+  return posts.filter(isInsight).map(toCard);
 }
 
 export async function getArticle(slug: string) {

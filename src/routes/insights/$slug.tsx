@@ -51,7 +51,11 @@ function Article() {
   };
 
   return (
-    <SiteLayout member={overview.member}>
+    <SiteLayout
+      member={overview.member}
+      logo={overview.logo}
+      favicon={overview.favicon}
+    >
       <article className="mx-auto max-w-3xl px-5 py-16">
         <Link to="/insights" className="text-sm text-primary hover:underline">
           ← All insights

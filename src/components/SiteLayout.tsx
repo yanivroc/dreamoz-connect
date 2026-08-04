@@ -2,30 +2,49 @@ import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import type { Member } from "@/lib/dreamoz.types";
 import { brandName, whatsappLink } from "@/lib/format";
+import { useEffect } from "react";
 
 const nav = [
   { to: "/", label: "Home" },
   { to: "/services", label: "Services" },
   { to: "/insights", label: "Insights" },
-  { to: "/products", label: "Products" },
+  
   { to: "/contact", label: "Contact" },
 ];
 
 export function SiteLayout({
   children,
   member,
+  logo,
+  favicon,
 }: {
   children: ReactNode;
   member?: Member | null;
+  logo?: string | null;
+  favicon?: string | null;
 }) {
   const name = brandName(member?.memberFullName);
   const wa = whatsappLink(member?.mobileNumber, member?.country);
+
+  useEffect(() => {
+    if (!favicon) return;
+    let link = document.querySelector<HTMLLinkElement>("link[rel='icon']");
+    if (!link) {
+      link = document.createElement("link");
+      link.rel = "icon";
+      document.head.appendChild(link);
+    }
+    link.href = favicon;
+  }, [favicon]);
 
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 border-b border-border/60 bg-background/85 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">
           <Link to="/" className="flex items-center gap-3">
+            {logo ? (
+              <img src={logo} alt={`${name} logo`} className="h-9 w-auto" />
+            ) : null}
             <span className="font-display text-lg font-bold tracking-tight">
               {name}
             </span>

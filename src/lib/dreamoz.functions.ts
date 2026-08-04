@@ -9,7 +9,6 @@ import type {
 import {
   getOverview,
   getArticles,
-  getProducts,
   getArticle,
   getContactInfo,
 } from "./dreamoz.server";
@@ -36,10 +35,6 @@ export const overviewFn = createServerFn({ method: "GET" }).handler(
 
 export const articlesFn = createServerFn({ method: "GET" }).handler(
   async (): Promise<ArticleCard[]> => getArticles(),
-);
-
-export const productsFn = createServerFn({ method: "GET" }).handler(
-  async (): Promise<ArticleCard[]> => getProducts(),
 );
 
 export const contactFn = createServerFn({ method: "GET" }).handler(

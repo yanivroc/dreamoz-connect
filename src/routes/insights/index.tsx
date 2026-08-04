@@ -30,10 +30,11 @@ export const Route = createFileRoute("/insights/")({
 });
 
 function Insights() {
-  const { member, articles } = Route.useLoaderData() as SiteOverview;
+  const { member, articles, logo, favicon } =
+    Route.useLoaderData() as SiteOverview;
 
   return (
-    <SiteLayout member={member}>
+    <SiteLayout member={member} logo={logo} favicon={favicon}>
       <section className="hero-surface border-b border-border/60">
         <div className="mx-auto max-w-6xl px-5 py-20">
           <h1 className="text-4xl font-bold md:text-5xl">Insights</h1>
