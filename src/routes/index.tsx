@@ -31,11 +31,11 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  const { member, services, articles, products } =
+  const { member, services, articles, servicePages, logo, favicon } =
     Route.useLoaderData() as SiteOverview;
 
   return (
-    <SiteLayout member={member}>
+    <SiteLayout member={member} logo={logo} favicon={favicon}>
       <section className="hero-surface border-b border-border/60">
         <div className="mx-auto grid max-w-6xl gap-10 px-5 py-24 md:grid-cols-[1.15fr_0.85fr] md:items-center">
           <div>
@@ -74,8 +74,10 @@ function Home() {
                 <dd className="text-sm text-muted-foreground">Technical insights</dd>
               </div>
               <div>
-                <dt className="text-3xl font-bold text-primary">{products.length}+</dt>
-                <dd className="text-sm text-muted-foreground">Products listed</dd>
+                <dt className="text-3xl font-bold text-primary">
+                  {servicePages.length}+
+                </dt>
+                <dd className="text-sm text-muted-foreground">Service areas</dd>
               </div>
               <div>
                 <dt className="text-3xl font-bold text-primary">
