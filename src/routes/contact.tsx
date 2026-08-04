@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { overviewFn } from "@/lib/dreamoz.functions";
 import { SiteLayout } from "@/components/SiteLayout";
 import type { SiteOverview } from "@/lib/dreamoz.types";
+import { whatsappLink } from "@/lib/format";
 
 export const Route = createFileRoute("/contact")({
   loader: () => overviewFn(),
@@ -29,7 +30,8 @@ export const Route = createFileRoute("/contact")({
 });
 
 function Contact() {
-  const { member } = Route.useLoaderData() as SiteOverview;
+  const { member, email, logo, favicon } = Route.useLoaderData() as SiteOverview;
+  const wa = whatsappLink(member.mobileNumber, member.country);
 
   const socials = [
     ["LinkedIn", member.linkedinProfile],
@@ -40,7 +42,7 @@ function Contact() {
   ].filter(([, url]) => Boolean(url)) as [string, string][];
 
   return (
-    <SiteLayout member={member}>
+    <SiteLayout member={member} logo={logo} favicon={favicon}>
       <section className="hero-surface border-b border-border/60">
         <div className="mx-auto max-w-6xl px-5 py-20">
           <h1 className="text-4xl font-bold md:text-5xl">Let's build something</h1>
@@ -55,26 +57,24 @@ function Contact() {
           <h2 className="text-xl font-semibold">Contact details</h2>
           <dl className="mt-6 space-y-4 text-sm">
             <div>
-              <dt className="text-muted-foreground">Contact person</dt>
-              <dd className="text-foreground">{member.customerName}</dd>
-            </div>
-            <div>
               <dt className="text-muted-foreground">Email</dt>
               <dd>
                 <a
-                  href={`mailto:${member.memberEmail}`}
+                  href={`mailto:${email}`}
                   className="text-primary hover:underline"
                 >
-                  {member.memberEmail}
+                  {email}
                 </a>
               </dd>
             </div>
             {member.mobileNumber ? (
               <div>
-                <dt className="text-muted-foreground">Phone</dt>
+                <dt className="text-muted-foreground">WhatsApp</dt>
                 <dd>
                   <a
-                    href={`tel:${member.mobileNumber}`}
+                    href={wa ?? `tel:${member.mobileNumber}`}
+                    target="_blank"
+                    rel="noreferrer"
                     className="text-primary hover:underline"
                   >
                     {member.mobileNumber}
