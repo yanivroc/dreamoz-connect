@@ -1,11 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { overviewFn } from "@/lib/dreamoz.functions";
+import { overviewFn, articlesFn } from "@/lib/dreamoz.functions";
 import { SiteLayout } from "@/components/SiteLayout";
-import type { SiteOverview } from "@/lib/dreamoz.types";
+import type { ArticleCard } from "@/lib/dreamoz.types";
 import { PostCard } from "@/components/PostCard";
 
 export const Route = createFileRoute("/insights/")({
-  loader: () => overviewFn(),
+  loader: async () => {
+    const [overview, articles] = await Promise.all([overviewFn(), articlesFn()]);
+    return { ...overview, articles };
+  },
   head: ({ loaderData }) => ({
     meta: [
       { title: "Insights — DreamozTech Engineering Blog" },
@@ -30,8 +33,7 @@ export const Route = createFileRoute("/insights/")({
 });
 
 function Insights() {
-  const { member, articles, logo, favicon } =
-    Route.useLoaderData() as SiteOverview;
+  const { member, articles, logo, favicon } = Route.useLoaderData();
 
   return (
     <SiteLayout member={member} logo={logo} favicon={favicon}>
@@ -45,7 +47,7 @@ function Insights() {
       </section>
       <section className="mx-auto max-w-6xl px-5 py-16">
         <div className="grid gap-6 md:grid-cols-3">
-          {articles.map((a) => (
+          {(articles as ArticleCard[]).map((a) => (
             <PostCard key={a.slug} item={a} />
           ))}
         </div>
