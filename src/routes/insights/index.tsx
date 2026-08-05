@@ -46,7 +46,7 @@ function Insights() {
       </section>
       <section className="mx-auto max-w-6xl px-5 py-16">
         <div className="grid gap-6 md:grid-cols-3">
-          {articles.map((a) => (
+          {(articles as ArticleCard[]).map((a) => (
             <PostCard key={a.slug} item={a} />
           ))}
         </div>
