@@ -118,7 +118,9 @@ async function loadAll() {
   };
 }
 
-const SERVICE_PAGES = ["about", "growth", "feature", "services"];
+const SITE_PATH = "dreamoz-tech-consulting";
+const EXCLUDED_PAGES = ["brand", "footer", "case", "blog", "return policy"];
+const PAGE_ORDER = ["home", "about", "services", "feature", "growth", "innovate", "testimonial"];
 
 function isPublicPost(p: Post): boolean {
   return p.bizEnable === true && p.bizPublic === true;
@@ -129,26 +131,39 @@ function isInsight(p: Post): boolean {
   return (t === "tech" || t === "blog") && isPublicPost(p);
 }
 
-function servicePages(webs: Web[]): ServicePage[] {
+function siteWeb(webs: Web[]): Web | undefined {
+  return (
+    webs.find((w) => (w.webDisplayPath ?? "").toLowerCase() === SITE_PATH) ?? webs[0]
+  );
+}
+
+function servicePages(web: Web | undefined): ServicePage[] {
   const out: ServicePage[] = [];
-  for (const web of webs) {
-    for (const page of web.webPages ?? []) {
-      if (SERVICE_PAGES.includes((page.pageTitle ?? "").trim().toLowerCase())) {
-        out.push({
-          title: page.pageTitle,
-          html: sanitizeHtml(page.description),
-          posts: (page.posts ?? []).filter(isPublicPost).map(toCard),
-        });
-      }
-    }
+  for (const page of web?.webPages ?? []) {
+    const title = (page.pageTitle ?? "").trim();
+    if (EXCLUDED_PAGES.includes(title.toLowerCase())) continue;
+    const html = sanitizeHtml(page.description);
+    const posts = (page.posts ?? []).filter(isPublicPost).map(toCard);
+    if (!html && posts.length === 0) continue;
+    out.push({
+      title,
+      html,
+      summary: stripHtml(page.description).slice(0, 220),
+      posts,
+    });
+
   }
-  return out;
+  return out.sort((a, b) => {
+    const ai = PAGE_ORDER.indexOf(a.title.toLowerCase());
+    const bi = PAGE_ORDER.indexOf(b.title.toLowerCase());
+    return (ai < 0 ? 99 : ai) - (bi < 0 ? 99 : bi);
+  });
 }
 
 export async function getOverview(): Promise<SiteOverview> {
   const { member, posts, webs } = await loadAll();
-  const web = webs[0];
-  const pages = servicePages(webs);
+  const web = siteWeb(webs);
+  const pages = servicePages(web);
   return {
     member,
     logo: mediaUrl(web?.logoImage) ?? mediaUrl(member.profilePicture),
@@ -160,6 +175,7 @@ export async function getOverview(): Promise<SiteOverview> {
     articles: posts.filter(isInsight).map(toCard).slice(0, 25),
   };
 }
+
 
 export async function getArticles() {
   const { posts } = await loadAll();

@@ -71,8 +71,10 @@ export type WebPage = {
 export type ServicePage = {
   title: string;
   html: string;
+  summary: string;
   posts: ArticleCard[];
 };
+
 
 export type Web = {
   webTitle: string;
