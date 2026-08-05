@@ -30,10 +30,12 @@ export function whatsappLink(
   return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
 }
 
-/** Locale-stable date formatting so SSR and client output match. */
+/** Locale/timezone-stable date formatting so SSR and client output match. */
 export function formatDate(value: string | null | undefined): string {
   if (!value) return "";
-  const d = new Date(value);
+  // API dates have no timezone suffix; treat them as UTC so SSR and client agree.
+  const normalized = /(?:Z|[+-]\d{2}:?\d{2})$/.test(value) ? value : `${value}Z`;
+  const d = new Date(normalized);
   if (Number.isNaN(d.getTime())) return "";
   return new Intl.DateTimeFormat("en-AU", {
     day: "2-digit",
@@ -42,6 +44,7 @@ export function formatDate(value: string | null | undefined): string {
     timeZone: "UTC",
   }).format(d);
 }
+
 
 export function brandName(memberFullName: string | null | undefined): string {
   const cleaned = (memberFullName ?? "").replace(/\s+/g, "");
