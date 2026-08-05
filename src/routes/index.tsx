@@ -94,27 +94,34 @@ function Home() {
         </div>
       </section>
 
-      {services.length > 0 && (
+      {servicePages.length > 0 && (
         <section className="mx-auto max-w-6xl px-5 py-20">
           <h2 className="text-3xl font-bold">What we do</h2>
           <p className="mt-3 max-w-2xl text-muted-foreground">
             End-to-end delivery: discovery, engineering, launch and ongoing growth.
           </p>
           <div className="mt-10 grid gap-6 md:grid-cols-3">
-            {services.map((s) => (
+            {servicePages.map((page) => (
               <div
-                key={s.slug + s.title}
+                key={page.title}
                 className="rounded-xl border border-border/70 bg-surface p-6 shadow-card"
               >
-                <h3 className="text-lg font-semibold">{s.title}</h3>
-                <p className="mt-3 line-clamp-4 text-sm text-muted-foreground">
-                  {s.excerpt}
+                <h3 className="text-lg font-semibold">{page.title}</h3>
+                <p className="mt-3 line-clamp-5 text-sm text-muted-foreground">
+                  {page.summary || page.posts[0]?.excerpt}
                 </p>
+                <Link
+                  to="/services"
+                  className="mt-4 inline-flex text-sm font-semibold text-primary hover:underline"
+                >
+                  Learn more
+                </Link>
               </div>
             ))}
           </div>
         </section>
       )}
+
 
       <section className="mx-auto max-w-6xl px-5 pb-20">
         <div className="flex items-end justify-between gap-4">
