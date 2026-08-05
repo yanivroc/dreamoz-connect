@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { overviewFn } from "@/lib/dreamoz.functions";
 import { SiteLayout } from "@/components/SiteLayout";
+import { MediaSlider } from "@/components/MediaSlider";
 import type { SiteOverview } from "@/lib/dreamoz.types";
 
 export const Route = createFileRoute("/services")({
@@ -89,13 +90,13 @@ function Services() {
                       <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
                         {s.attributes.map((a, ai) => (
                           <div
-                            key={`${a.attributeName}-${ai}`}
+                            key={`${a.title}-${ai}`}
                             className="rounded-lg border border-border/60 px-3 py-2"
                           >
                             <dt className="text-xs uppercase tracking-wide text-muted-foreground">
-                              {a.attributeName}
+                              {a.title}
                             </dt>
-                            <dd className="font-medium">{a.attributeValue}</dd>
+                            <dd className="font-medium">{a.value}</dd>
                           </div>
                         ))}
                       </dl>
