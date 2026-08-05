@@ -108,7 +108,7 @@ function toCard(post: Post): ArticleCard {
 async function loadAll() {
   const [memberRes, postsRes, websRes] = await Promise.all([
     apiGet<{ member: Member }>("Member/Get"),
-    apiGet<{ posts: Post[] }>("Member/Posts"),
+    apiGet<{ posts: Post[] }>("Member/Posts?item=500"),
     apiGet<{ webs: Web[] }>("Member/Webs"),
   ]);
   return {
@@ -121,7 +121,7 @@ async function loadAll() {
 const SERVICE_PAGES = ["about", "growth", "feature", "services"];
 
 function isPublicPost(p: Post): boolean {
-  return p.bizEnable !== false && p.bizPublic !== false;
+  return p.bizEnable === true && p.bizPublic === true;
 }
 
 function isInsight(p: Post): boolean {
@@ -157,7 +157,7 @@ export async function getOverview(): Promise<SiteOverview> {
     webTitle: web?.webTitle ?? null,
     servicePages: pages,
     services: pages.flatMap((p) => p.posts).slice(0, 6),
-    articles: posts.filter(isInsight).map(toCard).slice(0, 12),
+    articles: posts.filter(isInsight).map(toCard).slice(0, 25),
   };
 }
 
