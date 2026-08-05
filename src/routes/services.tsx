@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { overviewFn } from "@/lib/dreamoz.functions";
 import { SiteLayout } from "@/components/SiteLayout";
+import { MediaSlider } from "@/components/MediaSlider";
 import type { SiteOverview } from "@/lib/dreamoz.types";
 
 export const Route = createFileRoute("/services")({
@@ -55,15 +56,51 @@ function Services() {
             ) : null}
             {page.posts.length > 0 && (
               <div className="mt-8 grid gap-6 md:grid-cols-2">
-                {page.posts.map((s) => (
+                {page.posts.map((s, pi) => (
                   <article
-                    key={`${page.title}-${i}-${s.slug}-${s.title}`}
-                    className="rounded-xl border border-border/70 bg-surface p-7 shadow-card"
+                    key={`${page.title}-${i}-${s.slug}-${pi}`}
+                    className="overflow-hidden rounded-xl border border-border/70 bg-surface p-7 shadow-card"
                   >
+                    {(s.images.length > 0 || s.videos.length > 0) && (
+                      <div className="mb-5">
+                        <MediaSlider
+                          images={s.images}
+                          videos={s.videos}
+                          title={s.title}
+                        />
+                      </div>
+                    )}
                     <h3 className="text-lg font-semibold">{s.title}</h3>
+                    {s.categories.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {s.categories.map((c, ci) => (
+                          <span
+                            key={`${c}-${ci}`}
+                            className="rounded-full border border-border/70 px-2.5 py-0.5 text-xs text-muted-foreground"
+                          >
+                            {c}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                     <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                       {s.excerpt}
                     </p>
+                    {s.attributes.length > 0 && (
+                      <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
+                        {s.attributes.map((a, ai) => (
+                          <div
+                            key={`${a.title}-${ai}`}
+                            className="rounded-lg border border-border/60 px-3 py-2"
+                          >
+                            <dt className="text-xs uppercase tracking-wide text-muted-foreground">
+                              {a.title}
+                            </dt>
+                            <dd className="font-medium">{a.value}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    )}
                     {s.link ? (
                       <a
                         href={s.link}
