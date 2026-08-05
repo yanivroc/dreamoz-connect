@@ -145,7 +145,13 @@ function servicePages(web: Web | undefined): ServicePage[] {
     const html = sanitizeHtml(page.description);
     const posts = (page.posts ?? []).filter(isPublicPost).map(toCard);
     if (!html && posts.length === 0) continue;
-    out.push({ title, html, posts });
+    out.push({
+      title,
+      html,
+      summary: stripHtml(page.description).slice(0, 220),
+      posts,
+    });
+
   }
   return out.sort((a, b) => {
     const ai = PAGE_ORDER.indexOf(a.title.toLowerCase());
