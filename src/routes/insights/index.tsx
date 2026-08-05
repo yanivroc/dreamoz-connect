@@ -32,8 +32,7 @@ export const Route = createFileRoute("/insights/")({
 });
 
 function Insights() {
-  const { member, articles, logo, favicon } =
-    Route.useLoaderData() as SiteOverview;
+  const { member, articles, logo, favicon } = Route.useLoaderData();
 
   return (
     <SiteLayout member={member} logo={logo} favicon={favicon}>
