@@ -31,8 +31,9 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  const { member, services, articles, servicePages, logo, favicon } =
+  const { member, articles, servicePages, logo, favicon } =
     Route.useLoaderData() as SiteOverview;
+
 
   return (
     <SiteLayout member={member} logo={logo} favicon={favicon}>
