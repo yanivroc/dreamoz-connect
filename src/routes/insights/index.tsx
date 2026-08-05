@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { overviewFn, articlesFn } from "@/lib/dreamoz.functions";
 import { SiteLayout } from "@/components/SiteLayout";
+import type { ArticleCard } from "@/lib/dreamoz.types";
 import { PostCard } from "@/components/PostCard";
 
 export const Route = createFileRoute("/insights/")({
