@@ -124,7 +124,7 @@ function Home() {
           </Link>
         </div>
         <div className="mt-10 grid gap-6 md:grid-cols-3">
-          {articles.slice(0, 6).map((a) => (
+          {articles.slice(0, 25).map((a) => (
             <PostCard key={a.slug} item={a} />
           ))}
         </div>
