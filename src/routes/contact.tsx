@@ -30,7 +30,8 @@ export const Route = createFileRoute("/contact")({
 });
 
 function Contact() {
-  const { member, email, logo, favicon } = Route.useLoaderData() as SiteOverview;
+  const { member, email, logo, favicon, contactPage } =
+    Route.useLoaderData() as SiteOverview;
   const wa = whatsappLink(member.mobileNumber, member.country);
 
   const socials = [
