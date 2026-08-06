@@ -115,6 +115,7 @@ export type SiteOverview = {
   email: string | null;
   webTitle: string | null;
   servicePages: ServicePage[];
+  contactPage: ServicePage | null;
   services: ArticleCard[];
   articles: ArticleCard[];
 };
