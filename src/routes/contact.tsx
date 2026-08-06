@@ -137,7 +137,7 @@ function Contact() {
                     className="rounded-xl border border-border/70 bg-surface p-6 shadow-card"
                   >
                     {post.images.length > 0 || post.videos.length > 0 ? (
-                      <MediaSlider images={post.images} videos={post.videos} />
+                      <MediaSlider images={post.images} videos={post.videos} title={post.title} />
                     ) : null}
                     <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                       <span>{formatDate(post.date)}</span>
