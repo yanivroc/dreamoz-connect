@@ -189,3 +189,41 @@
   }
 }
 
+@utility prose-site {
+  & p,
+  & h1,
+  & h2,
+  & h3,
+  & h4,
+  & li,
+  & div,
+  & span {
+    text-align: left !important;
+  }
+  & p {
+    margin-bottom: 1rem;
+    line-height: 1.75;
+    color: var(--color-muted-foreground);
+  }
+  & h1,
+  & h2,
+  & h3,
+  & h4 {
+    color: var(--color-foreground);
+    margin: 1rem 0 0.75rem;
+  }
+  & ul,
+  & ol {
+    margin: 0 0 1rem 1.25rem;
+    list-style: disc;
+    color: var(--color-muted-foreground);
+  }
+  & a {
+    color: var(--color-primary);
+    text-decoration: underline;
+  }
+  & strong {
+    color: var(--color-foreground);
+  }
+}
+
