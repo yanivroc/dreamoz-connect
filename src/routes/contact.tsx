@@ -35,6 +35,7 @@ function Contact() {
   const { member, email, logo, favicon, contactPage } =
     Route.useLoaderData() as SiteOverview;
   const wa = whatsappLink(member.mobileNumber, member.country);
+  const firstContactPost = contactPage?.posts[0];
 
   const socials = [
     ["LinkedIn", member.linkedinProfile],
