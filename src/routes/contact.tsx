@@ -48,36 +48,54 @@ function Contact() {
     <SiteLayout member={member} logo={logo} favicon={favicon}>
       {contactPage ? (
         <section className="hero-surface border-b border-border/60">
-          <div className="mx-auto max-w-6xl px-5 py-16">
-            <h1 className="text-4xl font-bold md:text-5xl">{contactPage.title}</h1>
-            {contactPage.html ? (
-              <div
-                className="prose-site mt-6 max-w-3xl text-muted-foreground"
-                dangerouslySetInnerHTML={{ __html: contactPage.html }}
-              />
-            ) : null}
-            {contactPage.posts.length > 0 ? (
-              <div className="mt-10 grid gap-8 md:grid-cols-2">
-                {contactPage.posts.map((post, i) => (
-                  <div key={`${post.slug}-${i}`}>
-                    {post.images.length > 0 || post.videos.length > 0 ? (
-                      <MediaSlider images={post.images} videos={post.videos} title={post.title} />
-                    ) : null}
-                    {post.excerpt ? (
-                      <p className="mt-4 text-sm text-muted-foreground">{post.excerpt}</p>
-                    ) : null}
-                    {post.attributes.length > 0 ? (
-                      <dl className="mt-4 space-y-1 text-sm">
-                        {post.attributes.map((a, ai) => (
-                          <div key={`${a.title}-${ai}`} className="flex justify-between gap-4">
-                            <dt className="text-muted-foreground">{a.title}</dt>
-                            <dd>{a.value}</dd>
-                          </div>
-                        ))}
-                      </dl>
-                    ) : null}
-                  </div>
-                ))}
+          <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 md:grid-cols-2">
+            <div className="order-2 md:order-1">
+              <h1 className="text-4xl font-bold md:text-5xl">{contactPage.title}</h1>
+              {contactPage.html ? (
+                <div
+                  className="prose-site mt-6 text-muted-foreground"
+                  dangerouslySetInnerHTML={{ __html: contactPage.html }}
+                />
+              ) : null}
+              {contactPage.posts[0]?.attributes.length > 0 ? (
+                <dl className="mt-6 space-y-1 text-sm">
+                  {contactPage.posts[0].attributes.map((a, ai) => (
+                    <div key={`${a.title}-${ai}`} className="flex justify-between gap-4">
+                      <dt className="text-muted-foreground">{a.title}</dt>
+                      <dd>{a.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              ) : null}
+              <div className="mt-8 flex flex-wrap gap-3">
+                <a
+                  href={`mailto:${email}`}
+                  className="inline-flex items-center gap-2 rounded-full bg-gradient-accent px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-card transition hover:opacity-90"
+                >
+                  <Mail size={18} />
+                  Email Us
+                </a>
+                {member.mobileNumber ? (
+                  <a
+                    href={wa ?? `tel:${member.mobileNumber}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-foreground transition hover:bg-surface"
+                  >
+                    <MessageCircle size={18} />
+                    Text Us
+                  </a>
+                ) : null}
+              </div>
+            </div>
+            {contactPage.posts[0] &&
+            (contactPage.posts[0].images.length > 0 || contactPage.posts[0].videos.length > 0) ? (
+              <div className="order-1 md:order-2">
+                <MediaSlider
+                  images={contactPage.posts[0].images}
+                  videos={contactPage.posts[0].videos}
+                  title={contactPage.posts[0].title}
+                />
               </div>
             ) : null}
           </div>
@@ -94,7 +112,7 @@ function Contact() {
               className="inline-flex items-center gap-2 rounded-full bg-gradient-accent px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-card transition hover:opacity-90"
             >
               <Mail size={18} />
-              {email}
+              Email Us
             </a>
             {member.mobileNumber ? (
               <a
@@ -104,7 +122,7 @@ function Contact() {
                 className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-foreground transition hover:bg-surface"
               >
                 <MessageCircle size={18} />
-                {member.mobileNumber}
+                Text Us
               </a>
             ) : null}
           </div>
