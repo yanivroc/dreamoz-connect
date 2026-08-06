@@ -89,13 +89,13 @@ function Contact() {
                 ) : null}
               </div>
             </div>
-            {contactPage.posts[0] &&
-            (contactPage.posts[0].images.length > 0 || contactPage.posts[0].videos.length > 0) ? (
+            {firstContactPost &&
+            (firstContactPost.images.length > 0 || firstContactPost.videos.length > 0) ? (
               <div className="order-1 md:order-2">
                 <MediaSlider
-                  images={contactPage.posts[0].images}
-                  videos={contactPage.posts[0].videos}
-                  title={contactPage.posts[0].title}
+                  images={firstContactPost.images}
+                  videos={firstContactPost.videos}
+                  title={firstContactPost.title}
                 />
               </div>
             ) : null}
