@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Mail, MessageCircle } from "lucide-react";
 import { overviewFn } from "@/lib/dreamoz.functions";
 import { SiteLayout } from "@/components/SiteLayout";
 import type { SiteOverview } from "@/lib/dreamoz.types";
-import { formatDate, whatsappLink } from "@/lib/format";
+import { whatsappLink } from "@/lib/format";
 import { MediaSlider } from "@/components/MediaSlider";
 
 export const Route = createFileRoute("/contact")({
@@ -45,45 +46,70 @@ function Contact() {
 
   return (
     <SiteLayout member={member} logo={logo} favicon={favicon}>
-      <section className="hero-surface border-b border-border/60">
-        <div className="mx-auto max-w-6xl px-5 py-20">
-          <h1 className="text-4xl font-bold md:text-5xl">Let's build something</h1>
-          <p className="mt-4 max-w-2xl text-lg text-muted-foreground">
-            Tell us about your product idea, platform migration or growth goal.
-          </p>
-        </div>
-      </section>
+      {contactPage ? (
+        <section className="hero-surface border-b border-border/60">
+          <div className="mx-auto max-w-6xl px-5 py-16">
+            <h1 className="text-4xl font-bold md:text-5xl">{contactPage.title}</h1>
+            {contactPage.html ? (
+              <div
+                className="prose-site mt-6 max-w-3xl text-muted-foreground"
+                dangerouslySetInnerHTML={{ __html: contactPage.html }}
+              />
+            ) : null}
+            {contactPage.posts.length > 0 ? (
+              <div className="mt-10 grid gap-8 md:grid-cols-2">
+                {contactPage.posts.map((post, i) => (
+                  <div key={`${post.slug}-${i}`}>
+                    {post.images.length > 0 || post.videos.length > 0 ? (
+                      <MediaSlider images={post.images} videos={post.videos} title={post.title} />
+                    ) : null}
+                    {post.excerpt ? (
+                      <p className="mt-4 text-sm text-muted-foreground">{post.excerpt}</p>
+                    ) : null}
+                    {post.attributes.length > 0 ? (
+                      <dl className="mt-4 space-y-1 text-sm">
+                        {post.attributes.map((a, ai) => (
+                          <div key={`${a.title}-${ai}`} className="flex justify-between gap-4">
+                            <dt className="text-muted-foreground">{a.title}</dt>
+                            <dd>{a.value}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        </section>
+      ) : null}
 
       <section className="mx-auto grid max-w-6xl gap-10 px-5 py-16 md:grid-cols-2">
         <div className="rounded-xl border border-border/70 bg-surface p-7 shadow-card">
           <h2 className="text-xl font-semibold">Contact details</h2>
-          <dl className="mt-6 space-y-4 text-sm">
-            <div>
-              <dt className="text-muted-foreground">Email</dt>
-              <dd>
-                <a
-                  href={`mailto:${email}`}
-                  className="text-primary hover:underline"
-                >
-                  {email}
-                </a>
-              </dd>
-            </div>
+
+          <div className="mt-6 flex flex-wrap gap-3">
+            <a
+              href={`mailto:${email}`}
+              className="inline-flex items-center gap-2 rounded-full bg-gradient-accent px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-card transition hover:opacity-90"
+            >
+              <Mail size={18} />
+              {email}
+            </a>
             {member.mobileNumber ? (
-              <div>
-                <dt className="text-muted-foreground">WhatsApp</dt>
-                <dd>
-                  <a
-                    href={wa ?? `tel:${member.mobileNumber}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-primary hover:underline"
-                  >
-                    {member.mobileNumber}
-                  </a>
-                </dd>
-              </div>
+              <a
+                href={wa ?? `tel:${member.mobileNumber}`}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-foreground transition hover:bg-surface"
+              >
+                <MessageCircle size={18} />
+                {member.mobileNumber}
+              </a>
             ) : null}
+          </div>
+
+          <dl className="mt-6 space-y-4 text-sm">
             <div>
               <dt className="text-muted-foreground">Address</dt>
               <dd className="text-foreground">
@@ -118,69 +144,6 @@ function Contact() {
           />
         </div>
       </section>
-
-      {contactPage ? (
-        <section className="border-t border-border/60 bg-surface/40">
-          <div className="mx-auto max-w-6xl px-5 py-16">
-            <h2 className="text-2xl font-semibold md:text-3xl">{contactPage.title}</h2>
-            {contactPage.html ? (
-              <div
-                className="prose-site mt-6 max-w-none text-muted-foreground"
-                dangerouslySetInnerHTML={{ __html: contactPage.html }}
-              />
-            ) : null}
-            {contactPage.posts.length > 0 ? (
-              <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {contactPage.posts.map((post, i) => (
-                  <article
-                    key={`${post.slug}-${i}`}
-                    className="rounded-xl border border-border/70 bg-surface p-6 shadow-card"
-                  >
-                    {post.images.length > 0 || post.videos.length > 0 ? (
-                      <MediaSlider images={post.images} videos={post.videos} title={post.title} />
-                    ) : null}
-                    <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                      <span>{formatDate(post.date)}</span>
-                      {post.categories.map((c) => (
-                        <span
-                          key={c}
-                          className="rounded-full border border-border px-2.5 py-0.5 uppercase tracking-wide"
-                        >
-                          {c}
-                        </span>
-                      ))}
-                    </div>
-                    <h3 className="mt-3 text-lg font-semibold">{post.title}</h3>
-                    {post.excerpt ? (
-                      <p className="mt-2 text-sm text-muted-foreground">{post.excerpt}</p>
-                    ) : null}
-                    {post.attributes.length > 0 ? (
-                      <dl className="mt-4 space-y-1 text-sm">
-                        {post.attributes.map((a, ai) => (
-                          <div key={`${a.title}-${ai}`} className="flex justify-between gap-4">
-                            <dt className="text-muted-foreground">{a.title}</dt>
-                            <dd>{a.value}</dd>
-                          </div>
-                        ))}
-                      </dl>
-                    ) : null}
-                    {post.link ? (
-                      <a
-                        href={post.link}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="mt-4 inline-block text-sm font-semibold text-primary hover:underline"
-                      >
-                        Learn more ↗
-                      </a>
-                    ) : null}
-                  </article>
-                ))}
-              </div>
-            ) : null}
-          </div>
-        </section>
-      ) : null}
     </SiteLayout>
   );
 }
