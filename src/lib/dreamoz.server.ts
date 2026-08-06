@@ -160,11 +160,25 @@ function servicePages(web: Web | undefined): ServicePage[] {
   });
 }
 
+function innovatePage(web: Web | undefined): ServicePage | null {
+  const page = (web?.webPages ?? []).find(
+    (p) => (p.pageTitle ?? "").trim().toLowerCase() === "innovate",
+  );
+  if (!page) return null;
+  return {
+    title: (page.pageTitle ?? "").trim(),
+    html: sanitizeHtml(page.description),
+    summary: stripHtml(page.description).slice(0, 220),
+    posts: (page.posts ?? []).filter((p) => p.bizEnable === true).map(toCard),
+  };
+}
+
 export async function getOverview(): Promise<SiteOverview> {
   const { member, posts, webs } = await loadAll();
   const web = siteWeb(webs);
   const pages = servicePages(web);
   return {
+    contactPage: innovatePage(web),
     member,
     logo: mediaUrl(web?.logoImage) ?? mediaUrl(member.profilePicture),
     favicon: mediaUrl(web?.logoFavicon),
