@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { overviewFn } from "@/lib/dreamoz.functions";
 import { SiteLayout } from "@/components/SiteLayout";
 import type { SiteOverview } from "@/lib/dreamoz.types";
-import { whatsappLink } from "@/lib/format";
+import { formatDate, whatsappLink } from "@/lib/format";
+import { MediaSlider } from "@/components/MediaSlider";
 
 export const Route = createFileRoute("/contact")({
   loader: () => overviewFn(),
@@ -117,6 +118,69 @@ function Contact() {
           />
         </div>
       </section>
+
+      {contactPage ? (
+        <section className="border-t border-border/60 bg-surface/40">
+          <div className="mx-auto max-w-6xl px-5 py-16">
+            <h2 className="text-2xl font-semibold md:text-3xl">{contactPage.title}</h2>
+            {contactPage.html ? (
+              <div
+                className="prose-site mt-6 max-w-none text-muted-foreground"
+                dangerouslySetInnerHTML={{ __html: contactPage.html }}
+              />
+            ) : null}
+            {contactPage.posts.length > 0 ? (
+              <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {contactPage.posts.map((post, i) => (
+                  <article
+                    key={`${post.slug}-${i}`}
+                    className="rounded-xl border border-border/70 bg-surface p-6 shadow-card"
+                  >
+                    {post.images.length > 0 || post.videos.length > 0 ? (
+                      <MediaSlider images={post.images} videos={post.videos} />
+                    ) : null}
+                    <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                      <span>{formatDate(post.date)}</span>
+                      {post.categories.map((c) => (
+                        <span
+                          key={c}
+                          className="rounded-full border border-border px-2.5 py-0.5 uppercase tracking-wide"
+                        >
+                          {c}
+                        </span>
+                      ))}
+                    </div>
+                    <h3 className="mt-3 text-lg font-semibold">{post.title}</h3>
+                    {post.excerpt ? (
+                      <p className="mt-2 text-sm text-muted-foreground">{post.excerpt}</p>
+                    ) : null}
+                    {post.attributes.length > 0 ? (
+                      <dl className="mt-4 space-y-1 text-sm">
+                        {post.attributes.map((a, ai) => (
+                          <div key={`${a.title}-${ai}`} className="flex justify-between gap-4">
+                            <dt className="text-muted-foreground">{a.title}</dt>
+                            <dd>{a.value}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    ) : null}
+                    {post.link ? (
+                      <a
+                        href={post.link}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-4 inline-block text-sm font-semibold text-primary hover:underline"
+                      >
+                        Learn more ↗
+                      </a>
+                    ) : null}
+                  </article>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        </section>
+      ) : null}
     </SiteLayout>
   );
 }
