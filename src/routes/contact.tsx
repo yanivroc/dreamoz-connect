@@ -58,9 +58,9 @@ function Contact() {
                   dangerouslySetInnerHTML={{ __html: contactPage.html }}
                 />
               ) : null}
-              {contactPage.posts[0]?.attributes.length > 0 ? (
+              {firstContactPost && firstContactPost.attributes.length > 0 ? (
                 <dl className="mt-6 space-y-1 text-sm">
-                  {contactPage.posts[0].attributes.map((a, ai) => (
+                  {firstContactPost.attributes.map((a, ai) => (
                     <div key={`${a.title}-${ai}`} className="flex justify-between gap-4">
                       <dt className="text-muted-foreground">{a.title}</dt>
                       <dd>{a.value}</dd>
