@@ -197,7 +197,15 @@
   & h4,
   & li,
   & div,
-  & span {
+  & span,
+  & section,
+  & article,
+  & main,
+  & header,
+  & footer,
+  & blockquote,
+  & figure,
+  & figcaption {
     text-align: left !important;
   }
   & p {
