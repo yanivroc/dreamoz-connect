@@ -61,15 +61,6 @@ function Services() {
                     key={`${page.title}-${i}-${s.slug}-${pi}`}
                     className="overflow-hidden rounded-xl border border-border/70 bg-surface p-7 shadow-card"
                   >
-                    {(s.images.length > 0 || s.videos.length > 0) && (
-                      <div className="mb-5">
-                        <MediaSlider
-                          images={s.images}
-                          videos={s.videos}
-                          title={s.title}
-                        />
-                      </div>
-                    )}
                     <h3 className="text-lg font-semibold">{s.title}</h3>
                     {s.categories.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-2">
@@ -100,6 +91,15 @@ function Services() {
                           </div>
                         ))}
                       </dl>
+                    )}
+                    {(s.images.length > 0 || s.videos.length > 0) && (
+                      <div className="mt-5">
+                        <MediaSlider
+                          images={s.images}
+                          videos={s.videos}
+                          title={s.title}
+                        />
+                      </div>
                     )}
                     {s.link ? (
                       <a

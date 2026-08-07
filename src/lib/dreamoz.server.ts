@@ -119,7 +119,7 @@ async function loadAll() {
 }
 
 const SITE_PATH = "dreamoz-tech-consulting";
-const EXCLUDED_PAGES = ["footer", "case", "blog", "return policy"];
+const EXCLUDED_PAGES = ["footer", "case", "blog", "return policy", "innovate"];
 const PAGE_ORDER = ["home", "about", "services", "feature", "growth", "innovate", "brand", "testimonial"];
 
 function isPublicPost(p: Post): boolean {
