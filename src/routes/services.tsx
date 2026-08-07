@@ -74,9 +74,16 @@ function Services() {
                         ))}
                       </div>
                     )}
-                    <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                      {s.excerpt}
-                    </p>
+                    {s.html ? (
+                      <div
+                        className="prose-site mt-4 max-w-3xl text-sm"
+                        dangerouslySetInnerHTML={{ __html: s.html }}
+                      />
+                    ) : (
+                      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                        {s.excerpt}
+                      </p>
+                    )}
                     {s.attributes.length > 0 && (
                       <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
                         {s.attributes.map((a, ai) => (
