@@ -68,26 +68,7 @@ function Contact() {
                   ))}
                 </dl>
               ) : null}
-              <div className="mt-8 flex flex-wrap gap-3">
-                <a
-                  href={`mailto:${email}`}
-                  className="inline-flex items-center gap-2 rounded-full bg-gradient-accent px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-card transition hover:opacity-90"
-                >
-                  <Mail size={18} />
-                  Email Us
-                </a>
-                {member.mobileNumber ? (
-                  <a
-                    href={wa ?? `tel:${member.mobileNumber}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-foreground transition hover:bg-surface"
-                  >
-                    <MessageCircle size={18} />
-                    Text Us
-                  </a>
-                ) : null}
-              </div>
+              <div className="mt-8 flex flex-wrap gap-3" />
             </div>
             {firstContactPost &&
             (firstContactPost.images.length > 0 || firstContactPost.videos.length > 0) ? (
@@ -120,7 +101,7 @@ function Contact() {
                 href={wa ?? `tel:${member.mobileNumber}`}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-foreground transition hover:bg-surface"
+                className="inline-flex items-center gap-2 rounded-full bg-gradient-accent px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-card transition hover:opacity-90"
               >
                 <MessageCircle size={18} />
                 Text Us
