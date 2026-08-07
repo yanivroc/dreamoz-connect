@@ -3,6 +3,7 @@ import { overviewFn } from "@/lib/dreamoz.functions";
 import { SiteLayout } from "@/components/SiteLayout";
 import type { SiteOverview } from "@/lib/dreamoz.types";
 import { PostCard } from "@/components/PostCard";
+import { MediaSlider } from "@/components/MediaSlider";
 
 export const Route = createFileRoute("/")({
   loader: () => overviewFn(),
