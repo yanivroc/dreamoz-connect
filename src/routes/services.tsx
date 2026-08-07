@@ -30,11 +30,11 @@ export const Route = createFileRoute("/services")({
 });
 
 function Services() {
-  const { member, servicePages, logo, favicon } =
+  const { member, servicePages, logo, favicon, footerPage } =
     Route.useLoaderData() as SiteOverview;
 
   return (
-    <SiteLayout member={member} logo={logo} favicon={favicon}>
+    <SiteLayout member={member} logo={logo} favicon={favicon} footerPage={footerPage}>
       <section className="hero-surface border-b border-border/60">
         <div className="mx-auto max-w-6xl px-5 py-20">
           <h1 className="text-4xl font-bold md:text-5xl">Services</h1>
