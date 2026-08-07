@@ -92,6 +92,15 @@ function Services() {
                         ))}
                       </dl>
                     )}
+                    {(s.images.length > 0 || s.videos.length > 0) && (
+                      <div className="mt-5">
+                        <MediaSlider
+                          images={s.images}
+                          videos={s.videos}
+                          title={s.title}
+                        />
+                      </div>
+                    )}
                     {s.link ? (
                       <a
                         href={s.link}
