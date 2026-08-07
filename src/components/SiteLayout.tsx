@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
-import type { Member } from "@/lib/dreamoz.types";
+import type { Member, ServicePage } from "@/lib/dreamoz.types";
 import { brandName, whatsappLink } from "@/lib/format";
 import { useEffect } from "react";
 
@@ -17,14 +17,17 @@ export function SiteLayout({
   member,
   logo,
   favicon,
+  footerPage,
 }: {
   children: ReactNode;
   member?: Member | null;
   logo?: string | null;
   favicon?: string | null;
+  footerPage?: ServicePage | null;
 }) {
   const name = brandName(member?.memberFullName);
   const wa = whatsappLink(member?.mobileNumber, member?.country);
+  const footerPost = footerPage?.posts[0];
 
   useEffect(() => {
     if (!favicon) return;
