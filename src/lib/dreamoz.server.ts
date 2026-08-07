@@ -90,6 +90,7 @@ function toCard(post: Post): ArticleCard {
     slug: post.bizDisplayTitle,
     title: post.bizCustomTitle?.trim() || post.bizName,
     excerpt: text.slice(0, 190),
+    html: sanitizeHtml(post.bizDesc),
     image: images[0]?.thumb ?? images[0]?.src ?? null,
     images,
     videos: (post.videos ?? [])

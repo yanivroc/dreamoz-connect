@@ -97,6 +97,7 @@ export type ArticleCard = {
   slug: string;
   title: string;
   excerpt: string;
+  html: string;
   image: string | null;
   images: MediaImage[];
   videos: string[];
@@ -116,6 +117,7 @@ export type SiteOverview = {
   webTitle: string | null;
   servicePages: ServicePage[];
   contactPage: ServicePage | null;
+  footerPage: ServicePage | null;
   services: ArticleCard[];
   articles: ArticleCard[];
 };
