@@ -32,7 +32,7 @@ export const Route = createFileRoute("/contact")({
 });
 
 function Contact() {
-  const { member, email, logo, favicon, contactPage } =
+  const { member, email, logo, favicon, contactPage, footerPage } =
     Route.useLoaderData() as SiteOverview;
   const wa = whatsappLink(member.mobileNumber, member.country);
   const firstContactPost = contactPage?.posts[0];
@@ -46,7 +46,7 @@ function Contact() {
   ].filter(([, url]) => Boolean(url)) as [string, string][];
 
   return (
-    <SiteLayout member={member} logo={logo} favicon={favicon}>
+    <SiteLayout member={member} logo={logo} favicon={favicon} footerPage={footerPage}>
       {contactPage ? (
         <section className="hero-surface border-b border-border/60">
           <div className="mx-auto grid max-w-6xl items-center gap-10 px-5 py-16 md:grid-cols-2">
