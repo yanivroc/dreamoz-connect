@@ -55,7 +55,7 @@ function Services() {
               />
             ) : null}
             {page.posts.length > 0 && (
-              <div className="mt-8 grid gap-6 md:grid-cols-2">
+              <div className="mt-8 grid gap-6">
                 {page.posts.map((s, pi) => (
                   <article
                     key={`${page.title}-${i}-${s.slug}-${pi}`}
