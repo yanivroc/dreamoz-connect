@@ -30,11 +30,11 @@ export const Route = createFileRoute("/services")({
 });
 
 function Services() {
-  const { member, servicePages, logo, favicon } =
+  const { member, servicePages, logo, favicon, footerPage } =
     Route.useLoaderData() as SiteOverview;
 
   return (
-    <SiteLayout member={member} logo={logo} favicon={favicon}>
+    <SiteLayout member={member} logo={logo} favicon={favicon} footerPage={footerPage}>
       <section className="hero-surface border-b border-border/60">
         <div className="mx-auto max-w-6xl px-5 py-20">
           <h1 className="text-4xl font-bold md:text-5xl">Services</h1>
@@ -55,7 +55,7 @@ function Services() {
               />
             ) : null}
             {page.posts.length > 0 && (
-              <div className="mt-8 grid gap-6 md:grid-cols-2">
+              <div className="mt-8 grid gap-6">
                 {page.posts.map((s, pi) => (
                   <article
                     key={`${page.title}-${i}-${s.slug}-${pi}`}
@@ -74,9 +74,16 @@ function Services() {
                         ))}
                       </div>
                     )}
-                    <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                      {s.excerpt}
-                    </p>
+                    {s.html ? (
+                      <div
+                        className="prose-site mt-4 max-w-3xl text-sm"
+                        dangerouslySetInnerHTML={{ __html: s.html }}
+                      />
+                    ) : (
+                      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                        {s.excerpt}
+                      </p>
+                    )}
                     {s.attributes.length > 0 && (
                       <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
                         {s.attributes.map((a, ai) => (

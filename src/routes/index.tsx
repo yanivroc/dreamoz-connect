@@ -32,12 +32,12 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  const { member, articles, servicePages, logo, favicon } =
+  const { member, articles, servicePages, logo, favicon, footerPage } =
     Route.useLoaderData() as SiteOverview;
 
 
   return (
-    <SiteLayout member={member} logo={logo} favicon={favicon}>
+    <SiteLayout member={member} logo={logo} favicon={favicon} footerPage={footerPage}>
       <section className="hero-surface border-b border-border/60">
         <div className="mx-auto grid max-w-6xl gap-10 px-5 py-24 md:grid-cols-[1.15fr_0.85fr] md:items-center">
           <div>
@@ -97,87 +97,35 @@ function Home() {
       </section>
 
       {servicePages.length > 0 && (
-        <section className="mx-auto max-w-6xl space-y-16 px-5 py-20">
+        <section className="mx-auto max-w-6xl px-5 py-20">
           <div>
             <h2 className="text-3xl font-bold">What we do</h2>
             <p className="mt-3 max-w-2xl text-muted-foreground">
               End-to-end delivery: discovery, engineering, launch and ongoing growth.
             </p>
           </div>
-          {servicePages.map((page, i) => (
-            <div key={`${page.title}-${i}`}>
-              <h3 className="text-2xl font-bold">{page.title}</h3>
-              {page.html ? (
-                <div
-                  className="prose-api mt-4 max-w-3xl"
-                  dangerouslySetInnerHTML={{ __html: page.html }}
-                />
-              ) : null}
-              {page.posts.length > 0 && (
-                <div className="mt-8 grid gap-6 md:grid-cols-2">
-                  {page.posts.map((s, pi) => (
-                    <article
-                      key={`${page.title}-${i}-${s.slug}-${pi}`}
-                      className="overflow-hidden rounded-xl border border-border/70 bg-surface p-7 shadow-card"
-                    >
-                      <h4 className="text-lg font-semibold">{s.title}</h4>
-                      {s.categories.length > 0 && (
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          {s.categories.map((c, ci) => (
-                            <span
-                              key={`${c}-${ci}`}
-                              className="rounded-full border border-border/70 px-2.5 py-0.5 text-xs text-muted-foreground"
-                            >
-                              {c}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                        {s.excerpt}
-                      </p>
-                      {s.attributes.length > 0 && (
-                        <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
-                          {s.attributes.map((a, ai) => (
-                            <div
-                              key={`${a.title}-${ai}`}
-                              className="rounded-lg border border-border/60 px-3 py-2"
-                            >
-                              <dt className="text-xs uppercase tracking-wide text-muted-foreground">
-                                {a.title}
-                              </dt>
-                              <dd className="font-medium">{a.value}</dd>
-                            </div>
-                          ))}
-                        </dl>
-                      )}
-                      {(s.images.length > 0 || s.videos.length > 0) && (
-                        <div className="mt-5">
-                          <MediaSlider
-                            images={s.images}
-                            videos={s.videos}
-                            title={s.title}
-                          />
-                        </div>
-                      )}
-                      {s.link ? (
-                        <a
-                          href={s.link}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="mt-4 inline-flex text-sm font-semibold text-primary hover:underline"
-                        >
-                          Learn more ↗
-                        </a>
-                      ) : null}
-                    </article>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
+          <div className="mt-10 grid gap-6 md:grid-cols-3">
+            {servicePages.map((page, i) => (
+              <Link
+                key={`${page.title}-${i}`}
+                to="/services"
+                className="group rounded-xl border border-border/70 bg-surface p-7 shadow-card transition-transform hover:-translate-y-1"
+              >
+                <h3 className="text-lg font-semibold group-hover:text-primary">
+                  {page.title}
+                </h3>
+                <p className="mt-3 line-clamp-4 text-sm leading-relaxed text-muted-foreground">
+                  {page.summary || page.posts[0]?.excerpt}
+                </p>
+                <span className="mt-5 inline-flex text-sm font-semibold text-primary">
+                  View services ↗
+                </span>
+              </Link>
+            ))}
+          </div>
         </section>
       )}
+
 
 
       <section className="mx-auto max-w-6xl px-5 pb-20">

@@ -55,6 +55,7 @@ function Article() {
       member={overview.member}
       logo={overview.logo}
       favicon={overview.favicon}
+      footerPage={overview.footerPage}
     >
       <article className="mx-auto max-w-3xl px-5 py-16">
         <Link to="/insights" className="text-sm text-primary hover:underline">
