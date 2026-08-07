@@ -144,7 +144,9 @@ function servicePages(web: Web | undefined): ServicePage[] {
     const title = (page.pageTitle ?? "").trim();
     if (EXCLUDED_PAGES.includes(title.toLowerCase())) continue;
     const html = sanitizeHtml(page.description);
-    const posts = (page.posts ?? []).filter(isPublicPost).map(toCard);
+    const posts = (page.posts ?? [])
+      .filter((p) => p.bizEnable === true)
+      .map(toCard);
     if (!html && posts.length === 0) continue;
     out.push({
       title,
@@ -161,9 +163,9 @@ function servicePages(web: Web | undefined): ServicePage[] {
   });
 }
 
-function innovatePage(web: Web | undefined): ServicePage | null {
+function namedPage(web: Web | undefined, name: string): ServicePage | null {
   const page = (web?.webPages ?? []).find(
-    (p) => (p.pageTitle ?? "").trim().toLowerCase() === "innovate",
+    (p) => (p.pageTitle ?? "").trim().toLowerCase() === name,
   );
   if (!page) return null;
   return {
@@ -179,7 +181,8 @@ export async function getOverview(): Promise<SiteOverview> {
   const web = siteWeb(webs);
   const pages = servicePages(web);
   return {
-    contactPage: innovatePage(web),
+    contactPage: namedPage(web, "innovate"),
+    footerPage: namedPage(web, "footer"),
     member,
     logo: mediaUrl(web?.logoImage) ?? mediaUrl(member.profilePicture),
     favicon: mediaUrl(web?.logoFavicon),
