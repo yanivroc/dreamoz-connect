@@ -32,12 +32,12 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  const { member, articles, servicePages, logo, favicon } =
+  const { member, articles, servicePages, logo, favicon, footerPage } =
     Route.useLoaderData() as SiteOverview;
 
 
   return (
-    <SiteLayout member={member} logo={logo} favicon={favicon}>
+    <SiteLayout member={member} logo={logo} favicon={favicon} footerPage={footerPage}>
       <section className="hero-surface border-b border-border/60">
         <div className="mx-auto grid max-w-6xl gap-10 px-5 py-24 md:grid-cols-[1.15fr_0.85fr] md:items-center">
           <div>
