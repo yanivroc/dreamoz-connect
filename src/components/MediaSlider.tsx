@@ -5,10 +5,12 @@ export function MediaSlider({
   images,
   videos = [],
   title,
+  variant = "default",
 }: {
   images: MediaImage[];
   videos?: string[];
   title: string;
+  variant?: "default" | "brand";
 }) {
   const [index, setIndex] = useState(0);
   const slides = [
@@ -27,8 +29,16 @@ export function MediaSlider({
     setIndex((i) => (i + dir + slides.length) % slides.length);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border/70 bg-surface shadow-card">
-      <div className="relative aspect-video max-h-[420px] w-full bg-surface">
+    <div
+      className={`mx-auto overflow-hidden rounded-xl border border-border/70 bg-surface shadow-card ${
+        variant === "brand" ? "max-w-2xl" : "max-w-3xl"
+      }`}
+    >
+      <div
+        className={`relative mx-auto w-full bg-surface ${
+          variant === "brand" ? "h-64" : "aspect-video max-h-[360px]"
+        }`}
+      >
         {current.kind === "image" ? (
           <img
             src={current.src}
