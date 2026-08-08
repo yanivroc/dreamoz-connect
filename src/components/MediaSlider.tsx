@@ -28,7 +28,7 @@ export function MediaSlider({
 
   return (
     <div className="overflow-hidden rounded-xl border border-border/70 bg-surface shadow-card">
-      <div className="relative aspect-video max-h-[420px] w-full bg-surface">
+      <div className="relative mx-auto aspect-video w-full max-w-3xl bg-surface">
         {current.kind === "image" ? (
           <img
             src={current.src}
