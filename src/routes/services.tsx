@@ -91,14 +91,19 @@ function Services() {
                             key={`${a.title}-${ai}`}
                             className="rounded-lg border border-border/60 px-3 py-2"
                           >
-                            <dt className="text-xs uppercase tracking-wide text-muted-foreground">
-                              {a.title}
-                            </dt>
-                            <dd className="font-medium">{a.value}</dd>
+                            <dt
+                              className="prose-site text-xs text-muted-foreground [&_i]:text-base [&_i]:text-primary"
+                              dangerouslySetInnerHTML={{ __html: a.title }}
+                            />
+                            <dd
+                              className="prose-site mt-1 font-medium"
+                              dangerouslySetInnerHTML={{ __html: a.value }}
+                            />
                           </div>
                         ))}
                       </dl>
                     )}
+
                     {(s.images.length > 0 || s.videos.length > 0) && (
                       <div className="mt-5">
                         <MediaSlider

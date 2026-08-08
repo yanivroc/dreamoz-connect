@@ -28,12 +28,12 @@ export function MediaSlider({
 
   return (
     <div className="overflow-hidden rounded-xl border border-border/70 bg-surface shadow-card">
-      <div className="relative aspect-video w-full bg-surface">
+      <div className="relative aspect-video max-h-[420px] w-full bg-surface">
         {current.kind === "image" ? (
           <img
             src={current.src}
             alt={current.caption || title}
-            className="h-full w-full object-contain"
+            className="h-full w-full object-contain p-4"
           />
         ) : (
           <iframe
