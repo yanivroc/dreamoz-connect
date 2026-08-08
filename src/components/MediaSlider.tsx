@@ -5,10 +5,12 @@ export function MediaSlider({
   images,
   videos = [],
   title,
+  variant = "default",
 }: {
   images: MediaImage[];
   videos?: string[];
   title: string;
+  variant?: "default" | "brand";
 }) {
   const [index, setIndex] = useState(0);
   const slides = [
