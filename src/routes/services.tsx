@@ -110,6 +110,9 @@ function Services() {
                           images={s.images}
                           videos={s.videos}
                           title={s.title}
+                          variant={
+                            page.title.toLowerCase() === "brand" ? "brand" : "default"
+                          }
                         />
                       </div>
                     )}
