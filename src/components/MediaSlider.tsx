@@ -29,8 +29,16 @@ export function MediaSlider({
     setIndex((i) => (i + dir + slides.length) % slides.length);
 
   return (
-    <div className="mx-auto max-w-3xl overflow-hidden rounded-xl border border-border/70 bg-surface shadow-card">
-      <div className="relative mx-auto aspect-video w-full max-h-[360px] bg-surface">
+    <div
+      className={`mx-auto overflow-hidden rounded-xl border border-border/70 bg-surface shadow-card ${
+        variant === "brand" ? "max-w-2xl" : "max-w-3xl"
+      }`}
+    >
+      <div
+        className={`relative mx-auto w-full bg-surface ${
+          variant === "brand" ? "h-64" : "aspect-video max-h-[360px]"
+        }`}
+      >
         {current.kind === "image" ? (
           <img
             src={current.src}
