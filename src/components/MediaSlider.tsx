@@ -27,8 +27,8 @@ export function MediaSlider({
     setIndex((i) => (i + dir + slides.length) % slides.length);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border/70 bg-surface shadow-card">
-      <div className="relative mx-auto aspect-video w-full max-w-3xl bg-surface">
+    <div className="mx-auto max-w-3xl overflow-hidden rounded-xl border border-border/70 bg-surface shadow-card">
+      <div className="relative mx-auto aspect-video w-full max-h-[360px] bg-surface">
         {current.kind === "image" ? (
           <img
             src={current.src}
