@@ -7,13 +7,19 @@ import type {
   SiteOverview,
 } from "./dreamoz.types";
 
-const BASE = "https://dreamoz.com.au";
+const BASE =
+  "https://dtapicoreappservice-b7cqgucahsbnckdh.australiaeast-01.azurewebsites.net";
 const MEDIA_BASE = "https://dreamoztech.com/";
 
 export function mediaUrl(path: string | null | undefined): string | null {
   if (!path) return null;
-  if (path.startsWith("http")) return path;
-  return MEDIA_BASE + path.replace(/\\/g, "/").replace(/^\/+/, "");
+  const absolute = path.startsWith("http")
+    ? path
+    : MEDIA_BASE + path.replace(/\\/g, "/").replace(/^\/+/, "");
+  if (absolute.includes(".blob.vercel-storage.com")) {
+    return `/api/media?src=${encodeURIComponent(absolute)}`;
+  }
+  return absolute;
 }
 
 let cachedToken: { value: string; expires: number } | null = null;
