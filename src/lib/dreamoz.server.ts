@@ -121,7 +121,7 @@ const DATA_TTL = 10 * 60 * 1000;
 
 async function loadAll(): Promise<LoadedData> {
   const fresh = dataCache && Date.now() - dataCache.at < DATA_TTL;
-  if (fresh) return dataCache!.value;
+  if (fresh) return dataCache.value;
   if (!inflight) {
     inflight = fetchAll()
       .then((value) => {
@@ -133,14 +133,15 @@ async function loadAll(): Promise<LoadedData> {
       });
   }
   // Stale-while-revalidate: never block a render on the slow upstream API.
-  if (dataCache) {
+  const cached = dataCache;
+  if (cached) {
     void inflight.catch(() => {});
-    return dataCache.value;
+    return cached.value;
   }
   try {
     return await inflight;
   } catch (err) {
-    if (dataCache) return dataCache!.value;
+    if (cached) return cached.value;
     cachedToken = null;
     throw err;
   }
