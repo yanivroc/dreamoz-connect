@@ -117,10 +117,17 @@
     border-color: var(--color-border);
   }
 
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.7;
   }
 
   h1,
@@ -129,8 +136,11 @@
   h4 {
     font-family: var(--font-display);
     letter-spacing: -0.02em;
+    line-height: 1.15;
+    text-wrap: balance;
   }
 }
+
 
 @utility hero-surface {
   background-image: var(--gradient-hero);
