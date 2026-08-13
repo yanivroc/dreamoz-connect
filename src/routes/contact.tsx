@@ -37,7 +37,8 @@ export const Route = createFileRoute("/contact")({
 });
 
 function Contact() {
-  const { member, email, logo, favicon } = Route.useLoaderData() as SiteOverview;
+  const { member, email: webEmail, logo, favicon } = Route.useLoaderData() as SiteOverview;
+  const email = member.memberEmail?.trim() || webEmail;
   const dial = toInternationalPhone(member.mobileNumber, member.country);
 
   const socials = [
