@@ -168,8 +168,10 @@ function Home() {
             ) : page.posts.length > 0 ? (
               <div className="mt-10 grid gap-8">
                 {page.posts.map((s, pi) => {
+                  const isGrowth = page.title.toLowerCase() === "growth";
                   const split =
-                    ["about", "growth"].includes(page.title.toLowerCase()) &&
+                    !isGrowth &&
+                    page.title.toLowerCase() === "about" &&
                     page.posts.length === 1 &&
                     s.images.length + s.videos.length === 1;
                   const media =
@@ -181,7 +183,7 @@ function Home() {
                         variant={
                           page.title.toLowerCase() === "brand"
                             ? "brand"
-                            : split
+                            : split || isGrowth
                               ? "split"
                               : "default"
                         }
@@ -196,6 +198,7 @@ function Home() {
                           : "overflow-hidden rounded-2xl border border-border/70 bg-surface p-7 shadow-card transition hover:border-primary/40 md:p-9"
                       }
                     >
+                      {isGrowth && media ? <div className="mb-8">{media}</div> : null}
                       <div>
                         <h3 className="text-xl font-semibold">{s.title}</h3>
                         {s.categories.length > 0 && (
