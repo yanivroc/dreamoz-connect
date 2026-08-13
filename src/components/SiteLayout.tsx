@@ -61,18 +61,18 @@ export function SiteLayout({
           {phone ? (
             <a
               href={`tel:${dial ? `+${dial}` : phone}`}
-              className="inline-flex items-center gap-2 rounded-full bg-gradient-accent px-4 py-2 text-sm font-semibold text-primary-foreground shadow-glow"
+              className="inline-flex items-center gap-2 rounded-full bg-gradient-accent px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-card transition hover:opacity-90"
             >
-              <Phone size={16} />
+              <Phone size={18} />
               <span className="hidden sm:inline">Call Us</span>
-              <span>{phone}</span>
             </a>
           ) : (
             <Link
               to="/contact"
-              className="rounded-full bg-gradient-accent px-4 py-2 text-sm font-semibold text-primary-foreground shadow-glow"
+              className="inline-flex items-center gap-2 rounded-full bg-gradient-accent px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-card transition hover:opacity-90"
             >
-              Call Us
+              <Phone size={18} />
+              <span className="hidden sm:inline">Call Us</span>
             </Link>
           )}
         </div>

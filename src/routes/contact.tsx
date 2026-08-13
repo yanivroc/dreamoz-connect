@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Mail, MessageCircle, Phone } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
 import { overviewFn } from "@/lib/dreamoz.functions";
 import { SiteLayout } from "@/components/SiteLayout";
 import type { SiteOverview } from "@/lib/dreamoz.types";
-import { whatsappLink, toInternationalPhone } from "@/lib/format";
+import { toInternationalPhone } from "@/lib/format";
 import { ContactForm } from "@/components/ContactForm";
 
 export const Route = createFileRoute("/contact")({
@@ -33,7 +33,6 @@ export const Route = createFileRoute("/contact")({
 
 function Contact() {
   const { member, email, logo, favicon } = Route.useLoaderData() as SiteOverview;
-  const wa = whatsappLink(member.mobileNumber, member.country);
   const dial = toInternationalPhone(member.mobileNumber, member.country);
 
   const socials = [
@@ -76,26 +75,13 @@ function Contact() {
                 Email Us
               </a>
               {member.mobileNumber ? (
-                <>
-                  <a
-                    href={`tel:${dial ? `+${dial}` : member.mobileNumber}`}
-                    className="inline-flex items-center gap-2 rounded-full bg-gradient-accent px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-card transition hover:opacity-90"
-                  >
-                    <Phone size={18} />
-                    {member.mobileNumber}
-                  </a>
-                  {wa ? (
-                    <a
-                      href={wa}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-2 rounded-full bg-gradient-accent px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-card transition hover:opacity-90"
-                    >
-                      <MessageCircle size={18} />
-                      Text Us
-                    </a>
-                  ) : null}
-                </>
+                <a
+                  href={`tel:${dial ? `+${dial}` : member.mobileNumber}`}
+                  className="inline-flex items-center gap-2 rounded-full bg-gradient-accent px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-card transition hover:opacity-90"
+                >
+                  <Phone size={18} />
+                  Call Us
+                </a>
               ) : null}
             </div>
 
@@ -107,12 +93,6 @@ function Contact() {
                   {member.country}
                 </dd>
               </div>
-              {member.mobileNumber ? (
-                <div>
-                  <dt className="text-muted-foreground">Phone</dt>
-                  <dd className="text-foreground">{member.mobileNumber}</dd>
-                </div>
-              ) : null}
             </dl>
             {socials.length > 0 && (
               <div className="mt-8 flex flex-wrap gap-3">
