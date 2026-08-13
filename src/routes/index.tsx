@@ -36,12 +36,12 @@ function Home() {
 
   return (
     <SiteLayout member={member} logo={logo} favicon={favicon}>
-      <section className="hero-surface border-b border-border/60">
-        <div className="mx-auto max-w-6xl px-5 py-20">
-          <span className="inline-flex rounded-full border border-primary/40 px-3 py-1 text-xs uppercase tracking-[0.2em] text-primary">
+      <section className="hero-surface relative overflow-hidden border-b border-border/60">
+        <div className="mx-auto max-w-6xl px-5 py-24 md:py-32">
+          <span className="inline-flex rounded-full border border-primary/40 bg-primary/5 px-3 py-1 text-xs uppercase tracking-[0.2em] text-primary">
             {member.suburb}, {member.state}
           </span>
-          <h1 className="mt-6 max-w-3xl text-4xl font-bold leading-[1.05] md:text-6xl">
+          <h1 className="mt-6 max-w-4xl text-4xl font-bold leading-[1.05] md:text-6xl">
             {webTitle ?? member.memberFullName}
           </h1>
           {webDescription ? (
@@ -54,36 +54,59 @@ function Home() {
               {member.metaDesc}
             </p>
           )}
+          <div className="mt-10 flex flex-wrap gap-3">
+            {servicePages.slice(0, 6).map((p, i) => (
+              <a
+                key={`nav-${p.slug}-${i}`}
+                href={`#${p.slug}`}
+                className="rounded-full border border-border/70 bg-surface/60 px-4 py-1.5 text-sm text-muted-foreground transition hover:border-primary/50 hover:text-primary"
+              >
+                {p.title}
+              </a>
+            ))}
+          </div>
         </div>
       </section>
 
-      <div className="mx-auto max-w-6xl space-y-20 px-5 py-16">
-        {servicePages.map((page, i) => (
-          <section key={`${page.title}-${i}`} id={page.slug}>
-            <h2 className="text-3xl font-bold">{page.title}</h2>
-            {page.html ? (
-              <div
-                className="prose-api mt-4 max-w-3xl"
-                dangerouslySetInnerHTML={{ __html: page.html }}
-              />
-            ) : null}
+      {servicePages.map((page, i) => (
+        <section
+          key={`${page.title}-${i}`}
+          id={page.slug}
+          className={`scroll-mt-24 border-b border-border/50 ${
+            i % 2 === 1 ? "bg-surface/40" : "bg-background"
+          }`}
+        >
+          <div className="mx-auto max-w-6xl px-5 py-16 md:py-20">
+            <header className="max-w-3xl">
+              <span className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <h2 className="mt-2 text-3xl font-bold md:text-4xl">{page.title}</h2>
+              <div className="mt-4 h-px w-16 bg-gradient-accent" />
+              {page.html ? (
+                <div
+                  className="prose-api mt-5"
+                  dangerouslySetInnerHTML={{ __html: page.html }}
+                />
+              ) : null}
+            </header>
 
             {page.title.toLowerCase() === "blog" ? (
               page.posts.length > 0 && (
-                <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                   {page.posts.map((s, pi) => (
                     <Link
                       key={`${page.slug}-${s.slug}-${pi}`}
                       to="/post/$slug"
                       params={{ slug: s.slug }}
-                      className="group flex flex-col overflow-hidden rounded-xl border border-border/70 bg-surface shadow-card transition hover:border-primary/50"
+                      className="group flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-surface shadow-card transition duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-glow"
                     >
                       {s.image ? (
                         <img
                           src={s.image}
                           alt={s.title}
                           loading="lazy"
-                          className="h-44 w-full object-cover"
+                          className="h-44 w-full object-cover transition duration-500 group-hover:scale-[1.03]"
                         />
                       ) : null}
                       <div className="flex flex-1 flex-col p-5">
@@ -114,7 +137,7 @@ function Home() {
                 </div>
               )
             ) : page.posts.length > 0 ? (
-              <div className="mt-8 grid gap-6">
+              <div className="mt-10 grid gap-8">
                 {page.posts.map((s, pi) => {
                   const split =
                     ["about", "growth"].includes(page.title.toLowerCase()) &&
@@ -136,18 +159,18 @@ function Home() {
                       key={`${page.slug}-${s.slug}-${pi}`}
                       className={
                         split
-                          ? "overflow-hidden rounded-xl border border-border/70 bg-surface p-7 shadow-card grid gap-8 md:grid-cols-2 md:items-center"
-                          : "overflow-hidden rounded-xl border border-border/70 bg-surface p-7 shadow-card"
+                          ? "grid gap-10 overflow-hidden rounded-2xl border border-border/70 bg-surface p-7 shadow-card transition hover:border-primary/40 md:grid-cols-2 md:items-center md:p-9"
+                          : "overflow-hidden rounded-2xl border border-border/70 bg-surface p-7 shadow-card transition hover:border-primary/40 md:p-9"
                       }
                     >
                       <div>
-                        <h3 className="text-lg font-semibold">{s.title}</h3>
+                        <h3 className="text-xl font-semibold">{s.title}</h3>
                         {s.categories.length > 0 && (
-                          <div className="mt-2 flex flex-wrap gap-2">
+                          <div className="mt-3 flex flex-wrap gap-2">
                             {s.categories.map((c, ci) => (
                               <span
                                 key={`${c}-${ci}`}
-                                className="rounded-full border border-border/70 px-2.5 py-0.5 text-xs text-muted-foreground"
+                                className="rounded-full border border-primary/30 bg-primary/5 px-2.5 py-0.5 text-xs text-primary"
                               >
                                 {c}
                               </span>
@@ -166,12 +189,12 @@ function Home() {
                         )}
                         {s.attributes.length > 0 && (
                           <dl
-                            className={`mt-4 grid gap-2 text-sm ${split ? "" : "sm:grid-cols-2"}`}
+                            className={`mt-6 grid gap-3 text-sm ${split ? "" : "sm:grid-cols-2"}`}
                           >
                             {s.attributes.map((a, ai) => (
                               <div
                                 key={`${a.title}-${ai}`}
-                                className="rounded-lg border border-border/60 px-3 py-2"
+                                className="rounded-xl border border-border/60 bg-background/40 px-4 py-3 transition hover:border-primary/40"
                               >
                                 <dt
                                   className="prose-site text-xs text-muted-foreground [&_i]:text-base [&_i]:text-primary"
@@ -185,13 +208,13 @@ function Home() {
                             ))}
                           </dl>
                         )}
-                        {!split && media ? <div className="mt-5">{media}</div> : null}
+                        {!split && media ? <div className="mt-6">{media}</div> : null}
                         {s.link ? (
                           <a
                             href={s.link}
                             target="_blank"
                             rel="noreferrer"
-                            className="mt-4 inline-flex text-sm font-semibold text-primary hover:underline"
+                            className="mt-5 inline-flex text-sm font-semibold text-primary hover:underline"
                           >
                             Learn more ↗
                           </a>
@@ -203,10 +226,10 @@ function Home() {
                 })}
               </div>
             ) : null}
-
-          </section>
-        ))}
-      </div>
+          </div>
+        </section>
+      ))}
     </SiteLayout>
   );
 }
+
