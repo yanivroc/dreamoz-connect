@@ -115,79 +115,95 @@ function Home() {
               )
             ) : page.posts.length > 0 ? (
               <div className="mt-8 grid gap-6">
-                {page.posts.map((s, pi) => (
-                  <article
-                    key={`${page.slug}-${s.slug}-${pi}`}
-                    className="overflow-hidden rounded-xl border border-border/70 bg-surface p-7 shadow-card"
-                  >
-                    <h3 className="text-lg font-semibold">{s.title}</h3>
-                    {s.categories.length > 0 && (
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {s.categories.map((c, ci) => (
-                          <span
-                            key={`${c}-${ci}`}
-                            className="rounded-full border border-border/70 px-2.5 py-0.5 text-xs text-muted-foreground"
-                          >
-                            {c}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                    {s.html ? (
-                      <div
-                        className="prose-site mt-4 max-w-3xl text-sm"
-                        dangerouslySetInnerHTML={{ __html: s.html }}
+                {page.posts.map((s, pi) => {
+                  const split =
+                    ["about", "growth"].includes(page.title.toLowerCase()) &&
+                    page.posts.length === 1 &&
+                    s.images.length + s.videos.length === 1;
+                  const media =
+                    s.images.length > 0 || s.videos.length > 0 ? (
+                      <MediaSlider
+                        images={s.images}
+                        videos={s.videos}
+                        title={s.title}
+                        variant={
+                          page.title.toLowerCase() === "brand" ? "brand" : "default"
+                        }
                       />
-                    ) : (
-                      <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                        {s.excerpt}
-                      </p>
-                    )}
-                    {s.attributes.length > 0 && (
-                      <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
-                        {s.attributes.map((a, ai) => (
-                          <div
-                            key={`${a.title}-${ai}`}
-                            className="rounded-lg border border-border/60 px-3 py-2"
-                          >
-                            <dt
-                              className="prose-site text-xs text-muted-foreground [&_i]:text-base [&_i]:text-primary"
-                              dangerouslySetInnerHTML={{ __html: a.title }}
-                            />
-                            <dd
-                              className="prose-site mt-1 font-medium"
-                              dangerouslySetInnerHTML={{ __html: a.value }}
-                            />
+                    ) : null;
+                  return (
+                    <article
+                      key={`${page.slug}-${s.slug}-${pi}`}
+                      className={
+                        split
+                          ? "overflow-hidden rounded-xl border border-border/70 bg-surface p-7 shadow-card grid gap-8 md:grid-cols-2 md:items-center"
+                          : "overflow-hidden rounded-xl border border-border/70 bg-surface p-7 shadow-card"
+                      }
+                    >
+                      <div>
+                        <h3 className="text-lg font-semibold">{s.title}</h3>
+                        {s.categories.length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {s.categories.map((c, ci) => (
+                              <span
+                                key={`${c}-${ci}`}
+                                className="rounded-full border border-border/70 px-2.5 py-0.5 text-xs text-muted-foreground"
+                              >
+                                {c}
+                              </span>
+                            ))}
                           </div>
-                        ))}
-                      </dl>
-                    )}
-                    {(s.images.length > 0 || s.videos.length > 0) && (
-                      <div className="mt-5">
-                        <MediaSlider
-                          images={s.images}
-                          videos={s.videos}
-                          title={s.title}
-                          variant={
-                            page.title.toLowerCase() === "brand" ? "brand" : "default"
-                          }
-                        />
+                        )}
+                        {s.html ? (
+                          <div
+                            className="prose-site mt-4 max-w-3xl text-sm"
+                            dangerouslySetInnerHTML={{ __html: s.html }}
+                          />
+                        ) : (
+                          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                            {s.excerpt}
+                          </p>
+                        )}
+                        {s.attributes.length > 0 && (
+                          <dl
+                            className={`mt-4 grid gap-2 text-sm ${split ? "" : "sm:grid-cols-2"}`}
+                          >
+                            {s.attributes.map((a, ai) => (
+                              <div
+                                key={`${a.title}-${ai}`}
+                                className="rounded-lg border border-border/60 px-3 py-2"
+                              >
+                                <dt
+                                  className="prose-site text-xs text-muted-foreground [&_i]:text-base [&_i]:text-primary"
+                                  dangerouslySetInnerHTML={{ __html: a.title }}
+                                />
+                                <dd
+                                  className="prose-site mt-1 font-medium"
+                                  dangerouslySetInnerHTML={{ __html: a.value }}
+                                />
+                              </div>
+                            ))}
+                          </dl>
+                        )}
+                        {!split && media ? <div className="mt-5">{media}</div> : null}
+                        {s.link ? (
+                          <a
+                            href={s.link}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="mt-4 inline-flex text-sm font-semibold text-primary hover:underline"
+                          >
+                            Learn more ↗
+                          </a>
+                        ) : null}
                       </div>
-                    )}
-                    {s.link ? (
-                      <a
-                        href={s.link}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="mt-4 inline-flex text-sm font-semibold text-primary hover:underline"
-                      >
-                        Learn more ↗
-                      </a>
-                    ) : null}
-                  </article>
-                ))}
+                      {split && media ? <div>{media}</div> : null}
+                    </article>
+                  );
+                })}
               </div>
             ) : null}
+
           </section>
         ))}
       </div>
