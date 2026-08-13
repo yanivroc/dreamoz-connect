@@ -62,7 +62,52 @@ function Home() {
               />
             ) : null}
 
-            {page.posts.length > 0 && (
+            {page.title.toLowerCase() === "blog" ? (
+              page.posts.length > 0 && (
+                <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {page.posts.map((s, pi) => (
+                    <Link
+                      key={`${page.slug}-${s.slug}-${pi}`}
+                      to="/post/$slug"
+                      params={{ slug: s.slug }}
+                      className="group flex flex-col overflow-hidden rounded-xl border border-border/70 bg-surface shadow-card transition hover:border-primary/50"
+                    >
+                      {s.image ? (
+                        <img
+                          src={s.image}
+                          alt={s.title}
+                          loading="lazy"
+                          className="h-44 w-full object-cover"
+                        />
+                      ) : null}
+                      <div className="flex flex-1 flex-col p-5">
+                        <h3 className="text-base font-semibold group-hover:text-primary">
+                          {s.title}
+                        </h3>
+                        {s.categories.length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {s.categories.map((c, ci) => (
+                              <span
+                                key={`${c}-${ci}`}
+                                className="rounded-full border border-border/70 px-2.5 py-0.5 text-xs text-muted-foreground"
+                              >
+                                {c}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                        <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+                          {s.excerpt}
+                        </p>
+                        <span className="mt-4 text-sm font-semibold text-primary">
+                          Read more →
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              )
+            ) : page.posts.length > 0 ? (
               <div className="mt-8 grid gap-6">
                 {page.posts.map((s, pi) => (
                   <article
