@@ -211,8 +211,9 @@ function servicePages(web: Web | undefined): ServicePage[] {
     const title = (page.pageTitle ?? "").trim();
     if (EXCLUDED_PAGES.includes(title.toLowerCase())) continue;
     const html = sanitizeHtml(page.description);
+    const isBlog = title.toLowerCase() === "blog";
     const posts = (page.posts ?? [])
-      .filter((p) => p.bizEnable === true)
+      .filter((p) => (isBlog ? isPublicPost(p) : p.bizEnable === true))
       .map(toCard);
     if (!html && posts.length === 0) continue;
     out.push({
