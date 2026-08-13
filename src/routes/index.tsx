@@ -54,19 +54,23 @@ function Home() {
               {member.metaDesc}
             </p>
           )}
-          <div className="mt-10 flex flex-wrap gap-3">
-            {servicePages.slice(0, 6).map((p, i) => (
-              <a
-                key={`nav-${p.slug}-${i}`}
-                href={`#${p.slug}`}
-                className="rounded-full border border-border/70 bg-surface/60 px-4 py-1.5 text-sm text-muted-foreground transition hover:border-primary/50 hover:text-primary"
-              >
-                {p.title}
-              </a>
-            ))}
-          </div>
         </div>
       </section>
+
+      <nav className="sticky top-[72px] z-40 border-b border-border/60 bg-background/90 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl gap-2 overflow-x-auto px-5 py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {servicePages.map((p, i) => (
+            <a
+              key={`nav-${p.slug}-${i}`}
+              href={`#${p.slug}`}
+              className="shrink-0 rounded-full border border-border/70 bg-surface/60 px-4 py-1.5 text-sm text-muted-foreground transition hover:border-primary/50 hover:text-primary"
+            >
+              {p.title}
+            </a>
+          ))}
+        </div>
+      </nav>
+
 
       {servicePages.map((page, i) => (
         <section
