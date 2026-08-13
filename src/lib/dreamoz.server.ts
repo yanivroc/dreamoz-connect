@@ -29,7 +29,7 @@ async function getToken(): Promise<string> {
 
   const res = await fetch(`${BASE}/Client/Token`, {
     method: "POST",
-    signal: AbortSignal.timeout(12000),
+    signal: AbortSignal.timeout(30000),
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       apiKey: process.env["DREAMOZ_API_KEY"],
@@ -47,7 +47,7 @@ async function apiGet<T>(path: string): Promise<T> {
   const token = await getToken();
   const res = await fetch(`${BASE}/${path}`, {
     headers: { Authorization: `Bearer ${token}` },
-    signal: AbortSignal.timeout(15000),
+    signal: AbortSignal.timeout(60000),
   });
   if (!res.ok) throw new Error(`${path} failed (${res.status})`);
   return (await res.json()) as T;
@@ -117,10 +117,11 @@ function toCard(post: Post): ArticleCard {
 type LoadedData = { member: Member; posts: Post[]; webs: Web[] };
 let dataCache: { value: LoadedData; at: number } | null = null;
 let inflight: Promise<LoadedData> | null = null;
-const DATA_TTL = 5 * 60 * 1000;
+const DATA_TTL = 10 * 60 * 1000;
 
 async function loadAll(): Promise<LoadedData> {
-  if (dataCache && Date.now() - dataCache.at < DATA_TTL) return dataCache.value;
+  const fresh = dataCache && Date.now() - dataCache.at < DATA_TTL;
+  if (fresh) return dataCache!.value;
   if (!inflight) {
     inflight = fetchAll()
       .then((value) => {
@@ -130,6 +131,11 @@ async function loadAll(): Promise<LoadedData> {
       .finally(() => {
         inflight = null;
       });
+  }
+  // Stale-while-revalidate: never block a render on the slow upstream API.
+  if (dataCache) {
+    void inflight.catch(() => {});
+    return dataCache.value;
   }
   try {
     return await inflight;
