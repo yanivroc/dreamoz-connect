@@ -244,7 +244,7 @@ function Home() {
                             ))}
                           </dl>
                         )}
-                        {!split && media ? <div className="mt-6">{media}</div> : null}
+                        {!split && !isGrowth && media ? <div className="mt-6">{media}</div> : null}
                         {s.link ? (
                           <a
                             href={s.link}
