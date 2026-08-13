@@ -167,6 +167,36 @@
 @utility prose-api {
   font-size: 1rem;
   line-height: 1.7;
+  & p,
+  & h1,
+  & h2,
+  & h3,
+  & h4,
+  & li,
+  & div,
+  & span,
+  & section,
+  & article,
+  & header,
+  & footer,
+  & blockquote,
+  & figure,
+  & figcaption,
+  & center,
+  & [align="center"] {
+    text-align: left !important;
+  }
+  & div,
+  & section,
+  & article,
+  & table,
+  & p {
+    width: auto !important;
+    max-width: none !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
   & p {
     margin-bottom: 1rem;
     line-height: 1.7;
