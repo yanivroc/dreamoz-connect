@@ -45,7 +45,9 @@ export function MediaSlider({
         </p>
       ) : null}
       <div
-        className={`relative mx-auto w-full bg-surface ${
+        className={`relative mx-auto w-full ${
+          current.kind === "image" ? "media-canvas" : "bg-surface"
+        } ${
           variant === "brand"
             ? "h-64"
             : variant === "split"
@@ -112,15 +114,19 @@ export function MediaSlider({
               type="button"
               onClick={() => setIndex(i)}
               aria-label={`Show item ${i + 1}`}
-              className={`h-14 w-20 shrink-0 overflow-hidden rounded-md border ${
-                i === index ? "border-primary" : "border-border/60 opacity-70"
+              className={`h-14 w-20 shrink-0 overflow-hidden rounded-md border transition ${
+                s.kind === "image" ? "media-canvas" : ""
+              } ${
+                i === index
+                  ? "border-primary ring-1 ring-primary/60"
+                  : "border-border/60 opacity-70 hover:opacity-100"
               }`}
             >
               {s.kind === "image" ? (
                 <img
                   src={s.thumb ?? s.src}
                   alt={s.caption || `${title} ${i + 1}`}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-contain p-1"
                 />
               ) : (
                 <span className="flex h-full w-full items-center justify-center bg-gradient-accent text-xs font-semibold text-primary-foreground">

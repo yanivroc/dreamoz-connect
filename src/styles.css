@@ -104,7 +104,13 @@
   );
   --shadow-glow: 0 24px 60px -24px oklch(0.75 0.14 205 / 0.5);
   --shadow-card: 0 18px 40px -28px oklch(0 0 0 / 0.8);
+  --media-canvas: oklch(0.98 0.005 240);
 }
+
+@utility media-canvas {
+  background-color: var(--media-canvas);
+}
+
 
 @layer base {
   * {
