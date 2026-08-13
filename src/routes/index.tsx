@@ -154,7 +154,11 @@ function Home() {
                         videos={s.videos}
                         title={s.title}
                         variant={
-                          page.title.toLowerCase() === "brand" ? "brand" : "default"
+                          page.title.toLowerCase() === "brand"
+                            ? "brand"
+                            : split
+                              ? "split"
+                              : "default"
                         }
                       />
                     ) : null;
