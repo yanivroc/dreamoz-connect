@@ -45,7 +45,9 @@ export function MediaSlider({
         </p>
       ) : null}
       <div
-        className={`relative mx-auto w-full bg-surface ${
+        className={`relative mx-auto w-full ${
+          current.kind === "image" ? "media-canvas" : "bg-surface"
+        } ${
           variant === "brand"
             ? "h-64"
             : variant === "split"
