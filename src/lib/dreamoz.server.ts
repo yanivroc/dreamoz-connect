@@ -92,6 +92,7 @@ function toCard(post: Post): ArticleCard {
       src: mediaUrl(p.picPath) ?? mediaUrl(p.picThumbPath) ?? "",
       thumb: mediaUrl(p.picThumbPath),
       caption: p.picDescription ?? null,
+      url: p.picUrl?.trim() || null,
     }))
     .filter((p) => Boolean(p.src));
   return {

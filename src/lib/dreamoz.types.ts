@@ -92,6 +92,7 @@ export type MediaImage = {
   src: string;
   thumb: string | null;
   caption: string | null;
+  url: string | null;
 };
 
 export type ArticleCard = {
