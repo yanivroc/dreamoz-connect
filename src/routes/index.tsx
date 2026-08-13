@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { overviewFn } from "@/lib/dreamoz.functions";
 import { SiteLayout } from "@/components/SiteLayout";
@@ -33,6 +34,25 @@ export const Route = createFileRoute("/")({
 function Home() {
   const { member, servicePages, logo, favicon, webTitle, webDescription } =
     Route.useLoaderData() as SiteOverview;
+  const [activeSlug, setActiveSlug] = useState<string>("");
+
+  useEffect(() => {
+    const sections = servicePages
+      .map((p) => document.getElementById(p.slug))
+      .filter((el): el is HTMLElement => Boolean(el));
+    if (sections.length === 0) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+        if (visible?.target.id) setActiveSlug(visible.target.id);
+      },
+      { rootMargin: "-140px 0px -55% 0px", threshold: 0 },
+    );
+    sections.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, [servicePages]);
 
   return (
     <SiteLayout member={member} logo={logo} favicon={favicon}>
@@ -63,7 +83,12 @@ function Home() {
             <a
               key={`nav-${p.slug}-${i}`}
               href={`#${p.slug}`}
-              className="shrink-0 rounded-full border border-border/70 bg-surface/60 px-4 py-1.5 text-sm text-muted-foreground transition hover:border-primary/50 hover:text-primary"
+              aria-current={activeSlug === p.slug ? "true" : undefined}
+              className={`shrink-0 rounded-full border px-4 py-1.5 text-sm transition ${
+                activeSlug === p.slug
+                  ? "border-primary/60 bg-primary/10 font-semibold text-primary shadow-glow"
+                  : "border-border/70 bg-surface/60 text-muted-foreground hover:border-primary/50 hover:text-primary"
+              }`}
             >
               {p.title}
             </a>
@@ -143,8 +168,10 @@ function Home() {
             ) : page.posts.length > 0 ? (
               <div className="mt-10 grid gap-8">
                 {page.posts.map((s, pi) => {
+                  const isGrowth = page.title.toLowerCase() === "growth";
                   const split =
-                    ["about", "growth"].includes(page.title.toLowerCase()) &&
+                    !isGrowth &&
+                    page.title.toLowerCase() === "about" &&
                     page.posts.length === 1 &&
                     s.images.length + s.videos.length === 1;
                   const media =
@@ -156,7 +183,7 @@ function Home() {
                         variant={
                           page.title.toLowerCase() === "brand"
                             ? "brand"
-                            : split
+                            : split || isGrowth
                               ? "split"
                               : "default"
                         }
@@ -171,6 +198,7 @@ function Home() {
                           : "overflow-hidden rounded-2xl border border-border/70 bg-surface p-7 shadow-card transition hover:border-primary/40 md:p-9"
                       }
                     >
+                      {isGrowth && media ? <div className="mb-8">{media}</div> : null}
                       <div>
                         <h3 className="text-xl font-semibold">{s.title}</h3>
                         {s.categories.length > 0 && (
@@ -216,7 +244,7 @@ function Home() {
                             ))}
                           </dl>
                         )}
-                        {!split && media ? <div className="mt-6">{media}</div> : null}
+                        {!split && !isGrowth && media ? <div className="mt-6">{media}</div> : null}
                         {s.link ? (
                           <a
                             href={s.link}
