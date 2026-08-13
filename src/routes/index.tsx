@@ -57,7 +57,7 @@ function Home() {
   return (
     <SiteLayout member={member} logo={logo} favicon={favicon}>
       <section className="hero-surface relative overflow-hidden border-b border-border/60">
-        <div className="mx-auto max-w-6xl px-5 py-24 md:py-32">
+        <div className="mx-auto w-full max-w-7xl px-5 py-24 md:py-32">
           <span className="inline-flex rounded-full border border-primary/40 bg-primary/5 px-3 py-1 text-xs uppercase tracking-[0.2em] text-primary">
             {member.suburb}, {member.state}
           </span>
@@ -78,7 +78,7 @@ function Home() {
       </section>
 
       <nav className="sticky top-[72px] z-40 border-b border-border/60 bg-background/90 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl gap-2 overflow-x-auto px-5 py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-5 py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {servicePages.map((p, i) => (
             <a
               key={`nav-${p.slug}-${i}`}
@@ -116,7 +116,7 @@ function Home() {
               </div>
               {page.html ? (
                 <div
-                  className="prose-api min-w-0 lg:columns-2 lg:gap-10"
+                  className="prose-api min-w-0"
                   dangerouslySetInnerHTML={{ __html: page.html }}
                 />
               ) : null}
@@ -125,7 +125,7 @@ function Home() {
 
             {page.title.toLowerCase() === "blog" ? (
               page.posts.length > 0 && (
-                <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {page.posts.map((s, pi) => (
                     <Link
                       key={`${page.slug}-${s.slug}-${pi}`}
@@ -218,7 +218,7 @@ function Home() {
                         )}
                         {s.html ? (
                           <div
-                            className="prose-site mt-4 max-w-3xl text-sm"
+                            className="prose-site mt-4 max-w-none text-sm"
                             dangerouslySetInnerHTML={{ __html: s.html }}
                           />
                         ) : (
@@ -228,7 +228,7 @@ function Home() {
                         )}
                         {s.attributes.length > 0 && (
                           <dl
-                            className={`mt-6 grid gap-3 text-sm ${split ? "" : "sm:grid-cols-2"}`}
+                            className={`mt-6 grid gap-3 text-sm ${split ? "" : "sm:grid-cols-2 lg:grid-cols-3"}`}
                           >
                             {s.attributes.map((a, ai) => (
                               <div
