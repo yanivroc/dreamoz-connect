@@ -52,7 +52,7 @@ function Contact() {
   return (
     <SiteLayout member={member} logo={logo} favicon={favicon}>
       <section className="hero-surface border-b border-border/60">
-        <div className="mx-auto max-w-6xl px-5 py-14">
+        <div className="mx-auto w-full max-w-7xl px-5 py-14">
           <h1 className="text-4xl font-bold md:text-5xl">
             {member.memberFullName?.trim() || "Contact us"}
           </h1>
@@ -69,7 +69,7 @@ function Contact() {
         </div>
       </section>
 
-      <section className="mx-auto grid max-w-6xl gap-10 px-5 py-16 md:grid-cols-2">
+      <section className="mx-auto grid w-full max-w-7xl gap-10 px-5 py-16 md:grid-cols-2">
         <div className="rounded-xl border border-border/70 bg-surface p-7 shadow-card">
           <h2 className="text-xl font-semibold">Send us a message</h2>
           <div className="mt-6">

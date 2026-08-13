@@ -117,10 +117,17 @@
     border-color: var(--color-border);
   }
 
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.7;
   }
 
   h1,
@@ -129,8 +136,11 @@
   h4 {
     font-family: var(--font-display);
     letter-spacing: -0.02em;
+    line-height: 1.15;
+    text-wrap: balance;
   }
 }
+
 
 @utility hero-surface {
   background-image: var(--gradient-hero);
@@ -155,17 +165,21 @@
 }
 
 @utility prose-api {
+  font-size: 1rem;
+  line-height: 1.7;
   & p {
     margin-bottom: 1rem;
-    line-height: 1.75;
+    line-height: 1.7;
     color: var(--color-muted-foreground);
   }
   & h1,
   & h2,
-  & h3 {
+  & h3,
+  & h4 {
     color: var(--color-foreground);
-    margin: 1.75rem 0 0.75rem;
-    font-size: 1.35rem;
+    margin: 1.5rem 0 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 600;
   }
   & ul,
   & ol {
@@ -196,6 +210,8 @@
 }
 
 @utility prose-site {
+  font-size: 1rem;
+  line-height: 1.7;
   & p,
   & h1,
   & h2,
@@ -216,7 +232,7 @@
   }
   & p {
     margin-bottom: 1rem;
-    line-height: 1.75;
+    line-height: 1.7;
     color: var(--color-muted-foreground);
   }
   & h1,
@@ -224,13 +240,18 @@
   & h3,
   & h4 {
     color: var(--color-foreground);
-    margin: 1rem 0 0.75rem;
+    margin: 1.5rem 0 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 600;
   }
   & ul,
   & ol {
     margin: 0 0 1rem 1.25rem;
     list-style: disc;
     color: var(--color-muted-foreground);
+  }
+  & li {
+    margin-bottom: 0.4rem;
   }
   & a {
     color: var(--color-primary);
@@ -239,5 +260,10 @@
   & strong {
     color: var(--color-foreground);
   }
+  & img {
+    max-width: 100%;
+    border-radius: var(--radius);
+  }
 }
+
 
