@@ -10,21 +10,12 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as PageSlugRouteImport } from './routes/$pageSlug'
 import { Route as ContactRouteImport } from './routes/contact'
-import { Route as ServicesRouteImport } from './routes/services'
 import { Route as ApiMediaRouteImport } from './routes/api/media'
-import { Route as InsightsIndexRouteImport } from './routes/insights/index'
-import { Route as InsightsSlugRouteImport } from './routes/insights/$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PageSlugRoute = PageSlugRouteImport.update({
-  id: '/$pageSlug',
-  path: '/$pageSlug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -32,93 +23,40 @@ const ContactRoute = ContactRouteImport.update({
   path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ServicesRoute = ServicesRouteImport.update({
-  id: '/services',
-  path: '/services',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiMediaRoute = ApiMediaRouteImport.update({
   id: '/api/media',
   path: '/api/media',
   getParentRoute: () => rootRouteImport,
 } as any)
-const InsightsIndexRoute = InsightsIndexRouteImport.update({
-  id: '/insights/',
-  path: '/insights/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const InsightsSlugRoute = InsightsSlugRouteImport.update({
-  id: '/insights/$slug',
-  path: '/insights/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/$pageSlug': typeof PageSlugRoute
   '/contact': typeof ContactRoute
-  '/services': typeof ServicesRoute
   '/api/media': typeof ApiMediaRoute
-  '/insights/$slug': typeof InsightsSlugRoute
-  '/insights/': typeof InsightsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/$pageSlug': typeof PageSlugRoute
   '/contact': typeof ContactRoute
-  '/services': typeof ServicesRoute
   '/api/media': typeof ApiMediaRoute
-  '/insights/$slug': typeof InsightsSlugRoute
-  '/insights': typeof InsightsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/$pageSlug': typeof PageSlugRoute
   '/contact': typeof ContactRoute
-  '/services': typeof ServicesRoute
   '/api/media': typeof ApiMediaRoute
-  '/insights/$slug': typeof InsightsSlugRoute
-  '/insights/': typeof InsightsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/$pageSlug'
-    | '/contact'
-    | '/services'
-    | '/api/media'
-    | '/insights/$slug'
-    | '/insights/'
+  fullPaths: '/' | '/contact' | '/api/media'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/$pageSlug'
-    | '/contact'
-    | '/services'
-    | '/api/media'
-    | '/insights/$slug'
-    | '/insights'
-  id:
-    | '__root__'
-    | '/'
-    | '/$pageSlug'
-    | '/contact'
-    | '/services'
-    | '/api/media'
-    | '/insights/$slug'
-    | '/insights/'
+  to: '/' | '/contact' | '/api/media'
+  id: '__root__' | '/' | '/contact' | '/api/media'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  PageSlugRoute: typeof PageSlugRoute
   ContactRoute: typeof ContactRoute
-  ServicesRoute: typeof ServicesRoute
   ApiMediaRoute: typeof ApiMediaRoute
-  InsightsSlugRoute: typeof InsightsSlugRoute
-  InsightsIndexRoute: typeof InsightsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -130,25 +68,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/$pageSlug': {
-      id: '/$pageSlug'
-      path: '/$pageSlug'
-      fullPath: '/$pageSlug'
-      preLoaderRoute: typeof PageSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/contact': {
       id: '/contact'
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/services': {
-      id: '/services'
-      path: '/services'
-      fullPath: '/services'
-      preLoaderRoute: typeof ServicesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/media': {
@@ -158,31 +82,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiMediaRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/insights/': {
-      id: '/insights/'
-      path: '/insights'
-      fullPath: '/insights/'
-      preLoaderRoute: typeof InsightsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/insights/$slug': {
-      id: '/insights/$slug'
-      path: '/insights/$slug'
-      fullPath: '/insights/$slug'
-      preLoaderRoute: typeof InsightsSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  PageSlugRoute: PageSlugRoute,
   ContactRoute: ContactRoute,
-  ServicesRoute: ServicesRoute,
   ApiMediaRoute: ApiMediaRoute,
-  InsightsSlugRoute: InsightsSlugRoute,
-  InsightsIndexRoute: InsightsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
