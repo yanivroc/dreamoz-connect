@@ -83,6 +83,7 @@ function Contact() {
                   Call Us
                 </a>
               ) : null}
+            </div>
 
             <dl className="mt-6 space-y-4 text-sm">
               <div>
