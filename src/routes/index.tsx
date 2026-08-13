@@ -181,7 +181,7 @@ function Home() {
                   </article>
                 ))}
               </div>
-            )}
+            ) : null}
           </section>
         ))}
       </div>
