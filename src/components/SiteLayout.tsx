@@ -41,10 +41,11 @@ export function SiteLayout({
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 border-b border-border/60 bg-background/85 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">
-          <Link to="/" className="flex items-center">
-            {logo ? (
-              <img src={logo} alt={`${name} logo`} className="h-9 w-auto" />
-            ) : null}
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 rounded-full bg-gradient-accent px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-card transition hover:opacity-90"
+          >
+            {name}
           </Link>
           <nav className="hidden items-center gap-6 md:flex">
             {nav.map((item) => (
