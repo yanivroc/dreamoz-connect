@@ -31,7 +31,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  const { member, servicePages, logo, favicon } =
+  const { member, servicePages, logo, favicon, webTitle, webDescription } =
     Route.useLoaderData() as SiteOverview;
 
   return (
@@ -42,12 +42,18 @@ function Home() {
             {member.suburb}, {member.state}
           </span>
           <h1 className="mt-6 max-w-3xl text-4xl font-bold leading-[1.05] md:text-6xl">
-            Software that <span className="text-gradient">ships</span>, websites that
-            grow your business.
+            {webTitle ?? member.memberFullName}
           </h1>
-          <p className="mt-6 max-w-2xl text-lg text-muted-foreground">
-            {member.metaDesc}
-          </p>
+          {webDescription ? (
+            <div
+              className="prose-site mt-6 max-w-2xl text-lg text-muted-foreground"
+              dangerouslySetInnerHTML={{ __html: webDescription }}
+            />
+          ) : (
+            <p className="mt-6 max-w-2xl text-lg text-muted-foreground">
+              {member.metaDesc}
+            </p>
+          )}
         </div>
       </section>
 

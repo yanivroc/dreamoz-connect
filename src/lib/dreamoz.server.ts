@@ -259,6 +259,8 @@ export async function getOverview(): Promise<SiteOverview> {
     favicon: mediaUrl(web?.logoFavicon),
     email: web?.emailId?.trim() || member.memberEmail,
     webTitle: web?.webTitle ?? null,
+    webDescription: sanitizeHtml(web?.description) || null,
+    webDescriptionText: stripHtml(web?.description) || null,
     servicePages: pages,
     services: pages.flatMap((p) => p.posts).slice(0, 6),
     articles: posts.filter(isInsight).map(toCard).slice(0, 25),
