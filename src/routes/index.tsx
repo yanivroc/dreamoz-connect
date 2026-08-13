@@ -66,11 +66,11 @@ function Home() {
           </h1>
           {webDescription ? (
             <div
-              className="prose-site mt-6 max-w-2xl text-lg text-muted-foreground"
+              className="prose-site mt-6 max-w-3xl text-lg text-muted-foreground"
               dangerouslySetInnerHTML={{ __html: webDescription }}
             />
           ) : (
-            <p className="mt-6 max-w-2xl text-lg text-muted-foreground">
+            <p className="mt-6 max-w-3xl text-lg text-muted-foreground">
               {member.metaDesc}
             </p>
           )}

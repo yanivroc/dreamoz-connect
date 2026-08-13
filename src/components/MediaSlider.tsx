@@ -36,7 +36,7 @@ export function MediaSlider({
           ? "max-w-2xl"
           : variant === "split"
             ? "w-full"
-            : "max-w-3xl"
+            : "max-w-5xl"
       }`}
     >
       {current.kind === "image" && current.caption ? (
