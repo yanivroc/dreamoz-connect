@@ -34,6 +34,25 @@ export const Route = createFileRoute("/")({
 function Home() {
   const { member, servicePages, logo, favicon, webTitle, webDescription } =
     Route.useLoaderData() as SiteOverview;
+  const [activeSlug, setActiveSlug] = useState<string>("");
+
+  useEffect(() => {
+    const sections = servicePages
+      .map((p) => document.getElementById(p.slug))
+      .filter((el): el is HTMLElement => Boolean(el));
+    if (sections.length === 0) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+        if (visible?.target.id) setActiveSlug(visible.target.id);
+      },
+      { rootMargin: "-140px 0px -55% 0px", threshold: 0 },
+    );
+    sections.forEach((el) => observer.observe(el));
+    return () => observer.disconnect();
+  }, [servicePages]);
 
   return (
     <SiteLayout member={member} logo={logo} favicon={favicon}>
