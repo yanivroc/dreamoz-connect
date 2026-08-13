@@ -57,7 +57,7 @@ function PostPage() {
           <p className="mt-10 text-muted-foreground">This post is not available.</p>
         ) : (
           <article className="mt-6">
-            <h1 className="text-3xl font-bold md:text-4xl">{article.title}</h1>
+            <h1 className="text-4xl font-bold md:text-5xl">{article.title}</h1>
             <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
               <span>{formatDate(article.date)}</span>
               {article.categories.map((c, i) => (

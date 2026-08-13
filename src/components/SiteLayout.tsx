@@ -81,7 +81,7 @@ export function SiteLayout({
       <main>{children}</main>
 
       <footer className="mt-24 border-t border-border/60 bg-surface/40">
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-8 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-4 px-5 py-8 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
           <p>
             © {new Date().getFullYear()} {name}. Software development, web platforms
             and growth engineering.

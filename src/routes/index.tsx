@@ -218,7 +218,7 @@ function Home() {
                         )}
                         {s.html ? (
                           <div
-                            className="prose-site mt-4 max-w-none text-sm"
+                            className="prose-site mt-4 max-w-none"
                             dangerouslySetInnerHTML={{ __html: s.html }}
                           />
                         ) : (
