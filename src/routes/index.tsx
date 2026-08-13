@@ -76,7 +76,7 @@ function Home() {
         <section
           key={`${page.title}-${i}`}
           id={page.slug}
-          className={`scroll-mt-24 border-b border-border/50 ${
+          className={`scroll-mt-36 border-b border-border/50 ${
             i % 2 === 1 ? "bg-surface/40" : "bg-background"
           }`}
         >
