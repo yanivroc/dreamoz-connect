@@ -106,7 +106,7 @@ function Home() {
           }`}
         >
           <div className="mx-auto w-full max-w-7xl px-5 py-16 md:py-20">
-            <header className="grid gap-6 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)] lg:items-start lg:gap-12">
+            <header className="grid gap-5 lg:grid-cols-[minmax(0,200px)_minmax(0,1fr)] lg:items-start lg:gap-8">
               <div className="min-w-0">
                 <span className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">
                   {String(i + 1).padStart(2, "0")}
