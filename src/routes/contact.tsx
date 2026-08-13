@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Mail, MessageCircle, Phone } from "lucide-react";
+import { Mail, Phone } from "lucide-react";
 import { overviewFn } from "@/lib/dreamoz.functions";
 import { SiteLayout } from "@/components/SiteLayout";
 import type { SiteOverview } from "@/lib/dreamoz.types";
-import { whatsappLink, toInternationalPhone } from "@/lib/format";
+import { toInternationalPhone } from "@/lib/format";
 import { ContactForm } from "@/components/ContactForm";
 
 export const Route = createFileRoute("/contact")({
