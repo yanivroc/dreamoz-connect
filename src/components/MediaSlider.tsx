@@ -10,7 +10,7 @@ export function MediaSlider({
   images: MediaImage[];
   videos?: string[];
   title: string;
-  variant?: "default" | "brand";
+  variant?: "default" | "brand" | "split";
 }) {
   const [index, setIndex] = useState(0);
   const slides = [
