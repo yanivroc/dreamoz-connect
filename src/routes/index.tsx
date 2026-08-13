@@ -5,6 +5,15 @@ import { SiteLayout } from "@/components/SiteLayout";
 import type { SiteOverview } from "@/lib/dreamoz.types";
 import { MediaSlider } from "@/components/MediaSlider";
 
+function stripLinks(html: string) {
+  return html
+    .replace(/<a\b[^>]*>/gi, "")
+    .replace(/<\/a>/gi, "")
+    .replace(/<u\b[^>]*>/gi, "")
+    .replace(/<\/u>/gi, "");
+}
+
+
 export const Route = createFileRoute("/")({
   loader: () => overviewFn(),
   head: ({ loaderData }) => ({
