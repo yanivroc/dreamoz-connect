@@ -20,6 +20,7 @@ export function MediaSlider({
       src,
       thumb: null,
       caption: null,
+      url: null,
     })),
   ];
   if (slides.length === 0) return null;
@@ -34,17 +35,37 @@ export function MediaSlider({
         variant === "brand" ? "max-w-2xl" : "max-w-3xl"
       }`}
     >
+      {current.kind === "image" && current.caption ? (
+        <p className="border-b border-border/60 bg-background/40 px-4 py-2 text-center text-sm font-medium text-muted-foreground">
+          {current.caption}
+        </p>
+      ) : null}
       <div
         className={`relative mx-auto w-full bg-surface ${
           variant === "brand" ? "h-64" : "aspect-video max-h-[360px]"
         }`}
       >
         {current.kind === "image" ? (
-          <img
-            src={current.src}
-            alt={current.caption || title}
-            className="h-full w-full object-contain p-4"
-          />
+          current.url ? (
+            <a
+              href={current.url}
+              target="_blank"
+              rel="noreferrer"
+              className="block h-full w-full transition hover:opacity-90"
+            >
+              <img
+                src={current.src}
+                alt={current.caption || title}
+                className="h-full w-full object-contain p-4"
+              />
+            </a>
+          ) : (
+            <img
+              src={current.src}
+              alt={current.caption || title}
+              className="h-full w-full object-contain p-4"
+            />
+          )
         ) : (
           <iframe
             src={current.src}
