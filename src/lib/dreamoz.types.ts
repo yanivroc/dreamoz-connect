@@ -117,6 +117,8 @@ export type SiteOverview = {
   favicon: string | null;
   email: string | null;
   webTitle: string | null;
+  webDescription: string | null;
+  webDescriptionText: string | null;
   servicePages: ServicePage[];
   contactPage: ServicePage | null;
   footerPage: ServicePage | null;
