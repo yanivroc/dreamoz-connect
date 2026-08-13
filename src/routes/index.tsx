@@ -31,7 +31,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Home() {
-  const { member, servicePages, logo, favicon } =
+  const { member, servicePages, logo, favicon, webTitle, webDescription } =
     Route.useLoaderData() as SiteOverview;
 
   return (
