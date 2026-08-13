@@ -144,6 +144,17 @@ function siteWeb(webs: Web[]): Web | undefined {
   );
 }
 
+export function pageSlug(pageUrl: string | null | undefined, title: string): string {
+  const raw = (pageUrl ?? "").split("?")[0]?.replace(/\/+$/, "") ?? "";
+  const last = raw.split("/").filter(Boolean).pop() ?? "";
+  const base = last || title;
+  return base
+    .toLowerCase()
+    .replace(/\.[a-z]+$/, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 function servicePages(web: Web | undefined): ServicePage[] {
   const out: ServicePage[] = [];
   for (const page of web?.webPages ?? []) {
@@ -156,6 +167,7 @@ function servicePages(web: Web | undefined): ServicePage[] {
     if (!html && posts.length === 0) continue;
     out.push({
       title,
+      slug: pageSlug(page.pageUrl, title),
       html,
       summary: stripHtml(page.description).slice(0, 220),
       posts,
@@ -176,6 +188,7 @@ function namedPage(web: Web | undefined, name: string): ServicePage | null {
   if (!page) return null;
   return {
     title: (page.pageTitle ?? "").trim(),
+    slug: pageSlug(page.pageUrl, (page.pageTitle ?? "").trim()),
     html: sanitizeHtml(page.description),
     summary: stripHtml(page.description).slice(0, 220),
     posts: (page.posts ?? []).filter((p) => p.bizEnable === true).map(toCard),
@@ -200,6 +213,12 @@ export async function getOverview(): Promise<SiteOverview> {
   };
 }
 
+
+export async function getServicePage(slug: string): Promise<ServicePage | null> {
+  const { webs } = await loadAll();
+  const pages = servicePages(siteWeb(webs));
+  return pages.find((p) => p.slug === slug.toLowerCase()) ?? null;
+}
 
 export async function getArticles() {
   const { posts } = await loadAll();

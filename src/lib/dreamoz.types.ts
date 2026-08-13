@@ -70,6 +70,7 @@ export type WebPage = {
 
 export type ServicePage = {
   title: string;
+  slug: string;
   html: string;
   summary: string;
   posts: ArticleCard[];
