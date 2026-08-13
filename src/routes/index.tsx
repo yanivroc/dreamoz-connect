@@ -83,7 +83,12 @@ function Home() {
             <a
               key={`nav-${p.slug}-${i}`}
               href={`#${p.slug}`}
-              className="shrink-0 rounded-full border border-border/70 bg-surface/60 px-4 py-1.5 text-sm text-muted-foreground transition hover:border-primary/50 hover:text-primary"
+              aria-current={activeSlug === p.slug ? "true" : undefined}
+              className={`shrink-0 rounded-full border px-4 py-1.5 text-sm transition ${
+                activeSlug === p.slug
+                  ? "border-primary/60 bg-primary/10 font-semibold text-primary shadow-glow"
+                  : "border-border/70 bg-surface/60 text-muted-foreground hover:border-primary/50 hover:text-primary"
+              }`}
             >
               {p.title}
             </a>
