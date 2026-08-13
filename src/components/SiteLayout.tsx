@@ -1,14 +1,13 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import { Phone } from "lucide-react";
 import type { Member, ServicePage } from "@/lib/dreamoz.types";
-import { brandName, whatsappLink } from "@/lib/format";
+import { brandName, toInternationalPhone } from "@/lib/format";
 import { useEffect } from "react";
 
 const nav = [
   { to: "/", label: "Home" },
   { to: "/services", label: "Services" },
-  { to: "/insights", label: "Insights" },
-  
   { to: "/contact", label: "Contact" },
 ];
 
@@ -17,7 +16,6 @@ export function SiteLayout({
   member,
   logo,
   favicon,
-  footerPage,
 }: {
   children: ReactNode;
   member?: Member | null;
@@ -26,8 +24,8 @@ export function SiteLayout({
   footerPage?: ServicePage | null;
 }) {
   const name = brandName(member?.memberFullName);
-  const wa = whatsappLink(member?.mobileNumber, member?.country);
-  const footerPost = footerPage?.posts[0];
+  const phone = member?.mobileNumber?.trim() || null;
+  const dial = toInternationalPhone(member?.mobileNumber, member?.country);
 
   useEffect(() => {
     if (!favicon) return;
@@ -60,21 +58,21 @@ export function SiteLayout({
               </Link>
             ))}
           </nav>
-          {wa ? (
+          {phone ? (
             <a
-              href={wa}
-              target="_blank"
-              rel="noreferrer"
-              className="rounded-full bg-gradient-accent px-4 py-2 text-sm font-semibold text-primary-foreground shadow-glow"
+              href={`tel:${dial ? `+${dial}` : phone}`}
+              className="inline-flex items-center gap-2 rounded-full bg-gradient-accent px-4 py-2 text-sm font-semibold text-primary-foreground shadow-glow"
             >
-              Start a project
+              <Phone size={16} />
+              <span className="hidden sm:inline">Call Us</span>
+              <span>{phone}</span>
             </a>
           ) : (
             <Link
               to="/contact"
               className="rounded-full bg-gradient-accent px-4 py-2 text-sm font-semibold text-primary-foreground shadow-glow"
             >
-              Start a project
+              Call Us
             </Link>
           )}
         </div>
@@ -83,43 +81,7 @@ export function SiteLayout({
       <main>{children}</main>
 
       <footer className="mt-24 border-t border-border/60 bg-surface/40">
-        {footerPost ? (
-          <div className="mx-auto grid max-w-6xl gap-10 px-5 py-12 md:grid-cols-[1.4fr_1fr]">
-            <div>
-              {footerPost.images[0] ? (
-                <img
-                  src={footerPost.images[0].src}
-                  alt={`${name} logo`}
-                  loading="lazy"
-                  className="mb-5 h-10 w-auto"
-                />
-              ) : null}
-              {footerPost.html ? (
-                <div
-                  className="prose-site max-w-2xl text-sm"
-                  dangerouslySetInnerHTML={{ __html: footerPost.html }}
-                />
-              ) : null}
-            </div>
-            {footerPost.attributes.length > 0 ? (
-              <div className="grid gap-6 sm:grid-cols-2">
-                {footerPost.attributes.map((a, i) => (
-                  <div key={`${a.title}-${i}`} className="text-sm">
-                    <div
-                      className="prose-site font-semibold text-foreground"
-                      dangerouslySetInnerHTML={{ __html: a.title }}
-                    />
-                    <div
-                      className="prose-site mt-2 text-muted-foreground"
-                      dangerouslySetInnerHTML={{ __html: a.value }}
-                    />
-                  </div>
-                ))}
-              </div>
-            ) : null}
-          </div>
-        ) : null}
-        <div className="mx-auto flex max-w-6xl flex-col gap-4 border-t border-border/60 px-5 py-8 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
+        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-8 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
           <p>
             © {new Date().getFullYear()} {name}. Software development, web platforms
             and growth engineering.
