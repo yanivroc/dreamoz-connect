@@ -8,26 +8,31 @@ import { ContactForm } from "@/components/ContactForm";
 
 export const Route = createFileRoute("/contact")({
   loader: () => overviewFn(),
-  head: ({ loaderData }) => ({
-    meta: [
-      { title: "Contact DreamozTech — Melbourne Software Team" },
-      {
-        name: "description",
-        content:
-          "Get in touch with DreamozTech in Melbourne for software development, web platforms and digital growth projects.",
-      },
-      { property: "og:title", content: "Contact DreamozTech" },
-      {
-        property: "og:description",
-        content: "Talk to the DreamozTech team about your next software project.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      ...(loaderData?.member?.metaKey
-        ? [{ name: "keywords", content: loaderData.member.metaKey.replace(/\s+/g, " ").trim() }]
-        : []),
-    ],
-  }),
+  head: ({ loaderData }) => {
+    const member = loaderData?.member;
+    const title = `Contact ${member?.memberFullName?.trim() || "DreamozTech"}`;
+    const description =
+      member?.metaDesc?.trim() ||
+      "Get in touch with DreamozTech for software development, web platforms and digital growth projects.";
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "website" },
+        { name: "twitter:card", content: "summary_large_image" },
+        ...(member?.metaKey
+          ? [
+              {
+                name: "keywords",
+                content: member.metaKey.replace(/\s+/g, " ").trim(),
+              },
+            ]
+          : []),
+      ],
+    };
+  },
   component: Contact,
 });
 
@@ -47,10 +52,19 @@ function Contact() {
     <SiteLayout member={member} logo={logo} favicon={favicon}>
       <section className="hero-surface border-b border-border/60">
         <div className="mx-auto max-w-6xl px-5 py-14">
-          <h1 className="text-4xl font-bold md:text-5xl">Contact us</h1>
-          <p className="mt-4 max-w-2xl text-muted-foreground">
-            Tell us about your project and we'll get back to you shortly.
-          </p>
+          <h1 className="text-4xl font-bold md:text-5xl">
+            {member.memberFullName?.trim() || "Contact us"}
+          </h1>
+          {member.description ? (
+            <div
+              className="prose-site mt-4 max-w-3xl"
+              dangerouslySetInnerHTML={{ __html: member.description }}
+            />
+          ) : (
+            <p className="mt-4 max-w-2xl text-muted-foreground">
+              Tell us about your project and we'll get back to you shortly.
+            </p>
+          )}
         </div>
       </section>
 
