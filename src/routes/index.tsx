@@ -105,20 +105,23 @@ function Home() {
             i % 2 === 1 ? "bg-surface/40" : "bg-background"
           }`}
         >
-          <div className="mx-auto max-w-6xl px-5 py-16 md:py-20">
-            <header className="max-w-3xl">
-              <span className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <h2 className="mt-2 text-3xl font-bold md:text-4xl">{page.title}</h2>
-              <div className="mt-4 h-px w-16 bg-gradient-accent" />
+          <div className="mx-auto w-full max-w-7xl px-5 py-16 md:py-20">
+            <header className="grid gap-6 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)] lg:items-start lg:gap-12">
+              <div className="min-w-0">
+                <span className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <h2 className="mt-2 text-3xl font-bold md:text-4xl">{page.title}</h2>
+                <div className="mt-4 h-px w-16 bg-gradient-accent" />
+              </div>
               {page.html ? (
                 <div
-                  className="prose-api mt-5"
+                  className="prose-api min-w-0 lg:columns-2 lg:gap-10"
                   dangerouslySetInnerHTML={{ __html: page.html }}
                 />
               ) : null}
             </header>
+
 
             {page.title.toLowerCase() === "blog" ? (
               page.posts.length > 0 && (
