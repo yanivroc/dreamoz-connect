@@ -176,8 +176,8 @@ const PAGE_ORDER = [
   "feature",
   "services",
   "testimonial",
-  "blog",
   "about",
+  "blog",
 ];
 
 function isPublicPost(p: Post): boolean {
