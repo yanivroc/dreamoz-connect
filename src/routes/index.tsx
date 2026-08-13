@@ -108,7 +108,8 @@ function Home() {
             {servicePages.map((page, i) => (
               <Link
                 key={`${page.title}-${i}`}
-                to="/services"
+                to="/$pageSlug"
+                params={{ pageSlug: page.slug }}
                 className="group rounded-xl border border-border/70 bg-surface p-7 shadow-card transition-transform hover:-translate-y-1"
               >
                 <h3 className="text-lg font-semibold group-hover:text-primary">
@@ -118,7 +119,7 @@ function Home() {
                   {page.summary || page.posts[0]?.excerpt}
                 </p>
                 <span className="mt-5 inline-flex text-sm font-semibold text-primary">
-                  View services ↗
+                  Learn more ↗
                 </span>
               </Link>
             ))}
