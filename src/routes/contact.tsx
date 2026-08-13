@@ -75,28 +75,14 @@ function Contact() {
                 Email Us
               </a>
               {member.mobileNumber ? (
-                <>
-                  <a
-                    href={`tel:${dial ? `+${dial}` : member.mobileNumber}`}
-                    className="inline-flex items-center gap-2 rounded-full bg-gradient-accent px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-card transition hover:opacity-90"
-                  >
-                    <Phone size={18} />
-                    {member.mobileNumber}
-                  </a>
-                  {wa ? (
-                    <a
-                      href={wa}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-2 rounded-full bg-gradient-accent px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-card transition hover:opacity-90"
-                    >
-                      <MessageCircle size={18} />
-                      Text Us
-                    </a>
-                  ) : null}
-                </>
+                <a
+                  href={`tel:${dial ? `+${dial}` : member.mobileNumber}`}
+                  className="inline-flex items-center gap-2 rounded-full bg-gradient-accent px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-card transition hover:opacity-90"
+                >
+                  <Phone size={18} />
+                  Call Us
+                </a>
               ) : null}
-            </div>
 
             <dl className="mt-6 space-y-4 text-sm">
               <div>
@@ -106,12 +92,6 @@ function Contact() {
                   {member.country}
                 </dd>
               </div>
-              {member.mobileNumber ? (
-                <div>
-                  <dt className="text-muted-foreground">Phone</dt>
-                  <dd className="text-foreground">{member.mobileNumber}</dd>
-                </div>
-              ) : null}
             </dl>
             {socials.length > 0 && (
               <div className="mt-8 flex flex-wrap gap-3">
