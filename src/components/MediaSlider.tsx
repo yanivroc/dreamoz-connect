@@ -32,7 +32,11 @@ export function MediaSlider({
   return (
     <div
       className={`mx-auto overflow-hidden rounded-xl border border-border/70 bg-surface shadow-card ${
-        variant === "brand" ? "max-w-2xl" : "max-w-3xl"
+        variant === "brand"
+          ? "max-w-2xl"
+          : variant === "split"
+            ? "w-full"
+            : "max-w-3xl"
       }`}
     >
       {current.kind === "image" && current.caption ? (
@@ -42,7 +46,11 @@ export function MediaSlider({
       ) : null}
       <div
         className={`relative mx-auto w-full bg-surface ${
-          variant === "brand" ? "h-64" : "aspect-video max-h-[360px]"
+          variant === "brand"
+            ? "h-64"
+            : variant === "split"
+              ? "h-[420px] sm:h-[480px] md:h-[540px]"
+              : "aspect-video max-h-[360px]"
         }`}
       >
         {current.kind === "image" ? (
