@@ -239,21 +239,28 @@ function Home() {
                           <dl
                             className={`mt-6 grid gap-3 text-sm ${split ? "" : "sm:grid-cols-2 lg:grid-cols-3"}`}
                           >
-                            {s.attributes.map((a, ai) => (
-                              <div
-                                key={`${a.title}-${ai}`}
-                                className="rounded-xl border border-border/60 bg-background/40 px-4 py-3 transition hover:border-primary/40"
-                              >
-                                <dt
-                                  className="prose-site text-xs text-muted-foreground [&_i]:text-base [&_i]:text-primary"
-                                  dangerouslySetInnerHTML={{ __html: a.title }}
-                                />
-                                <dd
-                                  className="prose-site mt-1 font-medium"
-                                  dangerouslySetInnerHTML={{ __html: a.value }}
-                                />
-                              </div>
-                            ))}
+                            {s.attributes.map((a, ai) => {
+                              const isFeature = page.title.toLowerCase() === "feature";
+                              return (
+                                <div
+                                  key={`${a.title}-${ai}`}
+                                  className="rounded-xl border border-border/60 bg-background/40 px-4 py-3 transition hover:border-primary/40"
+                                >
+                                  <dt
+                                    className="prose-site text-xs text-muted-foreground [&_i]:text-base [&_i]:text-primary"
+                                    dangerouslySetInnerHTML={{
+                                      __html: isFeature ? stripLinks(a.title) : a.title,
+                                    }}
+                                  />
+                                  <dd
+                                    className="prose-site mt-1 font-medium"
+                                    dangerouslySetInnerHTML={{
+                                      __html: isFeature ? stripLinks(a.value) : a.value,
+                                    }}
+                                  />
+                                </div>
+                              );
+                            })}
                           </dl>
                         )}
                         {!split && !isGrowth && media ? <div className="mt-6">{media}</div> : null}
