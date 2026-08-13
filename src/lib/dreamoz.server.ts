@@ -140,7 +140,7 @@ async function loadAll(): Promise<LoadedData> {
   try {
     return await inflight;
   } catch (err) {
-    if (dataCache) return dataCache.value;
+    if (dataCache) return dataCache!.value;
     cachedToken = null;
     throw err;
   }
