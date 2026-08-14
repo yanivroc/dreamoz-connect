@@ -118,15 +118,15 @@ function toCard(post: Post): ArticleCard {
 type LoadedData = { member: Member; posts: Post[]; webs: Web[] };
 let dataCache: { value: LoadedData; at: number } | null = null;
 let inflight: Promise<LoadedData> | null = null;
-const DATA_TTL = 10 * 60 * 1000;
 
 function cachedValue(): LoadedData | null {
   return dataCache?.value ?? null;
 }
 
 async function loadAll(): Promise<LoadedData> {
-  const fresh = dataCache && Date.now() - dataCache.at < DATA_TTL;
-  if (fresh) return cachedValue()!;
+  // Cached snapshot never expires on its own; refresh via /api/public/cache-bust.
+  const cached = cachedValue();
+  if (cached) return cached;
   if (!inflight) {
     inflight = fetchAll()
       .then((value) => {
@@ -137,12 +137,6 @@ async function loadAll(): Promise<LoadedData> {
         inflight = null;
       });
   }
-  // Stale-while-revalidate: never block a render on the slow upstream API.
-  const stale = cachedValue();
-  if (stale) {
-    void inflight.catch(() => {});
-    return stale;
-  }
   try {
     return await inflight;
   } catch (err) {
@@ -152,6 +146,24 @@ async function loadAll(): Promise<LoadedData> {
     throw err;
   }
 }
+
+export async function bustCache(): Promise<{
+  posts: number;
+  webs: number;
+  refreshedAt: string;
+}> {
+  dataCache = null;
+  inflight = null;
+  cachedToken = null;
+  const data = await loadAll();
+  return {
+    posts: data.posts.length,
+    webs: data.webs.length,
+    refreshedAt: new Date().toISOString(),
+  };
+
+}
+
 
 async function fetchAll(): Promise<LoadedData> {
   const [memberRes, postsRes, websRes] = await Promise.all([

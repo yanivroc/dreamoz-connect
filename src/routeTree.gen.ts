@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ApiMediaRouteImport } from './routes/api/media'
 import { Route as PostSlugRouteImport } from './routes/post.$slug'
+import { Route as ApiPublicCacheBustRouteImport } from './routes/api/public/cache-bust'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,18 +35,25 @@ const PostSlugRoute = PostSlugRouteImport.update({
   path: '/post/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCacheBustRoute = ApiPublicCacheBustRouteImport.update({
+  id: '/api/public/cache-bust',
+  path: '/api/public/cache-bust',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/contact': typeof ContactRoute
   '/api/media': typeof ApiMediaRoute
   '/post/$slug': typeof PostSlugRoute
+  '/api/public/cache-bust': typeof ApiPublicCacheBustRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/contact': typeof ContactRoute
   '/api/media': typeof ApiMediaRoute
   '/post/$slug': typeof PostSlugRoute
+  '/api/public/cache-bust': typeof ApiPublicCacheBustRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,21 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/api/media': typeof ApiMediaRoute
   '/post/$slug': typeof PostSlugRoute
+  '/api/public/cache-bust': typeof ApiPublicCacheBustRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/contact' | '/api/media' | '/post/$slug'
+  fullPaths:
+    '/' | '/contact' | '/api/media' | '/post/$slug' | '/api/public/cache-bust'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/contact' | '/api/media' | '/post/$slug'
-  id: '__root__' | '/' | '/contact' | '/api/media' | '/post/$slug'
+  to: '/' | '/contact' | '/api/media' | '/post/$slug' | '/api/public/cache-bust'
+  id:
+    | '__root__'
+    | '/'
+    | '/contact'
+    | '/api/media'
+    | '/post/$slug'
+    | '/api/public/cache-bust'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +83,7 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   ApiMediaRoute: typeof ApiMediaRoute
   PostSlugRoute: typeof PostSlugRoute
+  ApiPublicCacheBustRoute: typeof ApiPublicCacheBustRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,6 +116,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PostSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cache-bust': {
+      id: '/api/public/cache-bust'
+      path: '/api/public/cache-bust'
+      fullPath: '/api/public/cache-bust'
+      preLoaderRoute: typeof ApiPublicCacheBustRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -107,6 +131,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   ApiMediaRoute: ApiMediaRoute,
   PostSlugRoute: PostSlugRoute,
+  ApiPublicCacheBustRoute: ApiPublicCacheBustRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
