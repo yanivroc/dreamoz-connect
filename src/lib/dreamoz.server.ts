@@ -159,8 +159,9 @@ export async function bustCache(): Promise<{
   return {
     posts: data.posts.length,
     webs: data.webs.length,
-    refreshedAt: new Date(dataCache?.at ?? Date.now()).toISOString(),
+    refreshedAt: new Date().toISOString(),
   };
+
 }
 
 
