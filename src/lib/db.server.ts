@@ -7,7 +7,7 @@ export function dbClient(): Client | null {
   const url = process.env["TURSO_DATABASE_URL"]?.trim();
   const authToken = process.env["TURSO_AUTH_TOKEN"]?.trim();
   if (!url) return null;
-  if (!client) client = createClient({ url, authToken });
+  if (!client) client = createClient(authToken ? { url, authToken } : { url });
   return client;
 }
 

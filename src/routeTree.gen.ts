@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ApiMediaRouteImport } from './routes/api/media'
 import { Route as PostSlugRouteImport } from './routes/post.$slug'
 import { Route as ApiPublicCacheBustRouteImport } from './routes/api/public/cache-bust'
@@ -24,6 +25,11 @@ const IndexRoute = IndexRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiMediaRoute = ApiMediaRouteImport.update({
@@ -50,6 +56,7 @@ const ApiPublicCacheStatusRoute = ApiPublicCacheStatusRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/contact': typeof ContactRoute
+  '/signup': typeof SignupRoute
   '/api/media': typeof ApiMediaRoute
   '/post/$slug': typeof PostSlugRoute
   '/api/public/cache-bust': typeof ApiPublicCacheBustRoute
@@ -58,6 +65,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/contact': typeof ContactRoute
+  '/signup': typeof SignupRoute
   '/api/media': typeof ApiMediaRoute
   '/post/$slug': typeof PostSlugRoute
   '/api/public/cache-bust': typeof ApiPublicCacheBustRoute
@@ -67,6 +75,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/contact': typeof ContactRoute
+  '/signup': typeof SignupRoute
   '/api/media': typeof ApiMediaRoute
   '/post/$slug': typeof PostSlugRoute
   '/api/public/cache-bust': typeof ApiPublicCacheBustRoute
@@ -77,6 +86,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/contact'
+    | '/signup'
     | '/api/media'
     | '/post/$slug'
     | '/api/public/cache-bust'
@@ -85,6 +95,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/contact'
+    | '/signup'
     | '/api/media'
     | '/post/$slug'
     | '/api/public/cache-bust'
@@ -93,6 +104,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/contact'
+    | '/signup'
     | '/api/media'
     | '/post/$slug'
     | '/api/public/cache-bust'
@@ -102,6 +114,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ContactRoute: typeof ContactRoute
+  SignupRoute: typeof SignupRoute
   ApiMediaRoute: typeof ApiMediaRoute
   PostSlugRoute: typeof PostSlugRoute
   ApiPublicCacheBustRoute: typeof ApiPublicCacheBustRoute
@@ -122,6 +135,13 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/media': {
@@ -158,6 +178,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ContactRoute: ContactRoute,
+  SignupRoute: SignupRoute,
   ApiMediaRoute: ApiMediaRoute,
   PostSlugRoute: PostSlugRoute,
   ApiPublicCacheBustRoute: ApiPublicCacheBustRoute,
