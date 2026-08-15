@@ -8,6 +8,7 @@ import { useEffect } from "react";
 const nav = [
   { to: "/", label: "Home" },
   { to: "/contact", label: "Contact" },
+  { to: "/signup", label: "Sign Up" },
 ];
 
 export function SiteLayout({
