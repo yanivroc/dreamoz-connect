@@ -116,26 +116,41 @@ function toCard(post: Post): ArticleCard {
 
 
 type LoadedData = { member: Member; posts: Post[]; webs: Web[] };
-let dataCache: { value: LoadedData; at: number } | null = null;
+type CacheSource = "memory" | "storage" | "empty";
+let dataCache: { value: LoadedData; at: number; source: CacheSource; savedAt: string | null } | null =
+  null;
 let inflight: Promise<LoadedData> | null = null;
 
 function cachedValue(): LoadedData | null {
   return dataCache?.value ?? null;
 }
 
+async function resolveData(): Promise<LoadedData> {
+  const { readSnapshot, writeSnapshot } = await import("./snapshot-store.server");
+  const stored = await readSnapshot<LoadedData>();
+  if (stored?.data?.member) {
+    dataCache = {
+      value: stored.data,
+      at: Date.now(),
+      source: "storage",
+      savedAt: stored.savedAt ?? null,
+    };
+    return stored.data;
+  }
+  const value = await fetchAll();
+  const savedAt = await writeSnapshot(value);
+  dataCache = { value, at: Date.now(), source: "memory", savedAt };
+  return value;
+}
+
 async function loadAll(): Promise<LoadedData> {
-  // Cached snapshot never expires on its own; refresh via /api/public/cache-bust.
+  // Memory -> persisted snapshot -> live API. Refresh via /api/public/cache-bust.
   const cached = cachedValue();
   if (cached) return cached;
   if (!inflight) {
-    inflight = fetchAll()
-      .then((value) => {
-        dataCache = { value, at: Date.now() };
-        return value;
-      })
-      .finally(() => {
-        inflight = null;
-      });
+    inflight = resolveData().finally(() => {
+      inflight = null;
+    });
   }
   try {
     return await inflight;
@@ -152,17 +167,53 @@ export async function bustCache(): Promise<{
   webs: number;
   refreshedAt: string;
 }> {
-  dataCache = null;
-  inflight = null;
+  const previous = dataCache;
   cachedToken = null;
-  const data = await loadAll();
-  return {
-    posts: data.posts.length,
-    webs: data.webs.length,
-    refreshedAt: new Date().toISOString(),
-  };
-
+  inflight = null;
+  try {
+    const { writeSnapshot } = await import("./snapshot-store.server");
+    const data = await fetchAll();
+    const savedAt = await writeSnapshot(data);
+    dataCache = { value: data, at: Date.now(), source: "memory", savedAt };
+    return {
+      posts: data.posts.length,
+      webs: data.webs.length,
+      refreshedAt: new Date().toISOString(),
+    };
+  } catch (err) {
+    // Keep serving the previous snapshot; the stored copy is untouched.
+    dataCache = previous;
+    throw err;
+  }
 }
+
+export async function cacheStatus(): Promise<{
+  source: CacheSource;
+  savedAt: string | null;
+  loadedAt: string | null;
+  posts: number;
+  webs: number;
+}> {
+  if (!dataCache) {
+    const { readSnapshot } = await import("./snapshot-store.server");
+    const stored = await readSnapshot<LoadedData>();
+    return {
+      source: stored ? "storage" : "empty",
+      savedAt: stored?.savedAt ?? null,
+      loadedAt: null,
+      posts: stored?.data?.posts?.length ?? 0,
+      webs: stored?.data?.webs?.length ?? 0,
+    };
+  }
+  return {
+    source: dataCache.source,
+    savedAt: dataCache.savedAt,
+    loadedAt: new Date(dataCache.at).toISOString(),
+    posts: dataCache.value.posts.length,
+    webs: dataCache.value.webs.length,
+  };
+}
+
 
 
 async function fetchAll(): Promise<LoadedData> {
