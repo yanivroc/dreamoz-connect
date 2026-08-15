@@ -69,6 +69,26 @@ export const signUp = createServerFn({ method: "POST" })
 <p style="margin-top:20px">— The ${config.fromName} team</p>
 </div>`,
       });
+      try {
+        const { getContactInfo } = await import("./dreamoz.server");
+        const member = await getContactInfo();
+        const adminEmail = member.memberEmail?.trim() || "support@dreamoztech.com";
+        await sendBrevoEmail({
+          from: { email: config.emailFrom, name: config.fromName },
+          to: [{ email: adminEmail }],
+          replyTo: { email, name: data.name },
+          subject: `New sign up: ${data.name}`,
+          textContent: `A new sign up has been created.\n\nName: ${data.name}\nEmail: ${email}\nDate: ${new Date().toISOString()}`,
+          htmlContent: `<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6;color:#111">
+<h2 style="margin:0 0 12px">New sign up has been created</h2>
+<p><strong>Name:</strong> ${safeName}<br/>
+<strong>Email:</strong> ${email}<br/>
+<strong>Date:</strong> ${new Date().toISOString()}</p>
+</div>`,
+        });
+      } catch (err) {
+        console.error("Admin signup notification failed:", err);
+      }
     } catch (err) {
       console.error("Welcome email failed:", err);
     }
