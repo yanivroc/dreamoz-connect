@@ -5,9 +5,10 @@ import type { SiteOverview } from "@/lib/dreamoz.types";
 import { LoginForm } from "@/components/LoginForm";
 
 export const Route = createFileRoute("/login")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    redirect: typeof search["redirect"] === "string" ? (search["redirect"] as string) : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { redirect?: string } => {
+    const r = search["redirect"];
+    return typeof r === "string" ? { redirect: r } : {};
+  },
   loader: () => overviewFn(),
   head: ({ loaderData }) => {
     const brand = loaderData?.member?.memberFullName?.trim() || "DreamozTech";

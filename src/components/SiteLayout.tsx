@@ -50,7 +50,7 @@ export function SiteLayout({
     await signOut();
     queryClient.clear();
     await router.invalidate();
-    router.navigate({ to: "/login", replace: true });
+    router.navigate({ to: "/login", search: {}, replace: true });
   }
 
   useEffect(() => {
