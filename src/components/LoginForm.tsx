@@ -4,7 +4,7 @@ import { useNavigate, useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { login } from "@/lib/auth.functions";
 
-export function LoginForm({ redirectTo }: { redirectTo?: string }) {
+export function LoginForm({ redirectTo }: { redirectTo?: string | undefined }) {
   const submit = useServerFn(login);
   const navigate = useNavigate();
   const router = useRouter();

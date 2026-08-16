@@ -11,6 +11,8 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ApiMediaRouteImport } from './routes/api/media'
 import { Route as PostSlugRouteImport } from './routes/post.$slug'
@@ -25,6 +27,16 @@ const IndexRoute = IndexRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SignupRoute = SignupRouteImport.update({
@@ -56,6 +68,8 @@ const ApiPublicCacheStatusRoute = ApiPublicCacheStatusRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/contact': typeof ContactRoute
+  '/dashboard': typeof DashboardRoute
+  '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/api/media': typeof ApiMediaRoute
   '/post/$slug': typeof PostSlugRoute
@@ -65,6 +79,8 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/contact': typeof ContactRoute
+  '/dashboard': typeof DashboardRoute
+  '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/api/media': typeof ApiMediaRoute
   '/post/$slug': typeof PostSlugRoute
@@ -75,6 +91,8 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/contact': typeof ContactRoute
+  '/dashboard': typeof DashboardRoute
+  '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/api/media': typeof ApiMediaRoute
   '/post/$slug': typeof PostSlugRoute
@@ -86,6 +104,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/contact'
+    | '/dashboard'
+    | '/login'
     | '/signup'
     | '/api/media'
     | '/post/$slug'
@@ -95,6 +115,8 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/contact'
+    | '/dashboard'
+    | '/login'
     | '/signup'
     | '/api/media'
     | '/post/$slug'
@@ -104,6 +126,8 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/contact'
+    | '/dashboard'
+    | '/login'
     | '/signup'
     | '/api/media'
     | '/post/$slug'
@@ -114,6 +138,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ContactRoute: typeof ContactRoute
+  DashboardRoute: typeof DashboardRoute
+  LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
   ApiMediaRoute: typeof ApiMediaRoute
   PostSlugRoute: typeof PostSlugRoute
@@ -135,6 +161,20 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/signup': {
@@ -178,6 +218,8 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ContactRoute: ContactRoute,
+  DashboardRoute: DashboardRoute,
+  LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
   ApiMediaRoute: ApiMediaRoute,
   PostSlugRoute: PostSlugRoute,

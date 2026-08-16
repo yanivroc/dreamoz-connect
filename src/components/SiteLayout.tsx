@@ -1,15 +1,26 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouter } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { Phone } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import type { Member, ServicePage } from "@/lib/dreamoz.types";
 import { brandName, toInternationalPhone } from "@/lib/format";
 import { useEffect } from "react";
+import { me, logout, type CurrentUser } from "@/lib/auth.functions";
 
-const nav = [
+const baseNav = [
   { to: "/", label: "Home" },
   { to: "/contact", label: "Contact" },
-  { to: "/signup", label: "Sign Up" },
 ];
+
+function useSessionUser() {
+  const fetchMe = useServerFn(me);
+  return useQuery<CurrentUser | null>({
+    queryKey: ["session-user"],
+    queryFn: () => fetchMe(),
+    staleTime: 30_000,
+  });
+}
 
 export function SiteLayout({
   children,
