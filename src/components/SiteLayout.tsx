@@ -115,6 +115,7 @@ export function SiteLayout({
               <span className="hidden sm:inline">Call Us</span>
             </Link>
           )}
+          </div>
         </div>
       </header>
 
