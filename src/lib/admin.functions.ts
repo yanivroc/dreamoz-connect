@@ -7,6 +7,7 @@ export type AdminUser = {
   email: string;
   role: string;
   createdAt: string;
+  deletedAt: string | null;
 };
 
 async function requireAdmin() {
@@ -20,7 +21,7 @@ async function requireAdmin() {
   await ensureUsersTable(db);
 
   const res = await db.execute({
-    sql: "SELECT id, role FROM users WHERE id = ? LIMIT 1",
+    sql: "SELECT id, role FROM users WHERE id = ? AND deleted_at IS NULL LIMIT 1",
     args: [session.userId],
   });
   const row = res.rows[0] as Record<string, unknown> | undefined;
@@ -30,24 +31,32 @@ async function requireAdmin() {
   return { db, adminId: Number(row["id"]) };
 }
 
-export const listUsers = createServerFn({ method: "GET" }).handler(
-  async (): Promise<AdminUser[]> => {
+export const listUsers = createServerFn({ method: "GET" })
+  .inputValidator((input: unknown) =>
+    z
+      .object({ includeDeleted: z.boolean().optional() })
+      .optional()
+      .parse(input ?? {}),
+  )
+  .handler(async ({ data }): Promise<AdminUser[]> => {
     const { db } = await requireAdmin();
+    const where = data?.includeDeleted ? "" : "WHERE deleted_at IS NULL";
     const res = await db.execute(
-      "SELECT id, name, email, role, created_at FROM users ORDER BY id ASC",
+      `SELECT id, name, email, role, created_at, deleted_at FROM users ${where} ORDER BY id ASC`,
     );
     return res.rows.map((r) => {
       const row = r as unknown as Record<string, unknown>;
+      const deleted = row["deleted_at"];
       return {
         id: Number(row["id"]),
         name: String(row["name"]),
         email: String(row["email"]),
         role: String(row["role"] ?? "user"),
         createdAt: String(row["created_at"] ?? ""),
+        deletedAt: deleted ? String(deleted) : null,
       };
     });
-  },
-);
+  });
 
 export const setUserRole = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
@@ -72,7 +81,23 @@ export const deleteUser = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { db, adminId } = await requireAdmin();
     if (data.id === adminId) throw new Error("You cannot delete your own account.");
-    await db.execute({ sql: "DELETE FROM users WHERE id = ?", args: [data.id] });
+    await db.execute({
+      sql: "UPDATE users SET deleted_at = ? WHERE id = ? AND deleted_at IS NULL",
+      args: [new Date().toISOString(), data.id],
+    });
+    return { ok: true as const };
+  });
+
+export const restoreUser = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z.object({ id: z.coerce.number().int() }).parse(input),
+  )
+  .handler(async ({ data }) => {
+    const { db } = await requireAdmin();
+    await db.execute({
+      sql: "UPDATE users SET deleted_at = NULL WHERE id = ?",
+      args: [data.id],
+    });
     return { ok: true as const };
   });
 
