@@ -1,15 +1,26 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouter } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { Phone } from "lucide-react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import type { Member, ServicePage } from "@/lib/dreamoz.types";
 import { brandName, toInternationalPhone } from "@/lib/format";
 import { useEffect } from "react";
+import { me, logout, type CurrentUser } from "@/lib/auth.functions";
 
-const nav = [
+const baseNav = [
   { to: "/", label: "Home" },
   { to: "/contact", label: "Contact" },
-  { to: "/signup", label: "Sign Up" },
 ];
+
+function useSessionUser() {
+  const fetchMe = useServerFn(me);
+  return useQuery<CurrentUser | null>({
+    queryKey: ["session-user"],
+    queryFn: () => fetchMe(),
+    staleTime: 30_000,
+  });
+}
 
 export function SiteLayout({
   children,
@@ -26,6 +37,21 @@ export function SiteLayout({
   const name = brandName(member?.memberFullName);
   const phone = member?.mobileNumber?.trim() || null;
   const dial = toInternationalPhone(member?.mobileNumber, member?.country);
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const signOut = useServerFn(logout);
+  const { data: user } = useSessionUser();
+
+  const nav = user
+    ? [...baseNav, { to: "/dashboard", label: "Dashboard" }]
+    : [...baseNav, { to: "/signup", label: "Sign Up" }, { to: "/login", label: "Login" }];
+
+  async function handleSignOut() {
+    await signOut();
+    queryClient.clear();
+    await router.invalidate();
+    router.navigate({ to: "/login", search: {}, replace: true });
+  }
 
   useEffect(() => {
     if (!favicon) return;
@@ -59,6 +85,19 @@ export function SiteLayout({
               </Link>
             ))}
           </nav>
+          <div className="flex items-center gap-3">
+          {user ? (
+            <div className="hidden items-center gap-3 sm:flex">
+              <span className="text-sm text-muted-foreground">{user.name}</span>
+              <button
+                type="button"
+                onClick={() => void handleSignOut()}
+                className="rounded-full border border-border/70 px-4 py-2 text-sm transition hover:bg-surface/60"
+              >
+                Sign out
+              </button>
+            </div>
+          ) : null}
           {phone ? (
             <a
               href={`tel:${dial ? `+${dial}` : phone}`}
@@ -76,6 +115,7 @@ export function SiteLayout({
               <span className="hidden sm:inline">Call Us</span>
             </Link>
           )}
+          </div>
         </div>
       </header>
 
