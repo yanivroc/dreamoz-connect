@@ -85,6 +85,19 @@ export function SiteLayout({
               </Link>
             ))}
           </nav>
+          <div className="flex items-center gap-3">
+          {user ? (
+            <div className="hidden items-center gap-3 sm:flex">
+              <span className="text-sm text-muted-foreground">{user.name}</span>
+              <button
+                type="button"
+                onClick={() => void handleSignOut()}
+                className="rounded-full border border-border/70 px-4 py-2 text-sm transition hover:bg-surface/60"
+              >
+                Sign out
+              </button>
+            </div>
+          ) : null}
           {phone ? (
             <a
               href={`tel:${dial ? `+${dial}` : phone}`}
