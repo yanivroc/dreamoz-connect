@@ -37,6 +37,21 @@ export function SiteLayout({
   const name = brandName(member?.memberFullName);
   const phone = member?.mobileNumber?.trim() || null;
   const dial = toInternationalPhone(member?.mobileNumber, member?.country);
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const signOut = useServerFn(logout);
+  const { data: user } = useSessionUser();
+
+  const nav = user
+    ? [...baseNav, { to: "/dashboard", label: "Dashboard" }]
+    : [...baseNav, { to: "/signup", label: "Sign Up" }, { to: "/login", label: "Login" }];
+
+  async function handleSignOut() {
+    await signOut();
+    queryClient.clear();
+    await router.invalidate();
+    router.navigate({ to: "/login", replace: true });
+  }
 
   useEffect(() => {
     if (!favicon) return;
