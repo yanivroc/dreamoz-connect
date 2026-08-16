@@ -18,10 +18,18 @@ export async function ensureUsersTable(db: Client): Promise<void> {
     name TEXT NOT NULL,
     email TEXT NOT NULL,
     password_hash TEXT NOT NULL,
+    role TEXT NOT NULL DEFAULT 'user',
     created_at TEXT NOT NULL
   )`);
   await db.execute(
     `CREATE UNIQUE INDEX IF NOT EXISTS users_email_unique ON users (email)`,
   );
+  try {
+    await db.execute(
+      `ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'user'`,
+    );
+  } catch {
+    // Column already exists.
+  }
   tableReady = true;
 }
