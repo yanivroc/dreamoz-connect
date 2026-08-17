@@ -8,6 +8,7 @@ const schema = z.object({
   captchaAnswer: z.coerce.number().int(),
   captchaA: z.coerce.number().int().min(0).max(99),
   captchaB: z.coerce.number().int().min(0).max(99),
+  marketingConsent: z.literal(true),
 });
 
 export type SignUpResult =
@@ -34,13 +35,14 @@ export const signUp = createServerFn({ method: "POST" })
     });
     if (existing.rows.length > 0) return { ok: false, reason: "exists" };
 
+    const consentAt = new Date().toISOString();
     const { hashPassword } = await import("./auth.server");
     const passwordHash = await hashPassword(data.password);
 
     try {
       await db.execute({
-        sql: "INSERT INTO users (name, email, password_hash, created_at) VALUES (?, ?, ?, ?)",
-        args: [data.name, email, passwordHash, new Date().toISOString()],
+        sql: "INSERT INTO users (name, email, password_hash, created_at, marketing_consent, marketing_consent_at) VALUES (?, ?, ?, ?, ?, ?)",
+        args: [data.name, email, passwordHash, consentAt, 1, consentAt],
       });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -78,12 +80,13 @@ export const signUp = createServerFn({ method: "POST" })
           to: [{ email: adminEmail }],
           replyTo: { email, name: data.name },
           subject: `New sign up: ${data.name}`,
-          textContent: `A new sign up has been created.\n\nName: ${data.name}\nEmail: ${email}\nDate: ${new Date().toISOString()}`,
+          textContent: `A new sign up has been created.\n\nName: ${data.name}\nEmail: ${email}\nMarketing consent: Yes — given ${consentAt} UTC\nDate: ${consentAt}`,
           htmlContent: `<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6;color:#111">
 <h2 style="margin:0 0 12px">New sign up has been created</h2>
 <p><strong>Name:</strong> ${safeName}<br/>
 <strong>Email:</strong> ${email}<br/>
-<strong>Date:</strong> ${new Date().toISOString()}</p>
+<strong>Marketing consent:</strong> Yes — given ${consentAt} UTC<br/>
+<strong>Date:</strong> ${consentAt}</p>
 </div>`,
         });
       } catch (err) {

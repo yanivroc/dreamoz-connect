@@ -16,6 +16,10 @@ export function ContactForm() {
     e.preventDefault();
     const form = e.currentTarget;
     const fd = new FormData(form);
+    if (fd.get("marketingConsent") !== "on") {
+      toast.error("Please tick the consent box to continue.");
+      return;
+    }
     setPending(true);
     try {
       await send({
