@@ -35,7 +35,7 @@ export const login = createServerFn({ method: "POST" })
 
     const email = data.email.toLowerCase();
     const res = await db.execute({
-      sql: "SELECT id, name, email, password_hash, role, created_at FROM users WHERE email = ? LIMIT 1",
+      sql: "SELECT id, name, email, password_hash, role, created_at FROM users WHERE email = ? AND deleted_at IS NULL LIMIT 1",
       args: [email],
     });
     const row = res.rows[0] as Record<string, unknown> | undefined;
