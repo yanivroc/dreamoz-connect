@@ -9,6 +9,7 @@ const schema = z.object({
   captchaAnswer: z.coerce.number().int(),
   captchaA: z.coerce.number().int().min(0).max(99),
   captchaB: z.coerce.number().int().min(0).max(99),
+  marketingConsent: z.literal(true),
 });
 
 export const sendContactEmail = createServerFn({ method: "POST" })
@@ -32,14 +33,17 @@ export const sendContactEmail = createServerFn({ method: "POST" })
           ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
       );
 
+    const consentAt = new Date().toISOString();
+
     await sendBrevoEmail({
       from: { email: config.emailFrom, name: `${data.name} via ${config.fromName}` },
       to: [{ email: toEmail }],
       replyTo: { email: data.email, name: data.name },
       subject: `[Contact] ${data.subject}`,
-      textContent: `Name: ${data.name}\nEmail: ${data.email}\n\n${data.message}`,
+      textContent: `Name: ${data.name}\nEmail: ${data.email}\nMarketing consent: Yes — given ${consentAt} UTC\n\n${data.message}`,
       htmlContent: `<p><strong>Name:</strong> ${safe(data.name)}<br/>
-<strong>Email:</strong> ${safe(data.email)}</p>
+<strong>Email:</strong> ${safe(data.email)}<br/>
+<strong>Marketing consent:</strong> Yes — given ${consentAt} UTC</p>
 <p><strong>Subject:</strong> ${safe(data.subject)}</p>
 <p>${safe(data.message).replace(/\n/g, "<br/>")}</p>`,
     });
