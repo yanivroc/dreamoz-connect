@@ -38,6 +38,16 @@ export async function ensureUsersTable(db: Client): Promise<void> {
   } catch {
     // Column already exists.
   }
+  try {
+    await db.execute(`ALTER TABLE users ADD COLUMN marketing_consent INTEGER`);
+  } catch {
+    // Column already exists.
+  }
+  try {
+    await db.execute(`ALTER TABLE users ADD COLUMN marketing_consent_at TEXT`);
+  } catch {
+    // Column already exists.
+  }
   tableReady = true;
 }
 
