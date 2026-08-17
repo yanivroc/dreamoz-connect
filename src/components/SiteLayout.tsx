@@ -43,7 +43,11 @@ export function SiteLayout({
   const { data: user } = useSessionUser();
 
   const nav = user
-    ? [...baseNav, { to: "/dashboard", label: "Dashboard" }]
+    ? [
+        ...baseNav,
+        { to: "/dashboard", label: "Dashboard" },
+        { to: "/build-web-apps", label: "Build Web Apps" },
+      ]
     : [...baseNav, { to: "/signup", label: "Sign Up" }, { to: "/login", label: "Login" }];
 
   async function handleSignOut() {
