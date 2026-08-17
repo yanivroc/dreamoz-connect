@@ -21,6 +21,10 @@ export function SignUpForm() {
       toast.error("Passwords do not match.");
       return;
     }
+    if (fd.get("marketingConsent") !== "on") {
+      toast.error("Please tick the consent box to continue.");
+      return;
+    }
     setPending(true);
     try {
       const res = await submit({
