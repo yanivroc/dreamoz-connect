@@ -77,7 +77,7 @@ export const me = createServerFn({ method: "GET" }).handler(
     await ensureUsersTable(db);
 
     const res = await db.execute({
-      sql: "SELECT id, name, email, role, created_at FROM users WHERE id = ? LIMIT 1",
+      sql: "SELECT id, name, email, role, created_at FROM users WHERE id = ? AND deleted_at IS NULL LIMIT 1",
       args: [session.userId],
     });
     const row = res.rows[0] as Record<string, unknown> | undefined;
