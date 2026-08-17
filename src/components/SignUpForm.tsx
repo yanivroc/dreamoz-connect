@@ -21,6 +21,10 @@ export function SignUpForm() {
       toast.error("Passwords do not match.");
       return;
     }
+    if (fd.get("marketingConsent") !== "on") {
+      toast.error("Please tick the consent box to continue.");
+      return;
+    }
     setPending(true);
     try {
       const res = await submit({
@@ -31,6 +35,7 @@ export function SignUpForm() {
           captchaAnswer: Number(fd.get("captchaAnswer") ?? NaN),
           captchaA: captcha.a,
           captchaB: captcha.b,
+          marketingConsent: true as const,
         },
       });
       if (res.ok) {
@@ -94,6 +99,26 @@ export function SignUpForm() {
         </span>
         <input name="captchaAnswer" type="number" required className={field} />
       </label>
+      <div className="rounded-lg border border-border/70 bg-background/60 p-3">
+        <label className="flex items-start gap-3 text-sm">
+          <input
+            name="marketingConsent"
+            type="checkbox"
+            required
+            defaultChecked={false}
+            className="mt-1 h-4 w-4 shrink-0 accent-primary"
+          />
+          <span className="text-muted-foreground">
+            I agree to receive marketing emails from DreamozTech about its services,
+            product updates, offers and news. I understand I can unsubscribe at any time
+            using the link in any email.
+          </span>
+        </label>
+        <p className="mt-2 pl-7 text-xs text-muted-foreground/80">
+          We only use your details to respond to your enquiry and to send the
+          communications you consent to.
+        </p>
+      </div>
       <button
         type="submit"
         disabled={pending}
