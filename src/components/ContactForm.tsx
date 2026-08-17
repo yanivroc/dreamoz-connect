@@ -31,6 +31,7 @@ export function ContactForm() {
           captchaAnswer: Number(fd.get("captchaAnswer") ?? NaN),
           captchaA: captcha.a,
           captchaB: captcha.b,
+          marketingConsent: true as const,
         },
       });
       toast.success("Thanks! Your message has been sent.");
