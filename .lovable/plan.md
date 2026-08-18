@@ -1,41 +1,35 @@
-# Diagnose and fix contact-form email on the live site
+# Fix contact email by relaying SMTP through a Node function
 
-The form is failing on the deployed Vercel site. Right now every SMTP failure is collapsed into the same generic message, so the real reason (wrong password, blocked port, missing setting, timeout) is invisible. The plan is to make the failure visible first, then fix it.
+## What's wrong
 
-## Step 1 — Make the real reason visible
+Your other project ("Dreamoztech Image Fetcher") uses the same mailbox settings but works, because it does **not** send SMTP from the app itself. This project's app runs in an edge runtime that cannot open a mail-server connection, so every send fails and the form shows "Could not send your message right now."
 
-Add a token-protected diagnostics endpoint at `/api/public/email-test` (guarded by the existing `CACHE_BUST_TOKEN`, same style as the cache endpoints). Visiting it:
+The working project solves it with a small Vercel Node serverless function (`api/send-mail.ts`) that lives outside the app bundle, in the Node runtime where SMTP works. The app posts the message to that function, and the function talks to `mail.privateemail.com`.
 
-- reports which SMTP settings are present (host, port, secure, user — never the password)
-- opens a real connection to `mail.privateemail.com` and verifies the login
-- optionally sends a test message to an address given in the query string
-- returns the exact provider error code and message
+## The fix
 
-That tells us in one request whether it's credentials, port/network, or something else.
+Port that exact working setup into this project:
 
-## Step 2 — Harden the sender
+1. Add `api/send-mail.ts` — a Vercel Node function that validates the request, connects to Namecheap Private Email over SSL (465, with your `SMTP_*` settings) and sends the message. It authenticates callers with an internal token derived from `SMTP_PASSWORD`, so no new secret is needed.
+2. Rewrite `src/lib/mailer.server.ts` so `sendMail()` posts to `/api/send-mail` on the same deployment instead of opening SMTP directly. Same call signature, so the contact form and sign-up flow are unchanged apart from the config helper name.
+3. Keep the sender identity on the relay side: `From` is always the authenticated mailbox (`support@dreamoztech.com`, display name DreamozTech) and the visitor stays as reply-to — this is what keeps Namecheap from rejecting the message.
+4. Surface the real error text when a send fails, so future problems are diagnosable instead of showing the generic message.
 
-- Distinguish the failure cases in `sendMail` so the user-facing text is accurate: "email is not configured" vs. "could not send right now".
-- Log the full SMTP error server-side (code, response, command) so it shows in Vercel logs.
-- Add a connection/greeting/socket timeout (10s) so a blocked port fails fast instead of hanging.
-- If the connection on port 465 (SSL) fails at the network level, automatically retry once on port 587 with STARTTLS. Namecheap supports both, and one of the two is usually the one a host allows.
+## Environment variables (Vercel)
 
-## Step 3 — Apply the fix the diagnostics point to
+Same ones you already have, plus the two optional sender overrides used by the relay:
 
-Most likely outcomes and their fixes:
-
-- **Auth failure (535)** — the mailbox password in Vercel is wrong or was rotated; re-enter `SMTP_PASSWORD` in Vercel and redeploy. Note the password pasted in chat earlier should be rotated anyway.
-- **Sender not allowed (550/553)** — the `From` address must be the authenticated mailbox. The contact form currently sends as `"<visitor name> via DreamozTech" <support@dreamoztech.com>`; if Namecheap rejects that, the display name is dropped and the visitor stays as reply-to only.
-- **Connection timeout / refused** — the 587 STARTTLS fallback from step 2 covers it; if both are blocked, the runtime the function landed on has no outbound SMTP and we would need to revisit (you chose SMTP-only for now, so this would be reported rather than worked around).
-- **Missing variables** — the endpoint lists exactly which ones are absent in Vercel.
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`
+- `MAIL_FROM_EMAIL`, `MAIL_FROM_NAME` (optional; default to the mailbox and "DreamozTech")
 
 ## Notes
 
-- The Lovable preview cannot open SMTP connections at all, so testing must be done against the deployed site.
-- No change to email content, recipients, consent wording, or the sign-up flow beyond the shared sender helper.
+- Sending still won't work in the Lovable preview — there is no Node serverless function there. It works on the deployed Vercel site.
+- Email content, recipients, captcha and marketing-consent wording stay exactly as they are.
 
 ## Technical detail
 
-- New file `src/routes/api/public/email-test.ts` — token check, `nodemailer` dynamically imported inside the handler, `transport.verify()` plus optional `sendMail`, returns JSON with `{ config, verified, error }`; no secret values in the response.
-- `src/lib/mailer.server.ts` — typed error propagation, timeouts, one 587 fallback attempt, structured `console.error`.
-- `src/lib/contact.functions.ts` / `signup.functions.ts` — unchanged call sites.
+- New `api/send-mail.ts` (`export const config = { runtime: "nodejs" }`), copied from the working project: Zod-free manual validation of `to`/`subject`/`htmlContent`/`replyTo`/`attachment`, HMAC-SHA256 `x-mail-secret` header compared with `timingSafeEqual`, `nodemailer.createTransport` from `SMTP_*`, returns `{ ok, messageId }` or a 502 with the SMTP error.
+- `src/lib/mailer.server.ts`: export `getMailConfig()` and `sendMail()`; relay URL from `getRequestUrl()` with a `VERCEL_PROJECT_PRODUCTION_URL` / `VERCEL_URL` fallback; token via `crypto.subtle` HMAC of the same label.
+- `src/lib/contact.functions.ts` and `src/lib/signup.functions.ts`: swap `mailConfig` for `getMailConfig`; no other change.
+- `nodemailer` stays a dependency (now used only by the Node function).
