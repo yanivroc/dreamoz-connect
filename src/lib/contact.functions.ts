@@ -19,12 +19,12 @@ export const sendContactEmail = createServerFn({ method: "POST" })
       throw new Error("Captcha verification failed. Please try again.");
     }
 
-    const { brevoConfig, sendBrevoEmail } = await import("./brevo.server");
+    const { mailConfig, sendMail } = await import("./mailer.server");
     const { getContactInfo } = await import("./dreamoz.server");
 
     const member = await getContactInfo();
     const toEmail = member.memberEmail ?? "support@dreamoztech.com";
-    const config = brevoConfig();
+    const config = mailConfig();
 
     const safe = (s: string) =>
       s.replace(
@@ -35,7 +35,7 @@ export const sendContactEmail = createServerFn({ method: "POST" })
 
     const consentAt = new Date().toISOString();
 
-    await sendBrevoEmail({
+    await sendMail({
       from: { email: config.emailFrom, name: `${data.name} via ${config.fromName}` },
       to: [{ email: toEmail }],
       replyTo: { email: data.email, name: data.name },

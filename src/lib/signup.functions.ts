@@ -52,14 +52,14 @@ export const signUp = createServerFn({ method: "POST" })
     }
 
     try {
-      const { brevoConfig, sendBrevoEmail } = await import("./brevo.server");
-      const config = brevoConfig();
+      const { mailConfig, sendMail } = await import("./mailer.server");
+      const config = mailConfig();
       const safeName = data.name.replace(
         /[&<>"']/g,
         (c) =>
           ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
       );
-      await sendBrevoEmail({
+      await sendMail({
         from: { email: config.emailFrom, name: config.fromName },
         to: [{ email, name: data.name }],
         subject: `Welcome to ${config.fromName}`,
@@ -75,7 +75,7 @@ export const signUp = createServerFn({ method: "POST" })
         const { getContactInfo } = await import("./dreamoz.server");
         const member = await getContactInfo();
         const adminEmail = member.memberEmail?.trim() || "support@dreamoztech.com";
-        await sendBrevoEmail({
+        await sendMail({
           from: { email: config.emailFrom, name: config.fromName },
           to: [{ email: adminEmail }],
           replyTo: { email, name: data.name },
