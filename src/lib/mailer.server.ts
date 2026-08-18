@@ -1,54 +1,110 @@
-// Server-only SMTP configuration & sender (Namecheap Private Email).
-// nodemailer is Node-only, so it is imported dynamically inside the send call.
+// Server-only mail sender.
+// The app runs in an edge runtime that cannot open SMTP connections, so sends
+// are relayed to the same deployment's Node serverless function
+// (api/send-mail.ts) which talks SMTP to Namecheap Private Email.
+// No extra secret: both sides derive the same internal token from SMTP_PASSWORD.
+import { getRequestUrl } from "@tanstack/react-start/server";
 
-export function mailConfig() {
-  const user = process.env["SMTP_USER"]?.trim() || "support@dreamoztech.com";
+type Address = { email: string; name?: string };
+type Attachment = { name: string; content: string }; // content = base64
+
+export function getMailConfig() {
   return {
-    emailFrom: process.env["SMTP_FROM_EMAIL"]?.trim() || user,
-    fromName: process.env["SMTP_FROM_NAME"]?.trim() || "DreamozTech",
+    emailFrom:
+      process.env["MAIL_FROM_EMAIL"]?.trim() ||
+      process.env["SMTP_USER"]?.trim() ||
+      "support@dreamoztech.com",
+    fromName: process.env["MAIL_FROM_NAME"]?.trim() || "DreamozTech",
   };
 }
 
-function addr(a: { email: string; name?: string }) {
-  return a.name ? { name: a.name, address: a.email } : a.email;
+// Backwards-compatible alias.
+export const mailConfig = getMailConfig;
+
+const RELAY_TOKEN_LABEL = "dreamoztech-mail-relay-v1";
+
+async function relayToken(smtpPassword: string) {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(smtpPassword),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const sig = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    new TextEncoder().encode(RELAY_TOKEN_LABEL),
+  );
+  return Array.from(new Uint8Array(sig))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+function relayUrl() {
+  // Same-origin relay on the current deployment.
+  try {
+    const url = getRequestUrl();
+    if (url?.origin && !url.origin.includes("localhost")) {
+      return `${url.origin}/api/send-mail`;
+    }
+  } catch {
+    // no request context (e.g. build time)
+  }
+  const host =
+    process.env["VERCEL_PROJECT_PRODUCTION_URL"]?.trim() ||
+    process.env["VERCEL_URL"]?.trim();
+  return host ? `https://${host.replace(/^https?:\/\//, "")}/api/send-mail` : null;
 }
 
 export async function sendMail(opts: {
-  from: { email: string; name?: string };
-  to: { email: string; name?: string }[];
-  replyTo?: { email: string; name?: string };
+  from: Address;
+  to: Address[];
+  replyTo?: Address;
   subject: string;
   htmlContent: string;
   textContent?: string;
+  attachment?: Attachment[];
 }) {
-  const host = process.env["SMTP_HOST"]?.trim() || "mail.privateemail.com";
-  const user = process.env["SMTP_USER"]?.trim();
-  const pass = process.env["SMTP_PASSWORD"];
-  const port = Number(process.env["SMTP_PORT"]?.trim() || 465);
-  const secureEnv = process.env["SMTP_SECURE"]?.trim().toLowerCase();
-  const secure = secureEnv ? secureEnv === "true" || secureEnv === "1" : port === 465;
+  const smtpPassword = process.env["SMTP_PASSWORD"];
+  const url = relayUrl();
 
-  if (!user || !pass) throw new Error("Email service is not configured.");
-
-  try {
-    const nodemailer = (await import("nodemailer")).default;
-    const transport = nodemailer.createTransport({
-      host,
-      port,
-      secure,
-      auth: { user, pass },
-    });
-
-    return await transport.sendMail({
-      from: addr(opts.from),
-      to: opts.to.map(addr),
-      replyTo: opts.replyTo ? addr(opts.replyTo) : undefined,
-      subject: opts.subject,
-      html: opts.htmlContent,
-      text: opts.textContent,
-    });
-  } catch (err) {
-    console.error("SMTP send failed:", err instanceof Error ? err.message : err);
-    throw new Error("Could not send your message right now. Please try again later.");
+  if (!smtpPassword) {
+    throw new Error("Email sending is not configured (SMTP_PASSWORD is missing).");
   }
+  if (!url) {
+    throw new Error("Email sending is only available on the deployed site.");
+  }
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      "x-mail-secret": await relayToken(smtpPassword),
+    },
+    body: JSON.stringify({
+      // The relay owns the From identity (it must match the SMTP mailbox).
+      to: opts.to,
+      replyTo: opts.replyTo,
+      subject: opts.subject,
+      htmlContent: opts.htmlContent,
+      textContent: opts.textContent,
+      attachment: opts.attachment,
+    }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    console.error("Mail relay failed:", res.status, body);
+    throw new Error(`Email send failed: ${res.status} ${body}`);
+  }
+  return res.json();
+}
+
+// Base64-encode a UTF-8 string in a runtime-agnostic way.
+export function toBase64(str: string) {
+  const bytes = new TextEncoder().encode(str);
+  let binary = "";
+  for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]!);
+  return btoa(binary);
 }
