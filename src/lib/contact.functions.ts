@@ -19,12 +19,12 @@ export const sendContactEmail = createServerFn({ method: "POST" })
       throw new Error("Captcha verification failed. Please try again.");
     }
 
-    const { mailConfig, sendMail } = await import("./mailer.server");
+    const { getMailConfig, sendMail } = await import("./mailer.server");
     const { getContactInfo } = await import("./dreamoz.server");
 
     const member = await getContactInfo();
     const toEmail = member.memberEmail ?? "support@dreamoztech.com";
-    const config = mailConfig();
+    const config = getMailConfig();
 
     const safe = (s: string) =>
       s.replace(

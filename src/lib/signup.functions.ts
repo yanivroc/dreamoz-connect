@@ -52,8 +52,8 @@ export const signUp = createServerFn({ method: "POST" })
     }
 
     try {
-      const { mailConfig, sendMail } = await import("./mailer.server");
-      const config = mailConfig();
+      const { getMailConfig, sendMail } = await import("./mailer.server");
+      const config = getMailConfig();
       const safeName = data.name.replace(
         /[&<>"']/g,
         (c) =>
