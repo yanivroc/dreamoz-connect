@@ -58,7 +58,6 @@ export function formatDateTime(value: string | null | undefined): string {
     year: "numeric",
     hour: "numeric",
     minute: "2-digit",
-    timeZoneName: "short",
   }).format(d);
 }
 
