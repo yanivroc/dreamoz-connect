@@ -30,10 +30,21 @@ const empty: FormState = {
 const inputClass =
   "w-full rounded-lg border border-border/70 bg-background px-3 py-2 text-sm outline-none transition focus:border-primary";
 
-function fmt(value: string) {
+function utcLabel(value: string) {
   if (!value) return "—";
-  const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? value : d.toISOString().slice(0, 16).replace("T", " ");
+  const normalized = /(?:Z|[+-]\d{2}:?\d{2})$/.test(value) ? value : `${value}Z`;
+  const d = new Date(normalized);
+  return Number.isNaN(d.getTime())
+    ? value
+    : `${d.toISOString().slice(0, 16).replace("T", " ")} UTC`;
+}
+
+function LocalTime({ value, hydrated }: { value: string; hydrated: boolean }) {
+  return (
+    <span title={utcLabel(value)}>
+      {hydrated ? formatDateTime(value) : utcLabel(value)}
+    </span>
+  );
 }
 
 export function WebAppsPanel({ isAdmin }: { isAdmin: boolean }) {
