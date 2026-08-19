@@ -143,6 +143,7 @@ export function AppSettingsPanel({ appId }: { appId: number }) {
           className={inputClass}
           type="number"
           min={0}
+          max={1000000}
           step="0.01"
           value={shipping}
           onChange={(e) => setShipping(e.target.value)}
