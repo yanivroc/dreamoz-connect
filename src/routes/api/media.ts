@@ -22,7 +22,8 @@ export const Route = createFileRoute("/api/media")({
           return new Response("Forbidden host", { status: 403 });
         }
 
-        const token = process.env["VERCEL_BLOB_TOKEN"];
+        const token =
+          process.env["VERCEL_BLOB_TOKEN"] || process.env["BLOB_READ_WRITE_TOKEN"];
         const upstream = await fetch(target.toString(), {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
