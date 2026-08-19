@@ -8,6 +8,32 @@ const cors = {
 
 type Row = Record<string, unknown>;
 
+type PageImage = { id: number; alt: string; orderNo: number; url: string };
+
+type PageNode = {
+  id: number;
+  parentId: number | null;
+  orderNo: number;
+  title: string;
+  description: string;
+  seoDescription: string;
+  keywords: string;
+  enabled: boolean;
+  videoUrl: string;
+  videoEmbed: string;
+  product: {
+    enabled: boolean;
+    price: number | null;
+    minQty: number | null;
+    maxQty: number | null;
+    shippingPrice: number | null;
+  };
+  images: PageImage[];
+  createdAt: string;
+  updatedAt: string;
+  children: PageNode[];
+};
+
 function num(v: unknown): number | null {
   if (v === null || v === undefined || v === "") return null;
   const n = Number(v);
@@ -76,10 +102,7 @@ export const Route = createFileRoute("/api/public/wa/webapp")({
           args: [appId],
         });
 
-        const images = new Map<
-          number,
-          { id: number; alt: string; orderNo: number; url: string }[]
-        >();
+        const images = new Map<number, PageImage[]>();
         for (const r of imgRes.rows as unknown as Row[]) {
           const pid = Number(r["page_id"]);
           const list = images.get(pid) ?? [];
@@ -92,7 +115,7 @@ export const Route = createFileRoute("/api/public/wa/webapp")({
           images.set(pid, list);
         }
 
-        const mapPage = (r: Row) => ({
+        const mapPage = (r: Row): PageNode => ({
           id: Number(r["id"]),
           parentId: r["parent_id"] === null || r["parent_id"] === undefined
             ? null
@@ -115,7 +138,7 @@ export const Route = createFileRoute("/api/public/wa/webapp")({
           images: images.get(Number(r["id"])) ?? [],
           createdAt: String(r["created_at"] ?? ""),
           updatedAt: String(r["updated_at"] ?? ""),
-          children: [] as ReturnType<typeof mapPage>[],
+          children: [] as PageNode[],
         });
 
         const all = (pagesRes.rows as unknown as Row[]).map(mapPage);

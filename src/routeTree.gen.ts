@@ -20,6 +20,7 @@ import { Route as PostSlugRouteImport } from './routes/post.$slug'
 import { Route as ApiPublicCacheBustRouteImport } from './routes/api/public/cache-bust'
 import { Route as ApiPublicCacheStatusRouteImport } from './routes/api/public/cache-status'
 import { Route as ApiPublicWaTokenRouteImport } from './routes/api/public/wa/token'
+import { Route as ApiPublicWaWebappRouteImport } from './routes/api/public/wa/webapp'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -76,6 +77,11 @@ const ApiPublicWaTokenRoute = ApiPublicWaTokenRouteImport.update({
   path: '/api/public/wa/token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicWaWebappRoute = ApiPublicWaWebappRouteImport.update({
+  id: '/api/public/wa/webapp',
+  path: '/api/public/wa/webapp',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -89,6 +95,7 @@ export interface FileRoutesByFullPath {
   '/api/public/cache-bust': typeof ApiPublicCacheBustRoute
   '/api/public/cache-status': typeof ApiPublicCacheStatusRoute
   '/api/public/wa/token': typeof ApiPublicWaTokenRoute
+  '/api/public/wa/webapp': typeof ApiPublicWaWebappRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -102,6 +109,7 @@ export interface FileRoutesByTo {
   '/api/public/cache-bust': typeof ApiPublicCacheBustRoute
   '/api/public/cache-status': typeof ApiPublicCacheStatusRoute
   '/api/public/wa/token': typeof ApiPublicWaTokenRoute
+  '/api/public/wa/webapp': typeof ApiPublicWaWebappRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -116,6 +124,7 @@ export interface FileRoutesById {
   '/api/public/cache-bust': typeof ApiPublicCacheBustRoute
   '/api/public/cache-status': typeof ApiPublicCacheStatusRoute
   '/api/public/wa/token': typeof ApiPublicWaTokenRoute
+  '/api/public/wa/webapp': typeof ApiPublicWaWebappRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -131,6 +140,7 @@ export interface FileRouteTypes {
     | '/api/public/cache-bust'
     | '/api/public/cache-status'
     | '/api/public/wa/token'
+    | '/api/public/wa/webapp'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -144,6 +154,7 @@ export interface FileRouteTypes {
     | '/api/public/cache-bust'
     | '/api/public/cache-status'
     | '/api/public/wa/token'
+    | '/api/public/wa/webapp'
   id:
     | '__root__'
     | '/'
@@ -157,6 +168,7 @@ export interface FileRouteTypes {
     | '/api/public/cache-bust'
     | '/api/public/cache-status'
     | '/api/public/wa/token'
+    | '/api/public/wa/webapp'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -171,6 +183,7 @@ export interface RootRouteChildren {
   ApiPublicCacheBustRoute: typeof ApiPublicCacheBustRoute
   ApiPublicCacheStatusRoute: typeof ApiPublicCacheStatusRoute
   ApiPublicWaTokenRoute: typeof ApiPublicWaTokenRoute
+  ApiPublicWaWebappRoute: typeof ApiPublicWaWebappRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -252,6 +265,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWaTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/wa/webapp': {
+      id: '/api/public/wa/webapp'
+      path: '/api/public/wa/webapp'
+      fullPath: '/api/public/wa/webapp'
+      preLoaderRoute: typeof ApiPublicWaWebappRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -267,6 +287,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCacheBustRoute: ApiPublicCacheBustRoute,
   ApiPublicCacheStatusRoute: ApiPublicCacheStatusRoute,
   ApiPublicWaTokenRoute: ApiPublicWaTokenRoute,
+  ApiPublicWaWebappRoute: ApiPublicWaWebappRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
