@@ -340,6 +340,7 @@ export function WebPagesPanel({ appId }: { appId: number }) {
               className={inputClass}
               type="number"
               min={0}
+              max={9999}
               value={form.orderNo}
               onChange={(e) => setForm({ ...form, orderNo: Number(e.target.value) })}
             />
@@ -393,8 +394,9 @@ export function WebPagesPanel({ appId }: { appId: number }) {
           </label>
           <label className="space-y-1.5 text-sm">
             <span className="text-muted-foreground">Keywords (comma separated)</span>
-            <input
-              className={inputClass}
+            <textarea
+              className={`${inputClass} min-h-20`}
+              rows={4}
               maxLength={500}
               value={form.keywords}
               onChange={(e) => setForm({ ...form, keywords: e.target.value })}
@@ -405,8 +407,10 @@ export function WebPagesPanel({ appId }: { appId: number }) {
         <div className="grid gap-4 md:grid-cols-2">
           <label className="space-y-1.5 text-sm">
             <span className="text-muted-foreground">Video link</span>
-            <input
-              className={inputClass}
+            <textarea
+              className={`${inputClass} min-h-20`}
+              rows={3}
+              maxLength={500}
               placeholder="https://youtube.com/…"
               value={form.videoUrl}
               onChange={(e) => setForm({ ...form, videoUrl: e.target.value })}
@@ -451,6 +455,7 @@ export function WebPagesPanel({ appId }: { appId: number }) {
                     className={inputClass}
                     type="number"
                     min={0}
+                    max={1000000}
                     step="0.01"
                     value={form.price}
                     onChange={(e) => setForm({ ...form, price: e.target.value })}
@@ -462,6 +467,7 @@ export function WebPagesPanel({ appId }: { appId: number }) {
                     className={inputClass}
                     type="number"
                     min={0}
+                    max={1000000}
                     step="0.01"
                     value={form.shippingPrice}
                     onChange={(e) => setForm({ ...form, shippingPrice: e.target.value })}
@@ -473,6 +479,8 @@ export function WebPagesPanel({ appId }: { appId: number }) {
                     className={inputClass}
                     type="number"
                     min={0}
+                    max={1000000}
+                    step={1}
                     value={form.minQty}
                     onChange={(e) => setForm({ ...form, minQty: e.target.value })}
                   />
@@ -483,6 +491,8 @@ export function WebPagesPanel({ appId }: { appId: number }) {
                     className={inputClass}
                     type="number"
                     min={0}
+                    max={1000000}
+                    step={1}
                     value={form.maxQty}
                     onChange={(e) => setForm({ ...form, maxQty: e.target.value })}
                   />

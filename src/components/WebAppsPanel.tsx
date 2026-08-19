@@ -149,6 +149,7 @@ export function WebAppsPanel({ isAdmin }: { isAdmin: boolean }) {
             <input
               className={inputClass}
               type="email"
+              maxLength={255}
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
             />
@@ -160,6 +161,7 @@ export function WebAppsPanel({ isAdmin }: { isAdmin: boolean }) {
           <input
             className={inputClass}
             placeholder="https://example.com"
+            maxLength={500}
             value={form.link}
             onChange={(e) => setForm({ ...form, link: e.target.value })}
           />
