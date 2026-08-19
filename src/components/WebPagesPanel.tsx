@@ -41,7 +41,7 @@ const emptyForm: FormState = {
   description: "",
   seoDescription: "",
   keywords: "",
-  enabled: true,
+  enabled: false,
   videoUrl: "",
   videoEmbed: "",
   productEnabled: false,
@@ -383,8 +383,9 @@ export function WebPagesPanel({ appId }: { appId: number }) {
         <div className="grid gap-4 md:grid-cols-2">
           <label className="space-y-1.5 text-sm">
             <span className="text-muted-foreground">SEO description</span>
-            <input
-              className={inputClass}
+            <textarea
+              className={`${inputClass} min-h-20`}
+              rows={4}
               maxLength={300}
               value={form.seoDescription}
               onChange={(e) => setForm({ ...form, seoDescription: e.target.value })}

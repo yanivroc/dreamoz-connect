@@ -24,7 +24,7 @@ const empty: FormState = {
   description: "",
   email: "",
   link: "",
-  enabled: true,
+  enabled: false,
 };
 
 const inputClass =
