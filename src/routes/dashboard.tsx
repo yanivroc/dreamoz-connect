@@ -17,7 +17,10 @@ export const Route = createFileRoute("/dashboard")({
     const overview = await overviewFn();
     return { overview, user: (context as { user: CurrentUser }).user };
   },
-  head: () => ({
+  head: ({ loaderData }) => ({
+    links: loaderData?.overview?.favicon
+      ? [{ rel: "icon", href: loaderData.overview.favicon }]
+      : [],
     meta: [
       { title: "Dashboard | DreamozTech" },
       { name: "robots", content: "noindex, nofollow" },

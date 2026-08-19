@@ -36,6 +36,7 @@ export const Route = createFileRoute("/post/$slug")({
         { name: "twitter:card", content: "summary_large_image" },
         ...(a.metaKey ? [{ name: "keywords", content: a.metaKey }] : []),
       ],
+      links,
     };
   },
   component: PostPage,
