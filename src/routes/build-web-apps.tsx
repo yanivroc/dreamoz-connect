@@ -9,6 +9,7 @@ import { me, type CurrentUser } from "@/lib/auth.functions";
 import { WebAppsPanel } from "@/components/WebAppsPanel";
 import { WebPagesPanel } from "@/components/WebPagesPanel";
 import { AppSettingsPanel } from "@/components/AppSettingsPanel";
+import { ApiPanel } from "@/components/ApiPanel";
 import { listWebApps, type WebApp } from "@/lib/webapps.functions";
 
 export const Route = createFileRoute("/build-web-apps")({
@@ -46,12 +47,13 @@ export const Route = createFileRoute("/build-web-apps")({
   component: BuildWebAppsPage,
 });
 
-type Tab = "apps" | "pages" | "settings";
+type Tab = "apps" | "pages" | "settings" | "api";
 
 const tabs: { id: Tab; label: string }[] = [
   { id: "apps", label: "Web apps" },
   { id: "pages", label: "Build web pages" },
   { id: "settings", label: "General settings" },
+  { id: "api", label: "API" },
 ];
 
 function BuildWebAppsPage() {
@@ -136,6 +138,7 @@ function BuildWebAppsPage() {
         {tab === "settings" && selected !== null && (
           <AppSettingsPanel appId={selected} />
         )}
+        {tab === "api" && selected !== null && <ApiPanel appId={selected} />}
       </section>
     </SiteLayout>
   );
