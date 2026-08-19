@@ -455,6 +455,7 @@ export function WebPagesPanel({ appId }: { appId: number }) {
                     className={inputClass}
                     type="number"
                     min={0}
+                    max={1000000}
                     step="0.01"
                     value={form.price}
                     onChange={(e) => setForm({ ...form, price: e.target.value })}
@@ -466,6 +467,7 @@ export function WebPagesPanel({ appId }: { appId: number }) {
                     className={inputClass}
                     type="number"
                     min={0}
+                    max={1000000}
                     step="0.01"
                     value={form.shippingPrice}
                     onChange={(e) => setForm({ ...form, shippingPrice: e.target.value })}
@@ -477,6 +479,8 @@ export function WebPagesPanel({ appId }: { appId: number }) {
                     className={inputClass}
                     type="number"
                     min={0}
+                    max={1000000}
+                    step={1}
                     value={form.minQty}
                     onChange={(e) => setForm({ ...form, minQty: e.target.value })}
                   />
@@ -487,6 +491,8 @@ export function WebPagesPanel({ appId }: { appId: number }) {
                     className={inputClass}
                     type="number"
                     min={0}
+                    max={1000000}
+                    step={1}
                     value={form.maxQty}
                     onChange={(e) => setForm({ ...form, maxQty: e.target.value })}
                   />
