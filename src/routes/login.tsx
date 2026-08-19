@@ -23,6 +23,7 @@ export const Route = createFileRoute("/login")({
         { property: "og:type", content: "website" },
         { name: "twitter:card", content: "summary_large_image" },
       ],
+      links: loaderData?.favicon ? [{ rel: "icon", href: loaderData.favicon }] : [],
     };
   },
   component: LoginPage,

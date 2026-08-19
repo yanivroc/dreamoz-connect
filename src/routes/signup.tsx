@@ -19,6 +19,7 @@ export const Route = createFileRoute("/signup")({
         { property: "og:type", content: "website" },
         { name: "twitter:card", content: "summary_large_image" },
       ],
+      links: loaderData?.favicon ? [{ rel: "icon", href: loaderData.favicon }] : [],
     };
   },
   component: SignUpPage,

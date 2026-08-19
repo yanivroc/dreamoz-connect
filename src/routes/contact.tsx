@@ -31,6 +31,7 @@ export const Route = createFileRoute("/contact")({
             ]
           : []),
       ],
+      links: loaderData?.favicon ? [{ rel: "icon", href: loaderData.favicon }] : [],
     };
   },
   component: Contact,
