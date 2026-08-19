@@ -36,6 +36,7 @@ export const Route = createFileRoute("/")({
         ? [{ name: "keywords", content: loaderData.member.metaKey.replace(/\s+/g, " ").trim() }]
         : []),
     ],
+    links: loaderData?.favicon ? [{ rel: "icon", href: loaderData.favicon }] : [],
   }),
   component: Home,
 });

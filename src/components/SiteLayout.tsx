@@ -54,15 +54,23 @@ export function SiteLayout({
   }
 
   useEffect(() => {
-    if (!favicon) return;
-    let link = document.querySelector<HTMLLinkElement>("link[rel='icon']");
-    if (!link) {
-      link = document.createElement("link");
+    const href = favicon || logo;
+    if (!href) return;
+    const existing = Array.from(
+      document.querySelectorAll<HTMLLinkElement>("link[rel~='icon']"),
+    );
+    if (existing.length === 0) {
+      const link = document.createElement("link");
       link.rel = "icon";
+      link.href = href;
       document.head.appendChild(link);
+      return;
     }
-    link.href = favicon;
-  }, [favicon]);
+    existing.forEach((link, i) => {
+      if (i === 0) link.href = href;
+      else link.remove();
+    });
+  }, [favicon, logo]);
 
   return (
     <div className="min-h-screen bg-background">

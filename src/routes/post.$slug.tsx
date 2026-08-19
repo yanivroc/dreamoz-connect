@@ -14,12 +14,15 @@ export const Route = createFileRoute("/post/$slug")({
   },
   head: ({ loaderData }) => {
     const a = loaderData?.article;
+    const icon = loaderData?.overview?.favicon;
+    const links = icon ? [{ rel: "icon", href: icon }] : [];
     if (!a) {
       return {
         meta: [
           { title: "Post unavailable — DreamozTech" },
           { name: "robots", content: "noindex" },
         ],
+        links,
       };
     }
     const desc = a.metaDesc || a.plain.slice(0, 155);
@@ -33,6 +36,7 @@ export const Route = createFileRoute("/post/$slug")({
         { name: "twitter:card", content: "summary_large_image" },
         ...(a.metaKey ? [{ name: "keywords", content: a.metaKey }] : []),
       ],
+      links,
     };
   },
   component: PostPage,
