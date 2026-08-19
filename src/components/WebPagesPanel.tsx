@@ -41,7 +41,7 @@ const emptyForm: FormState = {
   description: "",
   seoDescription: "",
   keywords: "",
-  enabled: true,
+  enabled: false,
   videoUrl: "",
   videoEmbed: "",
   productEnabled: false,
