@@ -124,5 +124,16 @@ export async function ensureWebPagesTables(db: Client): Promise<void> {
     default_shipping_price REAL,
     updated_at TEXT NOT NULL
   )`);
+  await db.execute(`CREATE TABLE IF NOT EXISTS web_app_api_keys (
+    app_id INTEGER PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    api_key TEXT NOT NULL,
+    secret_hash TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    rotated_at TEXT
+  )`);
+  await db.execute(
+    `CREATE UNIQUE INDEX IF NOT EXISTS web_app_api_keys_key ON web_app_api_keys (api_key)`,
+  );
   webPagesReady = true;
 }
