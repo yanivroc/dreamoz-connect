@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ import {
   toggleWebApp,
   type WebApp,
 } from "@/lib/webapps.functions";
+import { formatDateTime } from "@/lib/format";
 
 type FormState = {
   title: string;
@@ -30,10 +31,21 @@ const empty: FormState = {
 const inputClass =
   "w-full rounded-lg border border-border/70 bg-background px-3 py-2 text-sm outline-none transition focus:border-primary";
 
-function fmt(value: string) {
+function utcLabel(value: string) {
   if (!value) return "—";
-  const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? value : d.toISOString().slice(0, 16).replace("T", " ");
+  const normalized = /(?:Z|[+-]\d{2}:?\d{2})$/.test(value) ? value : `${value}Z`;
+  const d = new Date(normalized);
+  return Number.isNaN(d.getTime())
+    ? value
+    : `${d.toISOString().slice(0, 16).replace("T", " ")} UTC`;
+}
+
+function LocalTime({ value, hydrated }: { value: string; hydrated: boolean }) {
+  return (
+    <span title={utcLabel(value)}>
+      {hydrated ? formatDateTime(value) : utcLabel(value)}
+    </span>
+  );
 }
 
 export function WebAppsPanel({ isAdmin }: { isAdmin: boolean }) {
@@ -48,6 +60,8 @@ export function WebAppsPanel({ isAdmin }: { isAdmin: boolean }) {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [busy, setBusy] = useState<number | null>(null);
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
 
   const { data, isLoading, error } = useQuery<WebApp[]>({
     queryKey: ["web-apps"],
@@ -266,11 +280,11 @@ export function WebAppsPanel({ isAdmin }: { isAdmin: boolean }) {
                 )}
                 <div className="flex justify-between gap-3">
                   <dt className="text-muted-foreground">Created</dt>
-                  <dd>{fmt(app.createdAt)}</dd>
+                  <dd><LocalTime value={app.createdAt} hydrated={hydrated} /></dd>
                 </div>
                 <div className="flex justify-between gap-3">
                   <dt className="text-muted-foreground">Updated</dt>
-                  <dd>{fmt(app.updatedAt)}</dd>
+                  <dd><LocalTime value={app.updatedAt} hydrated={hydrated} /></dd>
                 </div>
               </dl>
 

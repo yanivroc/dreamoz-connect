@@ -46,6 +46,22 @@ export function formatDate(value: string | null | undefined): string {
 }
 
 
+/** Formats a stored UTC timestamp in the viewer's own locale/timezone (DST-aware). */
+export function formatDateTime(value: string | null | undefined): string {
+  if (!value) return "—";
+  const normalized = /(?:Z|[+-]\d{2}:?\d{2})$/.test(value) ? value : `${value}Z`;
+  const d = new Date(normalized);
+  if (Number.isNaN(d.getTime())) return value;
+  return new Intl.DateTimeFormat(undefined, {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZoneName: "short",
+  }).format(d);
+}
+
 export function brandName(memberFullName: string | null | undefined): string {
   const cleaned = (memberFullName ?? "").replace(/\s+/g, "");
   return cleaned || "DreamozTech";
