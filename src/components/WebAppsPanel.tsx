@@ -10,6 +10,7 @@ import {
   toggleWebApp,
   type WebApp,
 } from "@/lib/webapps.functions";
+import { formatDateTime } from "@/lib/format";
 
 type FormState = {
   title: string;
@@ -59,6 +60,8 @@ export function WebAppsPanel({ isAdmin }: { isAdmin: boolean }) {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [busy, setBusy] = useState<number | null>(null);
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
 
   const { data, isLoading, error } = useQuery<WebApp[]>({
     queryKey: ["web-apps"],
@@ -277,11 +280,11 @@ export function WebAppsPanel({ isAdmin }: { isAdmin: boolean }) {
                 )}
                 <div className="flex justify-between gap-3">
                   <dt className="text-muted-foreground">Created</dt>
-                  <dd>{fmt(app.createdAt)}</dd>
+                  <dd><LocalTime value={app.createdAt} hydrated={hydrated} /></dd>
                 </div>
                 <div className="flex justify-between gap-3">
                   <dt className="text-muted-foreground">Updated</dt>
-                  <dd>{fmt(app.updatedAt)}</dd>
+                  <dd><LocalTime value={app.updatedAt} hydrated={hydrated} /></dd>
                 </div>
               </dl>
 
