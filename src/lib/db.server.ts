@@ -69,3 +69,60 @@ export async function ensureWebAppsTable(db: Client): Promise<void> {
   );
   webAppsReady = true;
 }
+
+let webPagesReady = false;
+
+export async function ensureWebPagesTables(db: Client): Promise<void> {
+  if (webPagesReady) return;
+  await db.execute(`CREATE TABLE IF NOT EXISTS web_pages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    app_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    parent_id INTEGER,
+    order_no INTEGER NOT NULL DEFAULT 0,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    seo_description TEXT NOT NULL DEFAULT '',
+    keywords TEXT NOT NULL DEFAULT '',
+    enabled INTEGER NOT NULL DEFAULT 1,
+    video_url TEXT NOT NULL DEFAULT '',
+    video_embed TEXT NOT NULL DEFAULT '',
+    product_enabled INTEGER NOT NULL DEFAULT 0,
+    price REAL,
+    min_qty INTEGER,
+    max_qty INTEGER,
+    shipping_price REAL,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  )`);
+  await db.execute(
+    `CREATE INDEX IF NOT EXISTS web_pages_app ON web_pages (app_id)`,
+  );
+  await db.execute(
+    `CREATE INDEX IF NOT EXISTS web_pages_parent ON web_pages (parent_id)`,
+  );
+  await db.execute(`CREATE TABLE IF NOT EXISTS web_page_images (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    page_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    mime TEXT NOT NULL,
+    data TEXT NOT NULL,
+    alt TEXT NOT NULL DEFAULT '',
+    order_no INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL
+  )`);
+  await db.execute(
+    `CREATE INDEX IF NOT EXISTS web_page_images_page ON web_page_images (page_id)`,
+  );
+  await db.execute(`CREATE TABLE IF NOT EXISTS web_app_settings (
+    app_id INTEGER PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    logo_mime TEXT,
+    logo_data TEXT,
+    favicon_mime TEXT,
+    favicon_data TEXT,
+    default_shipping_price REAL,
+    updated_at TEXT NOT NULL
+  )`);
+  webPagesReady = true;
+}
