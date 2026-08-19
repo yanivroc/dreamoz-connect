@@ -75,6 +75,20 @@ function DashboardPage() {
           </dl>
         </div>
 
+        <div className="max-w-xl rounded-2xl border border-border/60 bg-surface/40 p-6 shadow-card">
+          <h2 className="text-xl font-semibold">Build Web Apps</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Create web apps, build their pages and sub pages, and manage logo,
+            favicon and shipping settings.
+          </p>
+          <Link
+            to="/build-web-apps"
+            className="mt-4 inline-block rounded-full bg-gradient-accent px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-card transition hover:opacity-90"
+          >
+            Open builder
+          </Link>
+        </div>
+
         {user.role === "admin" && (
           <div className="space-y-4">
             <h2 className="text-xl font-semibold">Users</h2>
