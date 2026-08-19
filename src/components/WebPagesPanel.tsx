@@ -394,8 +394,9 @@ export function WebPagesPanel({ appId }: { appId: number }) {
           </label>
           <label className="space-y-1.5 text-sm">
             <span className="text-muted-foreground">Keywords (comma separated)</span>
-            <input
-              className={inputClass}
+            <textarea
+              className={`${inputClass} min-h-20`}
+              rows={4}
               maxLength={500}
               value={form.keywords}
               onChange={(e) => setForm({ ...form, keywords: e.target.value })}
@@ -406,8 +407,10 @@ export function WebPagesPanel({ appId }: { appId: number }) {
         <div className="grid gap-4 md:grid-cols-2">
           <label className="space-y-1.5 text-sm">
             <span className="text-muted-foreground">Video link</span>
-            <input
-              className={inputClass}
+            <textarea
+              className={`${inputClass} min-h-20`}
+              rows={3}
+              maxLength={500}
               placeholder="https://youtube.com/…"
               value={form.videoUrl}
               onChange={(e) => setForm({ ...form, videoUrl: e.target.value })}
