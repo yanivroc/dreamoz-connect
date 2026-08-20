@@ -114,6 +114,11 @@ export async function ensureWebPagesTables(db: Client): Promise<void> {
   await db.execute(
     `CREATE INDEX IF NOT EXISTS web_page_images_page ON web_page_images (page_id)`,
   );
+  try {
+    await db.execute(`ALTER TABLE web_pages ADD COLUMN hyperlink TEXT NOT NULL DEFAULT ''`);
+  } catch {
+    // Column already exists.
+  }
   await db.execute(`CREATE TABLE IF NOT EXISTS web_app_settings (
     app_id INTEGER PRIMARY KEY,
     user_id INTEGER NOT NULL,
@@ -121,9 +126,31 @@ export async function ensureWebPagesTables(db: Client): Promise<void> {
     logo_data TEXT,
     favicon_mime TEXT,
     favicon_data TEXT,
-    default_shipping_price REAL,
     updated_at TEXT NOT NULL
   )`);
+  try {
+    await db.execute(`ALTER TABLE web_app_settings DROP COLUMN default_shipping_price`);
+  } catch {
+    // Column already dropped (or unsupported); ignored.
+  }
+  await db.execute(`CREATE TABLE IF NOT EXISTS web_app_shipping_rates (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    app_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    rate_type TEXT NOT NULL,
+    threshold REAL NOT NULL,
+    rate REAL NOT NULL,
+    currency TEXT NOT NULL DEFAULT 'AUD',
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  )`);
+  await db.execute(
+    `CREATE INDEX IF NOT EXISTS web_app_shipping_rates_app ON web_app_shipping_rates (app_id)`,
+  );
+  await db.execute(
+    `CREATE UNIQUE INDEX IF NOT EXISTS web_app_shipping_rates_unique
+       ON web_app_shipping_rates (app_id, rate_type, threshold)`,
+  );
   await db.execute(`CREATE TABLE IF NOT EXISTS web_app_api_keys (
     app_id INTEGER PRIMARY KEY,
     user_id INTEGER NOT NULL,

@@ -9,9 +9,6 @@ import {
 } from "@/lib/webpages.functions";
 import { encodeImage, imageSrc } from "@/lib/image-upload";
 
-const inputClass =
-  "w-full rounded-lg border border-border/70 bg-background px-3 py-2 text-sm outline-none transition focus:border-primary";
-
 type Media = { mime: string; data: string } | null;
 
 export function AppSettingsPanel({ appId }: { appId: number }) {
@@ -21,7 +18,6 @@ export function AppSettingsPanel({ appId }: { appId: number }) {
 
   const [logo, setLogo] = useState<Media>(null);
   const [favicon, setFavicon] = useState<Media>(null);
-  const [shipping, setShipping] = useState("");
   const [saving, setSaving] = useState(false);
 
   const { data, isLoading, error } = useQuery<AppSettings>({
@@ -33,7 +29,6 @@ export function AppSettingsPanel({ appId }: { appId: number }) {
     if (!data) return;
     setLogo(data.logo);
     setFavicon(data.favicon);
-    setShipping(data.defaultShippingPrice?.toString() ?? "");
   }, [data]);
 
   async function pick(file: File | undefined, set: (m: Media) => void, max: number) {
@@ -54,7 +49,6 @@ export function AppSettingsPanel({ appId }: { appId: number }) {
           appId,
           logo,
           favicon,
-          defaultShippingPrice: shipping.trim() === "" ? null : Number(shipping),
         },
       });
       toast.success("Settings saved.");
@@ -137,18 +131,6 @@ export function AppSettingsPanel({ appId }: { appId: number }) {
         </div>
       </div>
 
-      <label className="block space-y-1.5 text-sm">
-        <span className="text-muted-foreground">Default shipping price (optional)</span>
-        <input
-          className={inputClass}
-          type="number"
-          min={0}
-          max={1000000}
-          step="0.01"
-          value={shipping}
-          onChange={(e) => setShipping(e.target.value)}
-        />
-      </label>
 
       <button
         type="submit"

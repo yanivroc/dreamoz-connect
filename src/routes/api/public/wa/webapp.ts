@@ -21,6 +21,7 @@ type PageNode = {
   enabled: boolean;
   videoUrl: string;
   videoEmbed: string;
+  hyperlink: string;
   product: {
     enabled: boolean;
     price: number | null;
@@ -128,6 +129,7 @@ export const Route = createFileRoute("/api/public/wa/webapp")({
           enabled: Number(r["enabled"] ?? 0) === 1,
           videoUrl: String(r["video_url"] ?? ""),
           videoEmbed: String(r["video_embed"] ?? ""),
+          hyperlink: String(r["hyperlink"] ?? ""),
           product: {
             enabled: Number(r["product_enabled"] ?? 0) === 1,
             price: num(r["price"]),
@@ -152,6 +154,19 @@ export const Route = createFileRoute("/api/public/wa/webapp")({
           }
         }
 
+        const ratesRes = await db.execute({
+          sql: `SELECT rate_type, threshold, rate, currency
+                FROM web_app_shipping_rates WHERE app_id = ?
+                ORDER BY rate_type ASC, threshold ASC`,
+          args: [appId],
+        });
+        const shippingRates = (ratesRes.rows as unknown as Row[]).map((r) => ({
+          type: String(r["rate_type"] ?? "qty"),
+          threshold: Number(r["threshold"] ?? 0),
+          rate: Number(r["rate"] ?? 0),
+          currency: String(r["currency"] ?? "AUD"),
+        }));
+
         const logoData = s?.["logo_data"] ? String(s["logo_data"]) : "";
         const favData = s?.["favicon_data"] ? String(s["favicon_data"]) : "";
 
@@ -174,7 +189,10 @@ export const Route = createFileRoute("/api/public/wa/webapp")({
               favicon: favData
                 ? `data:${String(s?.["favicon_mime"] ?? "")};base64,${favData}`
                 : null,
-              defaultShippingPrice: num(s?.["default_shipping_price"]),
+            },
+            shippingRates: {
+              byQuantity: shippingRates.filter((r) => r.type === "qty"),
+              byAmount: shippingRates.filter((r) => r.type === "amount"),
             },
             pages: roots,
           },
