@@ -21,6 +21,7 @@ export type WebPage = {
   enabled: boolean;
   videoUrl: string;
   videoEmbed: string;
+  hyperlink: string;
   productEnabled: boolean;
   price: number | null;
   minQty: number | null;
@@ -35,7 +36,23 @@ export type AppSettings = {
   appId: number;
   logo: { mime: string; data: string } | null;
   favicon: { mime: string; data: string } | null;
-  defaultShippingPrice: number | null;
+};
+
+export type ShippingRateType = "qty" | "amount";
+
+export type ShippingRate = {
+  id: number;
+  rateType: ShippingRateType;
+  threshold: number;
+  rate: number;
+  currency: string;
+};
+
+export type ShippingRatesResult = {
+  appId: number;
+  hasProducts: boolean;
+  currency: string;
+  rates: ShippingRate[];
 };
 
 const MAX_BASE64 = 1_400_000;
@@ -117,6 +134,7 @@ function mapPage(r: unknown): WebPage {
     enabled: Number(row["enabled"] ?? 1) === 1,
     videoUrl: String(row["video_url"] ?? ""),
     videoEmbed: String(row["video_embed"] ?? ""),
+    hyperlink: String(row["hyperlink"] ?? ""),
     productEnabled: Number(row["product_enabled"] ?? 0) === 1,
     price: num(row["price"]),
     minQty: num(row["min_qty"]),
@@ -145,6 +163,14 @@ const pageShape = {
       message: "Video link must start with http:// or https://",
     }),
   videoEmbed: z.string().trim().max(4000),
+  hyperlink: z
+    .string()
+    .trim()
+    .max(500)
+    .default("")
+    .refine((v) => v === "" || /^https?:\/\/\S+$/i.test(v), {
+      message: "Hyperlink must start with http:// or https://",
+    }),
   productEnabled: z.boolean(),
   price: z.coerce.number().min(0).max(1_000_000).nullable().optional(),
   minQty: z.coerce.number().int().min(0).max(1_000_000).nullable().optional(),
@@ -231,9 +257,9 @@ export const createWebPage = createServerFn({ method: "POST" })
     const now = new Date().toISOString();
     const res = await ctx.db.execute({
       sql: `INSERT INTO web_pages (app_id, user_id, parent_id, order_no, title, description,
-              seo_description, keywords, enabled, video_url, video_embed, product_enabled,
-              price, min_qty, max_qty, shipping_price, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              seo_description, keywords, enabled, video_url, video_embed, hyperlink,
+              product_enabled, price, min_qty, max_qty, shipping_price, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         data.appId,
         ownerId,
@@ -246,6 +272,7 @@ export const createWebPage = createServerFn({ method: "POST" })
         data.enabled ? 1 : 0,
         data.videoUrl,
         data.videoEmbed,
+        data.hyperlink,
         p.productEnabled ? 1 : 0,
         p.price,
         p.minQty,
@@ -273,7 +300,7 @@ export const updateWebPage = createServerFn({ method: "POST" })
     await ctx.db.execute({
       sql: `UPDATE web_pages SET parent_id = ?, order_no = ?, title = ?, description = ?,
               seo_description = ?, keywords = ?, enabled = ?, video_url = ?, video_embed = ?,
-              product_enabled = ?, price = ?, min_qty = ?, max_qty = ?, shipping_price = ?,
+              hyperlink = ?, product_enabled = ?, price = ?, min_qty = ?, max_qty = ?, shipping_price = ?,
               updated_at = ?
             WHERE id = ?`,
       args: [
@@ -286,6 +313,7 @@ export const updateWebPage = createServerFn({ method: "POST" })
         data.enabled ? 1 : 0,
         data.videoUrl,
         data.videoEmbed,
+        data.hyperlink,
         p.productEnabled ? 1 : 0,
         p.price,
         p.minQty,
@@ -424,7 +452,7 @@ export const getAppSettings = createServerFn({ method: "GET" })
     });
     const row = res.rows[0] as Record<string, unknown> | undefined;
     if (!row) {
-      return { appId: data.appId, logo: null, favicon: null, defaultShippingPrice: null };
+      return { appId: data.appId, logo: null, favicon: null };
     }
     const logoData = row["logo_data"] ? String(row["logo_data"]) : "";
     const favData = row["favicon_data"] ? String(row["favicon_data"]) : "";
@@ -434,7 +462,6 @@ export const getAppSettings = createServerFn({ method: "GET" })
       favicon: favData
         ? { mime: String(row["favicon_mime"] ?? ""), data: favData }
         : null,
-      defaultShippingPrice: num(row["default_shipping_price"]),
     };
   });
 
@@ -457,12 +484,6 @@ export const saveAppSettings = createServerFn({ method: "POST" })
           })
           .nullable()
           .optional(),
-        defaultShippingPrice: z.coerce
-          .number()
-          .min(0)
-          .max(1_000_000)
-          .nullable()
-          .optional(),
       })
       .parse(input),
   )
@@ -472,14 +493,13 @@ export const saveAppSettings = createServerFn({ method: "POST" })
     const now = new Date().toISOString();
     await ctx.db.execute({
       sql: `INSERT INTO web_app_settings (app_id, user_id, logo_mime, logo_data,
-              favicon_mime, favicon_data, default_shipping_price, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+              favicon_mime, favicon_data, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(app_id) DO UPDATE SET
               logo_mime = excluded.logo_mime,
               logo_data = excluded.logo_data,
               favicon_mime = excluded.favicon_mime,
               favicon_data = excluded.favicon_data,
-              default_shipping_price = excluded.default_shipping_price,
               updated_at = excluded.updated_at`,
       args: [
         data.appId,
@@ -488,9 +508,100 @@ export const saveAppSettings = createServerFn({ method: "POST" })
         data.logo?.data ?? null,
         data.favicon?.mime ?? null,
         data.favicon?.data ?? null,
-        data.defaultShippingPrice ?? null,
         now,
       ],
     });
+    return { ok: true as const };
+  });
+
+async function appHasProducts(ctx: Ctx, appId: number): Promise<boolean> {
+  const res = await ctx.db.execute({
+    sql: "SELECT COUNT(*) AS n FROM web_pages WHERE app_id = ? AND product_enabled = 1",
+    args: [appId],
+  });
+  const row = res.rows[0] as unknown as Record<string, unknown> | undefined;
+  return Number(row?.["n"] ?? 0) > 0;
+}
+
+export const listShippingRates = createServerFn({ method: "GET" })
+  .inputValidator((input: unknown) =>
+    z.object({ appId: z.coerce.number().int() }).parse(input),
+  )
+  .handler(async ({ data }): Promise<ShippingRatesResult> => {
+    const ctx = await requireUser();
+    await assertApp(ctx, data.appId);
+    const hasProducts = await appHasProducts(ctx, data.appId);
+    const res = await ctx.db.execute({
+      sql: `SELECT * FROM web_app_shipping_rates WHERE app_id = ?
+            ORDER BY rate_type ASC, threshold ASC`,
+      args: [data.appId],
+    });
+    const rates = res.rows.map((r) => {
+      const row = r as unknown as Record<string, unknown>;
+      return {
+        id: Number(row["id"]),
+        rateType: (String(row["rate_type"]) === "amount" ? "amount" : "qty") as ShippingRateType,
+        threshold: Number(row["threshold"] ?? 0),
+        rate: Number(row["rate"] ?? 0),
+        currency: String(row["currency"] ?? "AUD"),
+      };
+    });
+    return {
+      appId: data.appId,
+      hasProducts,
+      currency: rates[0]?.currency ?? "AUD",
+      rates,
+    };
+  });
+
+export const saveShippingRates = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        appId: z.coerce.number().int(),
+        currency: z.string().trim().length(3).default("AUD"),
+        rates: z
+          .array(
+            z.object({
+              rateType: z.enum(["qty", "amount"]),
+              threshold: z.coerce.number().min(0).max(1_000_000),
+              rate: z.coerce.number().min(0).max(1_000_000),
+            }),
+          )
+          .max(200),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const ctx = await requireUser();
+    const ownerId = await assertApp(ctx, data.appId);
+    if (!(await appHasProducts(ctx, data.appId))) {
+      throw new Error("No products are configured, setup product to create shipping rates.");
+    }
+    const seen = new Set<string>();
+    for (const r of data.rates) {
+      const key = `${r.rateType}:${r.threshold}`;
+      if (seen.has(key)) {
+        throw new Error(
+          r.rateType === "qty"
+            ? `Duplicate quantity ${r.threshold} in the quantity rates.`
+            : `Duplicate amount ${r.threshold} in the amount rates.`,
+        );
+      }
+      seen.add(key);
+    }
+    const now = new Date().toISOString();
+    await ctx.db.execute({
+      sql: "DELETE FROM web_app_shipping_rates WHERE app_id = ?",
+      args: [data.appId],
+    });
+    for (const r of data.rates) {
+      await ctx.db.execute({
+        sql: `INSERT INTO web_app_shipping_rates
+                (app_id, user_id, rate_type, threshold, rate, currency, created_at, updated_at)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        args: [data.appId, ownerId, r.rateType, r.threshold, r.rate, data.currency, now, now],
+      });
+    }
     return { ok: true as const };
   });
