@@ -137,18 +137,6 @@ export function AppSettingsPanel({ appId }: { appId: number }) {
         </div>
       </div>
 
-      <label className="block space-y-1.5 text-sm">
-        <span className="text-muted-foreground">Default shipping price (optional)</span>
-        <input
-          className={inputClass}
-          type="number"
-          min={0}
-          max={1000000}
-          step="0.01"
-          value={shipping}
-          onChange={(e) => setShipping(e.target.value)}
-        />
-      </label>
 
       <button
         type="submit"
