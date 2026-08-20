@@ -9,7 +9,7 @@ Add an optional "Hyperlink" field to the Add/Edit web page form, stored with the
 
 ## 2. Shipping rates
 
-- Remove "Default shipping price (optional)" from General settings (field stays in the database, no longer edited or used by the UI).
+- Remove "Default shipping price (optional)" from General settings and drop the `default_shipping_price` column from the database.
 - New tab after General settings: **Shipping rates**.
 - If the selected web app has no page with products enabled, the tab shows only:
   "No products are configured, setup product to create shipping rates".
