@@ -9,6 +9,7 @@ import { me, type CurrentUser } from "@/lib/auth.functions";
 import { WebAppsPanel } from "@/components/WebAppsPanel";
 import { WebPagesPanel } from "@/components/WebPagesPanel";
 import { AppSettingsPanel } from "@/components/AppSettingsPanel";
+import { ShippingRatesPanel } from "@/components/ShippingRatesPanel";
 import { ApiPanel } from "@/components/ApiPanel";
 import { listWebApps, type WebApp } from "@/lib/webapps.functions";
 
@@ -47,12 +48,13 @@ export const Route = createFileRoute("/build-web-apps")({
   component: BuildWebAppsPage,
 });
 
-type Tab = "apps" | "pages" | "settings" | "api";
+type Tab = "apps" | "pages" | "settings" | "shipping" | "api";
 
 const tabs: { id: Tab; label: string }[] = [
   { id: "apps", label: "Web apps" },
   { id: "pages", label: "Build web pages" },
   { id: "settings", label: "General settings" },
+  { id: "shipping", label: "Shipping rates" },
   { id: "api", label: "API" },
 ];
 
@@ -137,6 +139,9 @@ function BuildWebAppsPage() {
         {tab === "pages" && selected !== null && <WebPagesPanel appId={selected} />}
         {tab === "settings" && selected !== null && (
           <AppSettingsPanel appId={selected} />
+        )}
+        {tab === "shipping" && selected !== null && (
+          <ShippingRatesPanel appId={selected} />
         )}
         {tab === "api" && selected !== null && <ApiPanel appId={selected} />}
       </section>

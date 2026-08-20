@@ -27,6 +27,7 @@ type FormState = {
   enabled: boolean;
   videoUrl: string;
   videoEmbed: string;
+  hyperlink: string;
   productEnabled: boolean;
   price: string;
   minQty: string;
@@ -44,6 +45,7 @@ const emptyForm: FormState = {
   enabled: false,
   videoUrl: "",
   videoEmbed: "",
+  hyperlink: "",
   productEnabled: false,
   price: "",
   minQty: "",
@@ -106,6 +108,7 @@ export function WebPagesPanel({ appId }: { appId: number }) {
       enabled: page.enabled,
       videoUrl: page.videoUrl,
       videoEmbed: page.videoEmbed,
+      hyperlink: page.hyperlink,
       productEnabled: page.productEnabled,
       price: page.price?.toString() ?? "",
       minQty: page.minQty?.toString() ?? "",
@@ -132,6 +135,7 @@ export function WebPagesPanel({ appId }: { appId: number }) {
       enabled: form.enabled,
       videoUrl: form.videoUrl,
       videoEmbed: form.videoEmbed,
+      hyperlink: form.hyperlink,
       productEnabled: form.parentId !== null && form.productEnabled,
       price: numOrNull(form.price),
       minQty: numOrNull(form.minQty),
@@ -426,6 +430,18 @@ export function WebPagesPanel({ appId }: { appId: number }) {
             />
           </label>
         </div>
+
+        <label className="block space-y-1.5 text-sm">
+          <span className="text-muted-foreground">Hyperlink (optional)</span>
+          <input
+            className={inputClass}
+            type="url"
+            maxLength={500}
+            placeholder="https://example.com/page"
+            value={form.hyperlink}
+            onChange={(e) => setForm({ ...form, hyperlink: e.target.value })}
+          />
+        </label>
 
         <label className="flex items-center gap-2 text-sm">
           <input
