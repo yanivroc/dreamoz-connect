@@ -168,15 +168,16 @@ export function WebAppsPanel({ isAdmin }: { isAdmin: boolean }) {
           />
         </label>
 
-        <div className="block space-y-1.5 text-sm">
+        <label className="block space-y-1.5 text-sm">
           <span className="text-muted-foreground">Description</span>
-          <RichTextEditor
+          <textarea
+            className={`${inputClass} min-h-32 resize-y`}
             value={form.description}
-            appId={editingId}
-            onChange={(html: string) => setForm({ ...form, description: html })}
-            placeholder="Format text, insert images or attach a PDF (max 1MB each)."
+            maxLength={4000}
+            rows={6}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
           />
-        </div>
+        </label>
 
         <label className="flex items-center gap-2 text-sm">
           <input
