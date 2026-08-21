@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -76,6 +76,7 @@ export function WebPagesPanel({ appId }: { appId: number }) {
   const [saving, setSaving] = useState(false);
   const [dragId, setDragId] = useState<number | null>(null);
   const [imgDragId, setImgDragId] = useState<number | null>(null);
+  const [orderTouched, setOrderTouched] = useState(false);
   const [links, setLinks] = useState<Record<number, string>>({});
 
   const { data, isLoading, error } = useQuery<WebPage[]>({
