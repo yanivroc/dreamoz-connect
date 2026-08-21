@@ -372,10 +372,13 @@ export function WebPagesPanel({ appId }: { appId: number }) {
             <input
               className={inputClass}
               type="number"
-              min={0}
+              min={1}
               max={9999}
               value={form.orderNo}
-              onChange={(e) => setForm({ ...form, orderNo: Number(e.target.value) })}
+              onChange={(e) => {
+                setOrderTouched(true);
+                setForm({ ...form, orderNo: Number(e.target.value) });
+              }}
             />
           </label>
         </div>
