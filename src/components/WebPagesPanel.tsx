@@ -293,7 +293,7 @@ export function WebPagesPanel({ appId }: { appId: number }) {
     return (
       <div
         key={page.id}
-        className={`rounded-2xl border border-border/60 bg-surface/40 p-5 shadow-card ${
+        className={`rounded-2xl border border-border/60 bg-surface/40 px-5 py-3 shadow-card ${
           isChild ? "ml-6 border-dashed" : ""
         }`}
         draggable={!isChild}
@@ -301,14 +301,15 @@ export function WebPagesPanel({ appId }: { appId: number }) {
         onDragOver={(e) => !isChild && e.preventDefault()}
         onDrop={() => !isChild && onDrop(page.id)}
       >
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h3 className="text-lg font-semibold">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h3 className="truncate text-base font-semibold">
               {!isChild && <span className="mr-2 cursor-grab text-muted-foreground">⠿</span>}
               {page.title}
             </h3>
             <p className="text-xs text-muted-foreground">
               Order {page.orderNo}
+              {page.images.length > 0 ? ` · ${page.images.length} image(s)` : ""}
               {page.productEnabled && page.price !== null
                 ? ` · Product · ${page.price}`
                 : ""}
@@ -341,48 +342,6 @@ export function WebPagesPanel({ appId }: { appId: number }) {
           </div>
         </div>
 
-        {page.description && (
-          <div
-            className="prose-site mt-3 max-w-none text-sm text-muted-foreground [&_img]:max-w-full"
-            dangerouslySetInnerHTML={{ __html: page.description }}
-          />
-        )}
-
-        {page.images.length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-3">
-            {page.images.map((img) => (
-              <div key={img.id} className="relative">
-                <img
-                  src={imageSrc(img)}
-                  alt={img.alt || page.title}
-                  className="h-20 w-28 rounded-lg object-cover"
-                  loading="lazy"
-                />
-                <button
-                  type="button"
-                  onClick={() => onRemoveImage(img.id)}
-                  className="absolute -right-2 -top-2 rounded-full border border-border bg-background px-2 text-xs"
-                  aria-label="Remove image"
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <label className="mt-4 block text-xs text-muted-foreground">
-          Add image
-          <input
-            type="file"
-            accept="image/png,image/jpeg,image/webp,image/svg+xml"
-            className="mt-1 block w-full text-xs"
-            onChange={(e) => {
-              void onUpload(page.id, e.target.files?.[0]);
-              e.target.value = "";
-            }}
-          />
-        </label>
       </div>
     );
   }
