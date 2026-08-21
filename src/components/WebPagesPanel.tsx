@@ -550,6 +550,74 @@ export function WebPagesPanel({ appId }: { appId: number }) {
           </div>
         )}
 
+        <div className="space-y-3 rounded-xl border border-border/60 p-4">
+          <div className="flex items-center justify-between gap-3">
+            <h4 className="text-sm font-semibold">Images ({editingImages.length}/{MAX_IMAGES})</h4>
+            {editingImages.length > 1 && (
+              <span className="text-xs text-muted-foreground">Drag to reorder</span>
+            )}
+          </div>
+
+          {editingId === null ? (
+            <p className="text-xs text-muted-foreground">
+              Save the page first, then attach images here.
+            </p>
+          ) : (
+            <>
+              <div className="space-y-3">
+                {editingImages.map((img) => (
+                  <div
+                    key={img.id}
+                    draggable
+                    onDragStart={() => setImgDragId(img.id)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={() => void onDropImage(img.id)}
+                    className="flex flex-wrap items-center gap-3 rounded-lg border border-border/60 bg-background/40 p-2"
+                  >
+                    <span className="cursor-grab text-muted-foreground">⠿</span>
+                    <img
+                      src={imageSrc(img)}
+                      alt={img.alt}
+                      className="h-16 w-24 rounded-md object-cover"
+                      loading="lazy"
+                    />
+                    <input
+                      className={`${inputClass} min-w-[14rem] flex-1`}
+                      placeholder="Hyperlink (optional)"
+                      maxLength={500}
+                      value={links[img.id] ?? img.hyperlink}
+                      onChange={(e) => setLinks({ ...links, [img.id]: e.target.value })}
+                      onBlur={() => void onSaveImageLink(img)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => void onRemoveImage(img.id)}
+                      className="rounded-full border border-destructive/50 px-3 py-1 text-xs text-destructive transition hover:bg-destructive/10"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {editingImages.length < MAX_IMAGES && (
+                <label className="block text-xs text-muted-foreground">
+                  Add image
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                    className="mt-1 block w-full text-xs"
+                    onChange={(e) => {
+                      void onUpload(editingId, e.target.files?.[0]);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+              )}
+            </>
+          )}
+        </div>
+
         <div className="flex flex-wrap gap-3">
           <button
             type="submit"
