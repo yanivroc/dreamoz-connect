@@ -151,7 +151,7 @@ const pageShape = {
   parentId: z.coerce.number().int().nullable().optional(),
   orderNo: z.coerce.number().int().min(0).max(9999).default(0),
   title: z.string().trim().min(1, "Page title is required.").max(200),
-  description: z.string().trim().max(4000),
+  description: z.string().trim().max(20000).transform(sanitizeHtml),
   seoDescription: z.string().trim().max(300),
   keywords: z.string().trim().max(500),
   enabled: z.boolean(),
