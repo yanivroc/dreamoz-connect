@@ -702,6 +702,51 @@ export function WebPagesPanel({ appId }: { appId: number }) {
           })}
         </div>
       </div>
+
+      <AlertDialog
+        open={pendingDelete !== null}
+        onOpenChange={(open) => {
+          if (!open && !deleting) setPendingDelete(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Delete &quot;{pendingDelete?.title ?? ""}&quot;?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingDelete && childrenOf(pendingDelete.id).length > 0 ? (
+                <>
+                  This will also permanently delete{" "}
+                  {childrenOf(pendingDelete.id).length} sub page
+                  {childrenOf(pendingDelete.id).length === 1 ? "" : "s"} and all their
+                  images:{" "}
+                  {childrenOf(pendingDelete.id)
+                    .map((c) => c.title)
+                    .join(", ")}
+                  . This cannot be undone.
+                </>
+              ) : (
+                "This page and its images will be permanently deleted. This cannot be undone."
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleting}
+              onClick={(e) => {
+                e.preventDefault();
+                void confirmDelete();
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Deleting…" : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
+
