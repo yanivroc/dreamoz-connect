@@ -33,6 +33,8 @@ export function LoginForm({ redirectTo }: { redirectTo?: string | undefined }) {
       });
       if (res.ok) {
         toast.success(`Welcome back, ${res.user.name}!`);
+        queryClient.removeQueries({ queryKey: ["session-user"] });
+        await queryClient.refetchQueries({ queryKey: ["session-user"] });
         await router.invalidate();
         navigate({ to: redirectTo && redirectTo.startsWith("/") ? redirectTo : "/dashboard" });
         return;
