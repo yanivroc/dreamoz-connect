@@ -7,6 +7,7 @@ export type WebPageImage = {
   mime: string;
   data: string;
   alt: string;
+  hyperlink: string;
   orderNo: number;
 };
 
@@ -57,6 +58,7 @@ export type ShippingRatesResult = {
 };
 
 const MAX_BASE64 = 1_400_000;
+const MAX_PAGE_IMAGES = 10;
 const IMAGE_MIMES = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
 const ICON_MIMES = [...IMAGE_MIMES, "image/x-icon", "image/vnd.microsoft.icon"];
 
@@ -150,7 +152,7 @@ function mapPage(r: unknown): WebPage {
 const pageShape = {
   appId: z.coerce.number().int(),
   parentId: z.coerce.number().int().nullable().optional(),
-  orderNo: z.coerce.number().int().min(0).max(9999).default(0),
+  orderNo: z.coerce.number().int().min(1).max(9999).default(1),
   title: z.string().trim().min(1, "Page title is required.").max(200),
   description: z.string().trim().max(20000).transform(sanitizeHtml),
   seoDescription: z.string().trim().max(300),
@@ -223,7 +225,7 @@ export const listWebPages = createServerFn({ method: "GET" })
     const pages = res.rows.map(mapPage);
     if (pages.length === 0) return pages;
     const imgs = await ctx.db.execute({
-      sql: `SELECT i.id, i.page_id, i.mime, i.data, i.alt, i.order_no
+      sql: `SELECT i.id, i.page_id, i.mime, i.data, i.alt, i.hyperlink, i.order_no
             FROM web_page_images i
             JOIN web_pages p ON p.id = i.page_id
             WHERE p.app_id = ?
@@ -240,6 +242,7 @@ export const listWebPages = createServerFn({ method: "GET" })
         mime: String(row["mime"] ?? ""),
         data: String(row["data"] ?? ""),
         alt: String(row["alt"] ?? ""),
+        hyperlink: String(row["hyperlink"] ?? ""),
         orderNo: Number(row["order_no"] ?? 0),
       });
       byPage.set(pid, list);
@@ -363,7 +366,7 @@ export const reorderWebPages = createServerFn({ method: "POST" })
           .array(
             z.object({
               id: z.coerce.number().int(),
-              orderNo: z.coerce.number().int().min(0).max(9999),
+              orderNo: z.coerce.number().int().min(1).max(9999),
             }),
           )
           .max(500),
@@ -391,32 +394,112 @@ export const addPageImage = createServerFn({ method: "POST" })
         mime: z.string().refine((v) => IMAGE_MIMES.includes(v), "Unsupported image type."),
         data: z.string().max(MAX_BASE64, "Image is too large."),
         alt: z.string().trim().max(200).default(""),
+        hyperlink: z
+          .string()
+          .trim()
+          .max(500)
+          .default("")
+          .refine((v) => v === "" || /^https?:\/\/\S+$/i.test(v), {
+            message: "Hyperlink must start with http:// or https://",
+          }),
       })
       .parse(input),
   )
   .handler(async ({ data }) => {
     const ctx = await requireUser();
     const { ownerId } = await assertPage(ctx, data.pageId);
-    const next = await ctx.db.execute({
-      sql: "SELECT COALESCE(MAX(order_no), -1) + 1 AS n FROM web_page_images WHERE page_id = ?",
+    const countRes = await ctx.db.execute({
+      sql: "SELECT COUNT(*) AS c, COALESCE(MAX(order_no), 0) + 1 AS n FROM web_page_images WHERE page_id = ?",
       args: [data.pageId],
     });
-    const orderNo = Number(
-      (next.rows[0] as unknown as Record<string, unknown>)["n"] ?? 0,
-    );
+    const stat = countRes.rows[0] as unknown as Record<string, unknown>;
+    if (Number(stat["c"] ?? 0) >= MAX_PAGE_IMAGES) {
+      throw new Error(`You can attach up to ${MAX_PAGE_IMAGES} images per page.`);
+    }
+    const orderNo = Number(stat["n"] ?? 1);
     await ctx.db.execute({
-      sql: `INSERT INTO web_page_images (page_id, user_id, mime, data, alt, order_no, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      sql: `INSERT INTO web_page_images (page_id, user_id, mime, data, alt, hyperlink, order_no, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         data.pageId,
         ownerId,
         data.mime,
         data.data,
         data.alt,
+        data.hyperlink,
         orderNo,
         new Date().toISOString(),
       ],
     });
+    return { ok: true as const };
+  });
+
+export const updatePageImage = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        id: z.coerce.number().int(),
+        alt: z.string().trim().max(200).optional(),
+        hyperlink: z
+          .string()
+          .trim()
+          .max(500)
+          .optional()
+          .refine((v) => v === undefined || v === "" || /^https?:\/\/\S+$/i.test(v), {
+            message: "Hyperlink must start with http:// or https://",
+          }),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const ctx = await requireUser();
+    const res = await ctx.db.execute({
+      sql: "SELECT page_id FROM web_page_images WHERE id = ? LIMIT 1",
+      args: [data.id],
+    });
+    const row = res.rows[0] as Record<string, unknown> | undefined;
+    if (!row) throw new Error("Image not found.");
+    await assertPage(ctx, Number(row["page_id"]));
+    if (data.alt !== undefined) {
+      await ctx.db.execute({
+        sql: "UPDATE web_page_images SET alt = ? WHERE id = ?",
+        args: [data.alt, data.id],
+      });
+    }
+    if (data.hyperlink !== undefined) {
+      await ctx.db.execute({
+        sql: "UPDATE web_page_images SET hyperlink = ? WHERE id = ?",
+        args: [data.hyperlink, data.id],
+      });
+    }
+    return { ok: true as const };
+  });
+
+export const reorderPageImages = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z
+      .object({
+        pageId: z.coerce.number().int(),
+        items: z
+          .array(
+            z.object({
+              id: z.coerce.number().int(),
+              orderNo: z.coerce.number().int().min(1).max(100),
+            }),
+          )
+          .max(MAX_PAGE_IMAGES),
+      })
+      .parse(input),
+  )
+  .handler(async ({ data }) => {
+    const ctx = await requireUser();
+    await assertPage(ctx, data.pageId);
+    for (const item of data.items) {
+      await ctx.db.execute({
+        sql: "UPDATE web_page_images SET order_no = ? WHERE id = ? AND page_id = ?",
+        args: [item.orderNo, item.id, data.pageId],
+      });
+    }
     return { ok: true as const };
   });
 

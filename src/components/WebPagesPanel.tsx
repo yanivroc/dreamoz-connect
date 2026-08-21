@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -10,7 +10,10 @@ import {
   reorderWebPages,
   addPageImage,
   deletePageImage,
+  updatePageImage,
+  reorderPageImages,
   type WebPage,
+  type WebPageImage,
 } from "@/lib/webpages.functions";
 import { encodeImage, imageSrc } from "@/lib/image-upload";
 import { RichTextEditor } from "@/components/RichTextEditor";
@@ -38,7 +41,7 @@ type FormState = {
 
 const emptyForm: FormState = {
   parentId: null,
-  orderNo: 0,
+  orderNo: 1,
   title: "",
   description: "",
   seoDescription: "",
@@ -56,6 +59,8 @@ const emptyForm: FormState = {
 
 const numOrNull = (v: string) => (v.trim() === "" ? null : Number(v));
 
+const MAX_IMAGES = 10;
+
 export function WebPagesPanel({ appId }: { appId: number }) {
   const fetchPages = useServerFn(listWebPages);
   const create = useServerFn(createWebPage);
@@ -64,12 +69,17 @@ export function WebPagesPanel({ appId }: { appId: number }) {
   const reorder = useServerFn(reorderWebPages);
   const uploadImage = useServerFn(addPageImage);
   const removeImage = useServerFn(deletePageImage);
+  const patchImage = useServerFn(updatePageImage);
+  const reorderImages = useServerFn(reorderPageImages);
   const queryClient = useQueryClient();
 
   const [form, setForm] = useState<FormState>(emptyForm);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [dragId, setDragId] = useState<number | null>(null);
+  const [imgDragId, setImgDragId] = useState<number | null>(null);
+  const [orderTouched, setOrderTouched] = useState(false);
+  const [links, setLinks] = useState<Record<number, string>>({});
 
   const { data, isLoading, error } = useQuery<WebPage[]>({
     queryKey: ["web-pages", appId],
@@ -92,10 +102,29 @@ export function WebPagesPanel({ appId }: { appId: number }) {
   const refresh = () =>
     queryClient.invalidateQueries({ queryKey: ["web-pages", appId] });
 
+  const nextOrder = (parentId: number | null) => {
+    const siblings = parentId === null ? parents : childrenOf(parentId);
+    return siblings.reduce((max, p) => Math.max(max, p.orderNo), 0) + 1;
+  };
+
+  const editingPage = editingId === null ? null : (pages.find((p) => p.id === editingId) ?? null);
+  const editingImages: WebPageImage[] = editingPage
+    ? [...editingPage.images].sort((a, b) => a.orderNo - b.orderNo || a.id - b.id)
+    : [];
+
   function reset() {
     setEditingId(null);
-    setForm(emptyForm);
+    setOrderTouched(false);
+    setForm({ ...emptyForm, orderNo: nextOrder(null) });
   }
+
+  // Keep the suggested order number fresh while creating a new page.
+  useEffect(() => {
+    if (editingId !== null || orderTouched) return;
+    const suggested = nextOrder(form.parentId);
+    if (suggested !== form.orderNo) setForm((f) => ({ ...f, orderNo: suggested }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pages, editingId, orderTouched, form.parentId]);
 
   function startEdit(page: WebPage) {
     setEditingId(page.id);
@@ -128,7 +157,7 @@ export function WebPagesPanel({ appId }: { appId: number }) {
     const payload = {
       appId,
       parentId: form.parentId,
-      orderNo: Number(form.orderNo) || 0,
+      orderNo: Math.max(1, Number(form.orderNo) || 1),
       title: form.title,
       description: form.description,
       seoDescription: form.seoDescription,
@@ -191,7 +220,7 @@ export function WebPagesPanel({ appId }: { appId: number }) {
       await reorder({
         data: {
           appId,
-          items: ordered.map((p, i) => ({ id: p.id, orderNo: i })),
+          items: ordered.map((p, i) => ({ id: p.id, orderNo: i + 1 })),
         },
       });
       await refresh();
@@ -202,6 +231,10 @@ export function WebPagesPanel({ appId }: { appId: number }) {
 
   async function onUpload(pageId: number, file: File | undefined) {
     if (!file) return;
+    if (editingImages.length >= MAX_IMAGES) {
+      toast.error(`You can attach up to ${MAX_IMAGES} images.`);
+      return;
+    }
     try {
       const encoded = await encodeImage(file);
       await uploadImage({ data: { pageId, ...encoded, alt: file.name.slice(0, 200) } });
@@ -221,11 +254,46 @@ export function WebPagesPanel({ appId }: { appId: number }) {
     }
   }
 
+  async function onSaveImageLink(img: WebPageImage) {
+    const next = (links[img.id] ?? img.hyperlink).trim();
+    if (next === img.hyperlink) return;
+    try {
+      await patchImage({ data: { id: img.id, hyperlink: next } });
+      toast.success("Image link saved.");
+      await refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not save the link.");
+    }
+  }
+
+  async function onDropImage(targetId: number) {
+    if (imgDragId === null || imgDragId === targetId || editingId === null) return;
+    const ordered = [...editingImages];
+    const from = ordered.findIndex((i) => i.id === imgDragId);
+    const to = ordered.findIndex((i) => i.id === targetId);
+    setImgDragId(null);
+    if (from < 0 || to < 0) return;
+    const [moved] = ordered.splice(from, 1);
+    if (!moved) return;
+    ordered.splice(to, 0, moved);
+    try {
+      await reorderImages({
+        data: {
+          pageId: editingId,
+          items: ordered.map((img, i) => ({ id: img.id, orderNo: i + 1 })),
+        },
+      });
+      await refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not reorder images.");
+    }
+  }
+
   function renderPage(page: WebPage, isChild: boolean) {
     return (
       <div
         key={page.id}
-        className={`rounded-2xl border border-border/60 bg-surface/40 p-5 shadow-card ${
+        className={`rounded-2xl border border-border/60 bg-surface/40 px-5 py-3 shadow-card ${
           isChild ? "ml-6 border-dashed" : ""
         }`}
         draggable={!isChild}
@@ -233,14 +301,15 @@ export function WebPagesPanel({ appId }: { appId: number }) {
         onDragOver={(e) => !isChild && e.preventDefault()}
         onDrop={() => !isChild && onDrop(page.id)}
       >
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h3 className="text-lg font-semibold">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h3 className="truncate text-base font-semibold">
               {!isChild && <span className="mr-2 cursor-grab text-muted-foreground">⠿</span>}
               {page.title}
             </h3>
             <p className="text-xs text-muted-foreground">
               Order {page.orderNo}
+              {page.images.length > 0 ? ` · ${page.images.length} image(s)` : ""}
               {page.productEnabled && page.price !== null
                 ? ` · Product · ${page.price}`
                 : ""}
@@ -273,48 +342,6 @@ export function WebPagesPanel({ appId }: { appId: number }) {
           </div>
         </div>
 
-        {page.description && (
-          <div
-            className="prose-site mt-3 max-w-none text-sm text-muted-foreground [&_img]:max-w-full"
-            dangerouslySetInnerHTML={{ __html: page.description }}
-          />
-        )}
-
-        {page.images.length > 0 && (
-          <div className="mt-4 flex flex-wrap gap-3">
-            {page.images.map((img) => (
-              <div key={img.id} className="relative">
-                <img
-                  src={imageSrc(img)}
-                  alt={img.alt || page.title}
-                  className="h-20 w-28 rounded-lg object-cover"
-                  loading="lazy"
-                />
-                <button
-                  type="button"
-                  onClick={() => onRemoveImage(img.id)}
-                  className="absolute -right-2 -top-2 rounded-full border border-border bg-background px-2 text-xs"
-                  aria-label="Remove image"
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <label className="mt-4 block text-xs text-muted-foreground">
-          Add image
-          <input
-            type="file"
-            accept="image/png,image/jpeg,image/webp,image/svg+xml"
-            className="mt-1 block w-full text-xs"
-            onChange={(e) => {
-              void onUpload(page.id, e.target.files?.[0]);
-              e.target.value = "";
-            }}
-          />
-        </label>
       </div>
     );
   }
@@ -345,10 +372,13 @@ export function WebPagesPanel({ appId }: { appId: number }) {
             <input
               className={inputClass}
               type="number"
-              min={0}
+              min={1}
               max={9999}
               value={form.orderNo}
-              onChange={(e) => setForm({ ...form, orderNo: Number(e.target.value) })}
+              onChange={(e) => {
+                setOrderTouched(true);
+                setForm({ ...form, orderNo: Number(e.target.value) });
+              }}
             />
           </label>
         </div>
@@ -519,6 +549,74 @@ export function WebPagesPanel({ appId }: { appId: number }) {
             )}
           </div>
         )}
+
+        <div className="space-y-3 rounded-xl border border-border/60 p-4">
+          <div className="flex items-center justify-between gap-3">
+            <h4 className="text-sm font-semibold">Images ({editingImages.length}/{MAX_IMAGES})</h4>
+            {editingImages.length > 1 && (
+              <span className="text-xs text-muted-foreground">Drag to reorder</span>
+            )}
+          </div>
+
+          {editingId === null ? (
+            <p className="text-xs text-muted-foreground">
+              Save the page first, then attach images here.
+            </p>
+          ) : (
+            <>
+              <div className="space-y-3">
+                {editingImages.map((img) => (
+                  <div
+                    key={img.id}
+                    draggable
+                    onDragStart={() => setImgDragId(img.id)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={() => void onDropImage(img.id)}
+                    className="flex flex-wrap items-center gap-3 rounded-lg border border-border/60 bg-background/40 p-2"
+                  >
+                    <span className="cursor-grab text-muted-foreground">⠿</span>
+                    <img
+                      src={imageSrc(img)}
+                      alt={img.alt}
+                      className="h-16 w-24 rounded-md object-cover"
+                      loading="lazy"
+                    />
+                    <input
+                      className={`${inputClass} min-w-[14rem] flex-1`}
+                      placeholder="Hyperlink (optional)"
+                      maxLength={500}
+                      value={links[img.id] ?? img.hyperlink}
+                      onChange={(e) => setLinks({ ...links, [img.id]: e.target.value })}
+                      onBlur={() => void onSaveImageLink(img)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => void onRemoveImage(img.id)}
+                      className="rounded-full border border-destructive/50 px-3 py-1 text-xs text-destructive transition hover:bg-destructive/10"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {editingImages.length < MAX_IMAGES && (
+                <label className="block text-xs text-muted-foreground">
+                  Add image
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp,image/svg+xml"
+                    className="mt-1 block w-full text-xs"
+                    onChange={(e) => {
+                      void onUpload(editingId, e.target.files?.[0]);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+              )}
+            </>
+          )}
+        </div>
 
         <div className="flex flex-wrap gap-3">
           <button

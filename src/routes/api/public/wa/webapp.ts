@@ -8,7 +8,13 @@ const cors = {
 
 type Row = Record<string, unknown>;
 
-type PageImage = { id: number; alt: string; orderNo: number; url: string };
+type PageImage = {
+  id: number;
+  alt: string;
+  hyperlink: string;
+  orderNo: number;
+  url: string;
+};
 
 type PageNode = {
   id: number;
@@ -95,7 +101,7 @@ export const Route = createFileRoute("/api/public/wa/webapp")({
           args: [appId],
         });
         const imgRes = await db.execute({
-          sql: `SELECT i.id, i.page_id, i.mime, i.data, i.alt, i.order_no
+          sql: `SELECT i.id, i.page_id, i.mime, i.data, i.alt, i.hyperlink, i.order_no
                 FROM web_page_images i
                 JOIN web_pages p ON p.id = i.page_id
                 WHERE p.app_id = ?
@@ -110,6 +116,7 @@ export const Route = createFileRoute("/api/public/wa/webapp")({
           list.push({
             id: Number(r["id"]),
             alt: String(r["alt"] ?? ""),
+            hyperlink: String(r["hyperlink"] ?? ""),
             orderNo: Number(r["order_no"] ?? 0),
             url: `data:${String(r["mime"] ?? "")};base64,${String(r["data"] ?? "")}`,
           });
