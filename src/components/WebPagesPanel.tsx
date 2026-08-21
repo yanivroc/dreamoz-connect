@@ -59,6 +59,8 @@ const emptyForm: FormState = {
 
 const numOrNull = (v: string) => (v.trim() === "" ? null : Number(v));
 
+const MAX_IMAGES = 10;
+
 export function WebPagesPanel({ appId }: { appId: number }) {
   const fetchPages = useServerFn(listWebPages);
   const create = useServerFn(createWebPage);
@@ -155,7 +157,7 @@ export function WebPagesPanel({ appId }: { appId: number }) {
     const payload = {
       appId,
       parentId: form.parentId,
-      orderNo: Number(form.orderNo) || 0,
+      orderNo: Math.max(1, Number(form.orderNo) || 1),
       title: form.title,
       description: form.description,
       seoDescription: form.seoDescription,
@@ -218,7 +220,7 @@ export function WebPagesPanel({ appId }: { appId: number }) {
       await reorder({
         data: {
           appId,
-          items: ordered.map((p, i) => ({ id: p.id, orderNo: i })),
+          items: ordered.map((p, i) => ({ id: p.id, orderNo: i + 1 })),
         },
       });
       await refresh();
@@ -229,6 +231,10 @@ export function WebPagesPanel({ appId }: { appId: number }) {
 
   async function onUpload(pageId: number, file: File | undefined) {
     if (!file) return;
+    if (editingImages.length >= MAX_IMAGES) {
+      toast.error(`You can attach up to ${MAX_IMAGES} images.`);
+      return;
+    }
     try {
       const encoded = await encodeImage(file);
       await uploadImage({ data: { pageId, ...encoded, alt: file.name.slice(0, 200) } });
@@ -245,6 +251,41 @@ export function WebPagesPanel({ appId }: { appId: number }) {
       await refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not remove the image.");
+    }
+  }
+
+  async function onSaveImageLink(img: WebPageImage) {
+    const next = (links[img.id] ?? img.hyperlink).trim();
+    if (next === img.hyperlink) return;
+    try {
+      await patchImage({ data: { id: img.id, hyperlink: next } });
+      toast.success("Image link saved.");
+      await refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not save the link.");
+    }
+  }
+
+  async function onDropImage(targetId: number) {
+    if (imgDragId === null || imgDragId === targetId || editingId === null) return;
+    const ordered = [...editingImages];
+    const from = ordered.findIndex((i) => i.id === imgDragId);
+    const to = ordered.findIndex((i) => i.id === targetId);
+    setImgDragId(null);
+    if (from < 0 || to < 0) return;
+    const [moved] = ordered.splice(from, 1);
+    if (!moved) return;
+    ordered.splice(to, 0, moved);
+    try {
+      await reorderImages({
+        data: {
+          pageId: editingId,
+          items: ordered.map((img, i) => ({ id: img.id, orderNo: i + 1 })),
+        },
+      });
+      await refresh();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not reorder images.");
     }
   }
 
