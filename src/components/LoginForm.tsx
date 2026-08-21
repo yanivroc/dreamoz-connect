@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useNavigate, useRouter } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { login } from "@/lib/auth.functions";
 
@@ -8,6 +9,7 @@ export function LoginForm({ redirectTo }: { redirectTo?: string | undefined }) {
   const submit = useServerFn(login);
   const navigate = useNavigate();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [pending, setPending] = useState(false);
   const [seed, setSeed] = useState(0);
   const captcha = useMemo(
@@ -31,6 +33,8 @@ export function LoginForm({ redirectTo }: { redirectTo?: string | undefined }) {
       });
       if (res.ok) {
         toast.success(`Welcome back, ${res.user.name}!`);
+        queryClient.removeQueries({ queryKey: ["session-user"] });
+        await queryClient.refetchQueries({ queryKey: ["session-user"] });
         await router.invalidate();
         navigate({ to: redirectTo && redirectTo.startsWith("/") ? redirectTo : "/dashboard" });
         return;
