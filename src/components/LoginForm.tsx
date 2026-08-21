@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useNavigate, useRouter } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { login } from "@/lib/auth.functions";
 
@@ -8,6 +9,7 @@ export function LoginForm({ redirectTo }: { redirectTo?: string | undefined }) {
   const submit = useServerFn(login);
   const navigate = useNavigate();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [pending, setPending] = useState(false);
   const [seed, setSeed] = useState(0);
   const captcha = useMemo(
