@@ -11,7 +11,7 @@ import {
   type WebApp,
 } from "@/lib/webapps.functions";
 import { formatDateTime } from "@/lib/format";
-import { RichTextEditor } from "@/components/RichTextEditor";
+import { stripHtml } from "@/lib/sanitize-html";
 
 type FormState = {
   title: string;
@@ -75,7 +75,7 @@ export function WebAppsPanel({ isAdmin }: { isAdmin: boolean }) {
     setEditingId(app.id);
     setForm({
       title: app.title,
-      description: app.description,
+      description: stripHtml(app.description),
       email: app.email,
       link: app.link,
       enabled: app.enabled,
@@ -168,15 +168,16 @@ export function WebAppsPanel({ isAdmin }: { isAdmin: boolean }) {
           />
         </label>
 
-        <div className="block space-y-1.5 text-sm">
+        <label className="block space-y-1.5 text-sm">
           <span className="text-muted-foreground">Description</span>
-          <RichTextEditor
+          <textarea
+            className={`${inputClass} min-h-32 resize-y`}
             value={form.description}
-            appId={editingId}
-            onChange={(html: string) => setForm({ ...form, description: html })}
-            placeholder="Format text, insert images or attach a PDF (max 1MB each)."
+            maxLength={4000}
+            rows={6}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
           />
-        </div>
+        </label>
 
         <label className="flex items-center gap-2 text-sm">
           <input
@@ -244,10 +245,9 @@ export function WebAppsPanel({ isAdmin }: { isAdmin: boolean }) {
               </div>
 
               {app.description && (
-                <div
-                  className="prose-site mt-3 max-w-none text-sm text-muted-foreground [&_img]:max-w-full"
-                  dangerouslySetInnerHTML={{ __html: app.description }}
-                />
+                <p className="mt-3 whitespace-pre-line text-sm text-muted-foreground">
+                  {stripHtml(app.description)}
+                </p>
               )}
 
               <dl className="mt-4 space-y-1.5 text-sm">

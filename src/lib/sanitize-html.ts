@@ -94,3 +94,20 @@ export function isEmptyHtml(html: string): boolean {
       html.replace(/<[^>]*>/g, "").replace(/&nbsp;/g, " ").trim() === "")
   );
 }
+
+/** Strip all HTML tags and decode basic entities, returning plain text. */
+export function stripHtml(input: string): string {
+  return input
+    .replace(/<(script|style)[\s\S]*?<\/\1>/gi, "")
+    .replace(/<\/(p|div|h[1-6]|li|tr)>/gi, "\n")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}

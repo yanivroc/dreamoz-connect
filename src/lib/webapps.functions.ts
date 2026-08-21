@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { sanitizeHtml } from "./sanitize-html";
+import { stripHtml } from "./sanitize-html";
 
 export type WebApp = {
   id: number;
@@ -90,7 +90,7 @@ export const listWebApps = createServerFn({ method: "GET" }).handler(
 
 const upsertShape = {
   title: z.string().trim().min(1, "Title is required.").max(200),
-  description: z.string().trim().max(20000).transform(sanitizeHtml),
+  description: z.string().trim().max(20000).transform(stripHtml).pipe(z.string().max(4000)),
   email: optionalEmail,
   link: optionalLink,
   enabled: z.boolean(),
