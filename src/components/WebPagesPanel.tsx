@@ -680,12 +680,16 @@ export function WebPagesPanel({ appId }: { appId: number }) {
         )}
 
         <div className="space-y-4">
-          {parents.map((parent) => (
-            <div key={parent.id} className="space-y-3">
-              {renderPage(parent, false)}
-              {childrenOf(parent.id).map((child) => renderPage(child, true))}
-            </div>
-          ))}
+          {parents.map((parent) => {
+            const isCollapsed = collapsed.has(parent.id);
+            return (
+              <div key={parent.id} className="space-y-3">
+                {renderPage(parent, false)}
+                {!isCollapsed &&
+                  childrenOf(parent.id).map((child) => renderPage(child, true))}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
