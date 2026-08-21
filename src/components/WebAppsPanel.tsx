@@ -245,10 +245,9 @@ export function WebAppsPanel({ isAdmin }: { isAdmin: boolean }) {
               </div>
 
               {app.description && (
-                <div
-                  className="prose-site mt-3 max-w-none text-sm text-muted-foreground [&_img]:max-w-full"
-                  dangerouslySetInnerHTML={{ __html: app.description }}
-                />
+                <p className="mt-3 whitespace-pre-line text-sm text-muted-foreground">
+                  {stripHtml(app.description)}
+                </p>
               )}
 
               <dl className="mt-4 space-y-1.5 text-sm">
