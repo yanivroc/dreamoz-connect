@@ -11,7 +11,7 @@ import {
   type WebApp,
 } from "@/lib/webapps.functions";
 import { formatDateTime } from "@/lib/format";
-import { RichTextEditor } from "@/components/RichTextEditor";
+import { stripHtml } from "@/lib/sanitize-html";
 
 type FormState = {
   title: string;
