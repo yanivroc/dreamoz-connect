@@ -75,7 +75,7 @@ export function WebAppsPanel({ isAdmin }: { isAdmin: boolean }) {
     setEditingId(app.id);
     setForm({
       title: app.title,
-      description: app.description,
+      description: stripHtml(app.description),
       email: app.email,
       link: app.link,
       enabled: app.enabled,
