@@ -80,6 +80,7 @@ export function WebPagesPanel({ appId }: { appId: number }) {
   const [imgDragId, setImgDragId] = useState<number | null>(null);
   const [orderTouched, setOrderTouched] = useState(false);
   const [links, setLinks] = useState<Record<number, string>>({});
+  const [collapsed, setCollapsed] = useState<Set<number>>(new Set());
 
   const { data, isLoading, error } = useQuery<WebPage[]>({
     queryKey: ["web-pages", appId],
@@ -290,6 +291,8 @@ export function WebPagesPanel({ appId }: { appId: number }) {
   }
 
   function renderPage(page: WebPage, isChild: boolean) {
+    const hasChildren = childrenOf(page.id).length > 0;
+    const isCollapsed = collapsed.has(page.id);
     return (
       <div
         key={page.id}
@@ -304,7 +307,9 @@ export function WebPagesPanel({ appId }: { appId: number }) {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
             <h3 className="truncate text-base font-semibold">
-              {!isChild && <span className="mr-2 cursor-grab text-muted-foreground">⠿</span>}
+              {!isChild && (
+                <span className="mr-2 cursor-grab text-muted-foreground">⠿</span>
+              )}
               {page.title}
             </h3>
             <p className="text-xs text-muted-foreground">
@@ -316,6 +321,24 @@ export function WebPagesPanel({ appId }: { appId: number }) {
             </p>
           </div>
           <div className="flex items-center gap-2">
+            {!isChild && hasChildren && (
+              <button
+                type="button"
+                onClick={() =>
+                  setCollapsed((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(page.id)) next.delete(page.id);
+                    else next.add(page.id);
+                    return next;
+                  })
+                }
+                className="rounded-full border border-border/70 px-3 py-1 text-xs transition hover:bg-surface/60"
+                aria-label={isCollapsed ? "Expand child pages" : "Collapse child pages"}
+                title={isCollapsed ? "Expand child pages" : "Collapse child pages"}
+              >
+                {isCollapsed ? "▸" : "▾"}
+              </button>
+            )}
             <span
               className={`rounded-full px-3 py-1 text-xs ${
                 page.enabled
@@ -657,12 +680,16 @@ export function WebPagesPanel({ appId }: { appId: number }) {
         )}
 
         <div className="space-y-4">
-          {parents.map((parent) => (
-            <div key={parent.id} className="space-y-3">
-              {renderPage(parent, false)}
-              {childrenOf(parent.id).map((child) => renderPage(child, true))}
-            </div>
-          ))}
+          {parents.map((parent) => {
+            const isCollapsed = collapsed.has(parent.id);
+            return (
+              <div key={parent.id} className="space-y-3">
+                {renderPage(parent, false)}
+                {!isCollapsed &&
+                  childrenOf(parent.id).map((child) => renderPage(child, true))}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
