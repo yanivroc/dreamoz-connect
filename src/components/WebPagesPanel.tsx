@@ -67,12 +67,16 @@ export function WebPagesPanel({ appId }: { appId: number }) {
   const reorder = useServerFn(reorderWebPages);
   const uploadImage = useServerFn(addPageImage);
   const removeImage = useServerFn(deletePageImage);
+  const patchImage = useServerFn(updatePageImage);
+  const reorderImages = useServerFn(reorderPageImages);
   const queryClient = useQueryClient();
 
   const [form, setForm] = useState<FormState>(emptyForm);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [dragId, setDragId] = useState<number | null>(null);
+  const [imgDragId, setImgDragId] = useState<number | null>(null);
+  const [links, setLinks] = useState<Record<number, string>>({});
 
   const { data, isLoading, error } = useQuery<WebPage[]>({
     queryKey: ["web-pages", appId],
