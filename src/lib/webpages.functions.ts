@@ -151,7 +151,7 @@ function mapPage(r: unknown): WebPage {
 const pageShape = {
   appId: z.coerce.number().int(),
   parentId: z.coerce.number().int().nullable().optional(),
-  orderNo: z.coerce.number().int().min(0).max(9999).default(0),
+  orderNo: z.coerce.number().int().min(1).max(9999).default(1),
   title: z.string().trim().min(1, "Page title is required.").max(200),
   description: z.string().trim().max(20000).transform(sanitizeHtml),
   seoDescription: z.string().trim().max(300),
@@ -224,7 +224,7 @@ export const listWebPages = createServerFn({ method: "GET" })
     const pages = res.rows.map(mapPage);
     if (pages.length === 0) return pages;
     const imgs = await ctx.db.execute({
-      sql: `SELECT i.id, i.page_id, i.mime, i.data, i.alt, i.order_no
+      sql: `SELECT i.id, i.page_id, i.mime, i.data, i.alt, i.hyperlink, i.order_no
             FROM web_page_images i
             JOIN web_pages p ON p.id = i.page_id
             WHERE p.app_id = ?
@@ -241,6 +241,7 @@ export const listWebPages = createServerFn({ method: "GET" })
         mime: String(row["mime"] ?? ""),
         data: String(row["data"] ?? ""),
         alt: String(row["alt"] ?? ""),
+        hyperlink: String(row["hyperlink"] ?? ""),
         orderNo: Number(row["order_no"] ?? 0),
       });
       byPage.set(pid, list);
