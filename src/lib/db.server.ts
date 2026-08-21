@@ -162,5 +162,22 @@ export async function ensureWebPagesTables(db: Client): Promise<void> {
   await db.execute(
     `CREATE UNIQUE INDEX IF NOT EXISTS web_app_api_keys_key ON web_app_api_keys (api_key)`,
   );
+  await db.execute(`CREATE TABLE IF NOT EXISTS web_assets (
+    id TEXT PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    app_id INTEGER,
+    kind TEXT NOT NULL,
+    mime TEXT NOT NULL,
+    name TEXT NOT NULL DEFAULT '',
+    data TEXT NOT NULL,
+    size INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL
+  )`);
+  await db.execute(
+    `CREATE INDEX IF NOT EXISTS web_assets_app ON web_assets (app_id)`,
+  );
+  await db.execute(
+    `CREATE INDEX IF NOT EXISTS web_assets_user ON web_assets (user_id)`,
+  );
   webPagesReady = true;
 }

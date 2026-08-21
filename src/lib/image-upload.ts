@@ -57,3 +57,15 @@ export async function encodeImage(
 export function imageSrc(img: { mime: string; data: string }) {
   return `data:${img.mime};base64,${img.data}`;
 }
+
+/** Encode a PDF to base64 (no data: prefix), enforcing the 1MB cap. */
+export async function encodePdf(
+  file: File,
+): Promise<{ mime: string; name: string; data: string }> {
+  if (file.type !== "application/pdf") throw new Error("Only PDF files are supported.");
+  const dataUrl = await readAsDataUrl(file);
+  const base64 = dataUrl.split(",")[1] ?? "";
+  if (!base64) throw new Error("Could not read that file.");
+  if (base64.length > MAX_BYTES) throw new Error("That PDF is too large (max 1MB).");
+  return { mime: "application/pdf", name: file.name, data: base64 };
+}

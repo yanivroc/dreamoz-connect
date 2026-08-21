@@ -13,6 +13,7 @@ import {
   type WebPage,
 } from "@/lib/webpages.functions";
 import { encodeImage, imageSrc } from "@/lib/image-upload";
+import { RichTextEditor } from "@/components/RichTextEditor";
 
 const inputClass =
   "w-full rounded-lg border border-border/70 bg-background px-3 py-2 text-sm outline-none transition focus:border-primary";
@@ -273,9 +274,10 @@ export function WebPagesPanel({ appId }: { appId: number }) {
         </div>
 
         {page.description && (
-          <p className="mt-3 whitespace-pre-line text-sm text-muted-foreground">
-            {page.description}
-          </p>
+          <div
+            className="prose-site mt-3 max-w-none text-sm text-muted-foreground [&_img]:max-w-full"
+            dangerouslySetInnerHTML={{ __html: page.description }}
+          />
         )}
 
         {page.images.length > 0 && (
@@ -375,15 +377,15 @@ export function WebPagesPanel({ appId }: { appId: number }) {
           </select>
         </label>
 
-        <label className="block space-y-1.5 text-sm">
+        <div className="block space-y-1.5 text-sm">
           <span className="text-muted-foreground">Description</span>
-          <textarea
-            className={`${inputClass} min-h-28`}
-            maxLength={4000}
+          <RichTextEditor
             value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            appId={appId}
+            onChange={(html) => setForm({ ...form, description: html })}
+            placeholder="Format text, insert images or attach a PDF (max 1MB each)."
           />
-        </label>
+        </div>
 
         <div className="grid gap-4 md:grid-cols-2">
           <label className="space-y-1.5 text-sm">
