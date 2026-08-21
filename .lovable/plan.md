@@ -1,26 +1,26 @@
-# Fix signed-in header + new General settings fields
+# Fix "not signed in" header + credentials via environment variables
 
-## 1. Header doesn't show you're signed in after login
+## 1. Header doesn't show you're signed in
 
-Confirmed cause: the header reads the session through a cached query (`session-user`, 30s stale time). The login form only calls `router.invalidate()`, which refreshes route loaders but not that cache — so the nav keeps showing Login / Sign Up until a full page reload. Opening the builder does a route load with its own session check, which is why it looks correct there.
+Confirmed cause: the header reads the session through a cached query (`session-user`, 30s stale time). The login form only calls `router.invalidate()`, which refreshes route loaders but not that cache — so the nav keeps showing Login / Sign Up (and no name / Sign out) until a full page reload. Opening the builder does a fresh route load with its own session check, which is why it looks right there.
 
-Fix: after a successful login, clear and refetch the session query before navigating, so the header immediately shows your name, Dashboard link and Sign out. Same handling stays on sign-out (already clears the cache).
+Fix: after a successful login, clear and refetch the session query before navigating, so the header immediately shows your name, the Dashboard link and Sign out — on the dashboard and everywhere else.
 
-## 2. New fields under General settings
+## 2. The new credential fields
 
-Add these to the General settings tab, grouped into sections, saved per web app:
+Google Maps, Square and SMTP credentials are secrets, so they stay out of the database and out of the builder UI. They are set as environment variables at deployment (Vercel → Settings → Environment Variables):
 
-- Google: GoogleMapsKey
-- Square: SQUARE_ENVIRONMENT (sandbox / production select), SQUARE_APPLICATION_ID, SQUARE_LOCATION_ID, SQUARE_ACCESS_TOKEN
-- Mail: MAIL_FROM_NAME, MAIL_FROM_EMAIL
-- SMTP: SMTP_HOST, SMTP_PORT, SMTP_SECURE (true/false select), SMTP_USER, SMTP_PASSWORD
+```text
+GoogleMapsKey
+SQUARE_ENVIRONMENT, SQUARE_APPLICATION_ID, SQUARE_LOCATION_ID, SQUARE_ACCESS_TOKEN
+MAIL_FROM_NAME, MAIL_FROM_EMAIL
+SMTP_HOST, SMTP_PORT, SMTP_SECURE, SMTP_USER, SMTP_PASSWORD
+```
 
-Secret values (SQUARE_ACCESS_TOKEN, SMTP_PASSWORD, GoogleMapsKey) are shown masked once saved; leaving the masked value untouched keeps the stored value, typing a new one replaces it. These values are never included in the public web app JSON API.
+To make that discoverable, the General settings tab gets a short read-only "Deployment configuration" note listing these names and saying they are configured as environment variables, never stored in the app database. No values are ever displayed.
 
 ## Technical notes
 
-- `src/lib/db.server.ts`: add nullable TEXT columns to `web_app_settings` for each field via guarded `ALTER TABLE ... ADD COLUMN` (ignore "duplicate column" errors), keeping the existing auto-migration style. `SMTP_PORT` stored as INTEGER, `SMTP_SECURE` as TEXT 'true'/'false'.
-- `src/lib/webpages.functions.ts`: extend `AppSettings` type, `getAppSettings` (return secrets as a `hasX: true` flag plus masked placeholder rather than raw value) and `saveAppSettings` Zod schema (email format for MAIL_FROM_EMAIL, port 1-65535, max lengths 255-500). Secret fields accept `undefined` = keep existing.
-- `src/components/AppSettingsPanel.tsx`: add the grouped inputs with `maxLength` caps matching server limits; existing logo/favicon UI unchanged.
-- `src/components/LoginForm.tsx`: `queryClient.removeQueries({ queryKey: ["session-user"] })` + `await queryClient.refetchQueries(...)` before `navigate`.
-- `src/routes/api/public/wa/webapp.ts`: confirm settings serialization only emits logo/favicon — no credentials.
+- `src/components/LoginForm.tsx`: on success, `queryClient.removeQueries({ queryKey: ["session-user"] })` then `await queryClient.refetchQueries({ queryKey: ["session-user"] })` before `router.invalidate()` and `navigate(...)`.
+- `src/components/AppSettingsPanel.tsx`: add the static informational block listing the env-var names; no new inputs, no new server calls.
+- No database or public API changes.
