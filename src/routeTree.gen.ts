@@ -17,6 +17,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as ApiMediaRouteImport } from './routes/api/media'
 import { Route as PostSlugRouteImport } from './routes/post.$slug'
+import { Route as ApiAssetIdRouteImport } from './routes/api/asset.$id'
 import { Route as ApiPublicCacheBustRouteImport } from './routes/api/public/cache-bust'
 import { Route as ApiPublicCacheStatusRouteImport } from './routes/api/public/cache-status'
 import { Route as ApiPublicWaTokenRouteImport } from './routes/api/public/wa/token'
@@ -62,6 +63,11 @@ const PostSlugRoute = PostSlugRouteImport.update({
   path: '/post/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAssetIdRoute = ApiAssetIdRouteImport.update({
+  id: '/api/asset/$id',
+  path: '/api/asset/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCacheBustRoute = ApiPublicCacheBustRouteImport.update({
   id: '/api/public/cache-bust',
   path: '/api/public/cache-bust',
@@ -92,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/signup': typeof SignupRoute
   '/api/media': typeof ApiMediaRoute
   '/post/$slug': typeof PostSlugRoute
+  '/api/asset/$id': typeof ApiAssetIdRoute
   '/api/public/cache-bust': typeof ApiPublicCacheBustRoute
   '/api/public/cache-status': typeof ApiPublicCacheStatusRoute
   '/api/public/wa/token': typeof ApiPublicWaTokenRoute
@@ -106,6 +113,7 @@ export interface FileRoutesByTo {
   '/signup': typeof SignupRoute
   '/api/media': typeof ApiMediaRoute
   '/post/$slug': typeof PostSlugRoute
+  '/api/asset/$id': typeof ApiAssetIdRoute
   '/api/public/cache-bust': typeof ApiPublicCacheBustRoute
   '/api/public/cache-status': typeof ApiPublicCacheStatusRoute
   '/api/public/wa/token': typeof ApiPublicWaTokenRoute
@@ -121,6 +129,7 @@ export interface FileRoutesById {
   '/signup': typeof SignupRoute
   '/api/media': typeof ApiMediaRoute
   '/post/$slug': typeof PostSlugRoute
+  '/api/asset/$id': typeof ApiAssetIdRoute
   '/api/public/cache-bust': typeof ApiPublicCacheBustRoute
   '/api/public/cache-status': typeof ApiPublicCacheStatusRoute
   '/api/public/wa/token': typeof ApiPublicWaTokenRoute
@@ -137,6 +146,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/api/media'
     | '/post/$slug'
+    | '/api/asset/$id'
     | '/api/public/cache-bust'
     | '/api/public/cache-status'
     | '/api/public/wa/token'
@@ -151,6 +161,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/api/media'
     | '/post/$slug'
+    | '/api/asset/$id'
     | '/api/public/cache-bust'
     | '/api/public/cache-status'
     | '/api/public/wa/token'
@@ -165,6 +176,7 @@ export interface FileRouteTypes {
     | '/signup'
     | '/api/media'
     | '/post/$slug'
+    | '/api/asset/$id'
     | '/api/public/cache-bust'
     | '/api/public/cache-status'
     | '/api/public/wa/token'
@@ -180,6 +192,7 @@ export interface RootRouteChildren {
   SignupRoute: typeof SignupRoute
   ApiMediaRoute: typeof ApiMediaRoute
   PostSlugRoute: typeof PostSlugRoute
+  ApiAssetIdRoute: typeof ApiAssetIdRoute
   ApiPublicCacheBustRoute: typeof ApiPublicCacheBustRoute
   ApiPublicCacheStatusRoute: typeof ApiPublicCacheStatusRoute
   ApiPublicWaTokenRoute: typeof ApiPublicWaTokenRoute
@@ -244,6 +257,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PostSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/asset/$id': {
+      id: '/api/asset/$id'
+      path: '/api/asset/$id'
+      fullPath: '/api/asset/$id'
+      preLoaderRoute: typeof ApiAssetIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cache-bust': {
       id: '/api/public/cache-bust'
       path: '/api/public/cache-bust'
@@ -284,6 +304,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignupRoute: SignupRoute,
   ApiMediaRoute: ApiMediaRoute,
   PostSlugRoute: PostSlugRoute,
+  ApiAssetIdRoute: ApiAssetIdRoute,
   ApiPublicCacheBustRoute: ApiPublicCacheBustRoute,
   ApiPublicCacheStatusRoute: ApiPublicCacheStatusRoute,
   ApiPublicWaTokenRoute: ApiPublicWaTokenRoute,

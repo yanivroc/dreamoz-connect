@@ -32,7 +32,7 @@ export const Route = createFileRoute("/api/asset/$id")({
         const name = String(row["name"] ?? "file");
         const isPdf = String(row["kind"]) === "pdf";
 
-        return new Response(bytes, {
+        return new Response(bytes.buffer as ArrayBuffer, {
           status: 200,
           headers: {
             "content-type": String(row["mime"] ?? "application/octet-stream"),
