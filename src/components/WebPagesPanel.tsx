@@ -375,15 +375,15 @@ export function WebPagesPanel({ appId }: { appId: number }) {
           </select>
         </label>
 
-        <label className="block space-y-1.5 text-sm">
+        <div className="block space-y-1.5 text-sm">
           <span className="text-muted-foreground">Description</span>
-          <textarea
-            className={`${inputClass} min-h-28`}
-            maxLength={4000}
+          <RichTextEditor
             value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            appId={appId}
+            onChange={(html) => setForm({ ...form, description: html })}
+            placeholder="Format text, insert images or attach a PDF (max 1MB each)."
           />
-        </label>
+        </div>
 
         <div className="grid gap-4 md:grid-cols-2">
           <label className="space-y-1.5 text-sm">
