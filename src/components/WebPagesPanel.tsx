@@ -111,8 +111,17 @@ export function WebPagesPanel({ appId }: { appId: number }) {
 
   function reset() {
     setEditingId(null);
+    setOrderTouched(false);
     setForm({ ...emptyForm, orderNo: nextOrder(null) });
   }
+
+  // Keep the suggested order number fresh while creating a new page.
+  useEffect(() => {
+    if (editingId !== null || orderTouched) return;
+    const suggested = nextOrder(form.parentId);
+    if (suggested !== form.orderNo) setForm((f) => ({ ...f, orderNo: suggested }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pages, editingId, orderTouched, form.parentId]);
 
   function startEdit(page: WebPage) {
     setEditingId(page.id);
