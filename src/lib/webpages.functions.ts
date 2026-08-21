@@ -7,6 +7,7 @@ export type WebPageImage = {
   mime: string;
   data: string;
   alt: string;
+  hyperlink: string;
   orderNo: number;
 };
 
