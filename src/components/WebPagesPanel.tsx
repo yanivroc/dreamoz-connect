@@ -81,6 +81,9 @@ export function WebPagesPanel({ appId }: { appId: number }) {
   const [orderTouched, setOrderTouched] = useState(false);
   const [links, setLinks] = useState<Record<number, string>>({});
   const [collapsed, setCollapsed] = useState<Set<number>>(new Set());
+  const [pendingDelete, setPendingDelete] = useState<WebPage | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
 
   const { data, isLoading, error } = useQuery<WebPage[]>({
     queryKey: ["web-pages", appId],
