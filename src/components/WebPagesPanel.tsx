@@ -10,7 +10,10 @@ import {
   reorderWebPages,
   addPageImage,
   deletePageImage,
+  updatePageImage,
+  reorderPageImages,
   type WebPage,
+  type WebPageImage,
 } from "@/lib/webpages.functions";
 import { encodeImage, imageSrc } from "@/lib/image-upload";
 import { RichTextEditor } from "@/components/RichTextEditor";
@@ -38,7 +41,7 @@ type FormState = {
 
 const emptyForm: FormState = {
   parentId: null,
-  orderNo: 0,
+  orderNo: 1,
   title: "",
   description: "",
   seoDescription: "",
