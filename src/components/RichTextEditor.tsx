@@ -135,9 +135,48 @@ export function RichTextEditor({ value, onChange, appId, placeholder }: Props) {
     editor.chain().focus().extendMarkRange("link").setLink({ href: url.trim() }).run();
   }
 
+  const blockValue = (() => {
+    for (const level of [1, 2, 3, 4, 5, 6] as const) {
+      if (editor.isActive("heading", { level })) return `h${level}`;
+    }
+    if (editor.isActive("blockquote")) return "quote";
+    if (editor.isActive("codeBlock")) return "codeBlock";
+    return "p";
+  })();
+
+  function applyBlock(value: string) {
+    if (!editor) return;
+    const chain = editor.chain().focus();
+    if (value === "p") chain.setParagraph().run();
+    else if (value === "quote") chain.toggleBlockquote().run();
+    else if (value === "codeBlock") chain.toggleCodeBlock().run();
+    else {
+      const level = Number(value.slice(1)) as 1 | 2 | 3 | 4 | 5 | 6;
+      chain.setNode("heading", { level }).run();
+    }
+  }
+
+  const inList = editor.isActive("listItem");
+
   return (
     <div className="rounded-lg border border-border/70 bg-background">
       <div className="flex flex-wrap items-center gap-1.5 border-b border-border/60 px-2 py-2">
+        <select
+          aria-label="Text style"
+          className="rounded-md border border-border/60 bg-background px-2 py-1 text-xs outline-none"
+          value={blockValue}
+          onChange={(e) => applyBlock(e.target.value)}
+        >
+          <option value="p">Paragraph</option>
+          <option value="h1">Heading 1</option>
+          <option value="h2">Heading 2</option>
+          <option value="h3">Heading 3</option>
+          <option value="h4">Heading 4</option>
+          <option value="h5">Heading 5</option>
+          <option value="h6">Heading 6</option>
+          <option value="quote">Quote</option>
+          <option value="codeBlock">Code block</option>
+        </select>
         <button
           type="button"
           className={mark("bold", editor.isActive("bold"))}
@@ -161,17 +200,17 @@ export function RichTextEditor({ value, onChange, appId, placeholder }: Props) {
         </button>
         <button
           type="button"
-          className={mark("h2", editor.isActive("heading", { level: 2 }))}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          className={mark("strike", editor.isActive("strike"))}
+          onClick={() => editor.chain().focus().toggleStrike().run()}
         >
-          H2
+          Strike
         </button>
         <button
           type="button"
-          className={mark("h3", editor.isActive("heading", { level: 3 }))}
-          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+          className={mark("code", editor.isActive("code"))}
+          onClick={() => editor.chain().focus().toggleCode().run()}
         >
-          H3
+          Code
         </button>
         <button
           type="button"
@@ -186,6 +225,40 @@ export function RichTextEditor({ value, onChange, appId, placeholder }: Props) {
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
         >
           1. List
+        </button>
+        <button
+          type="button"
+          className={btn}
+          disabled={!inList}
+          title="Indent list item"
+          onClick={() => editor.chain().focus().sinkListItem("listItem").run()}
+        >
+          →|
+        </button>
+        <button
+          type="button"
+          className={btn}
+          disabled={!inList}
+          title="Outdent list item"
+          onClick={() => editor.chain().focus().liftListItem("listItem").run()}
+        >
+          |←
+        </button>
+        <button
+          type="button"
+          className={btn}
+          title="Insert horizontal line"
+          onClick={() => editor.chain().focus().setHorizontalRule().run()}
+        >
+          — Line
+        </button>
+        <button
+          type="button"
+          className={btn}
+          title="Insert line break"
+          onClick={() => editor.chain().focus().setHardBreak().run()}
+        >
+          ↵ Break
         </button>
         <button
           type="button"
@@ -213,11 +286,30 @@ export function RichTextEditor({ value, onChange, appId, placeholder }: Props) {
         <button
           type="button"
           className={btn}
+          title="Undo"
+          disabled={!editor.can().undo()}
+          onClick={() => editor.chain().focus().undo().run()}
+        >
+          ↶
+        </button>
+        <button
+          type="button"
+          className={btn}
+          title="Redo"
+          disabled={!editor.can().redo()}
+          onClick={() => editor.chain().focus().redo().run()}
+        >
+          ↷
+        </button>
+        <button
+          type="button"
+          className={btn}
           onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()}
         >
           Clear format
         </button>
       </div>
+
 
       <EditorContent editor={editor} />
       {placeholder && editor.isEmpty && (
