@@ -367,7 +367,7 @@ export function WebPagesPanel({ appId }: { appId: number }) {
             </button>
             <button
               type="button"
-              onClick={() => onDelete(page)}
+              onClick={() => setPendingDelete(page)}
               className="rounded-full border border-destructive/50 px-3 py-1 text-xs text-destructive transition hover:bg-destructive/10"
             >
               Delete
