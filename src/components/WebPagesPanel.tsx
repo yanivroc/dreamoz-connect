@@ -13,6 +13,7 @@ import {
   type WebPage,
 } from "@/lib/webpages.functions";
 import { encodeImage, imageSrc } from "@/lib/image-upload";
+import { RichTextEditor } from "@/components/RichTextEditor";
 
 const inputClass =
   "w-full rounded-lg border border-border/70 bg-background px-3 py-2 text-sm outline-none transition focus:border-primary";
@@ -273,9 +274,10 @@ export function WebPagesPanel({ appId }: { appId: number }) {
         </div>
 
         {page.description && (
-          <p className="mt-3 whitespace-pre-line text-sm text-muted-foreground">
-            {page.description}
-          </p>
+          <div
+            className="prose-site mt-3 max-w-none text-sm text-muted-foreground [&_img]:max-w-full"
+            dangerouslySetInnerHTML={{ __html: page.description }}
+          />
         )}
 
         {page.images.length > 0 && (

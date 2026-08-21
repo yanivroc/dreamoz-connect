@@ -11,6 +11,7 @@ import {
   type WebApp,
 } from "@/lib/webapps.functions";
 import { formatDateTime } from "@/lib/format";
+import { RichTextEditor } from "@/components/RichTextEditor";
 
 type FormState = {
   title: string;
@@ -167,15 +168,15 @@ export function WebAppsPanel({ isAdmin }: { isAdmin: boolean }) {
           />
         </label>
 
-        <label className="block space-y-1.5 text-sm">
+        <div className="block space-y-1.5 text-sm">
           <span className="text-muted-foreground">Description</span>
-          <textarea
-            className={`${inputClass} min-h-28`}
-            maxLength={4000}
+          <RichTextEditor
             value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            appId={editingId}
+            onChange={(html: string) => setForm({ ...form, description: html })}
+            placeholder="Format text, insert images or attach a PDF (max 1MB each)."
           />
-        </label>
+        </div>
 
         <label className="flex items-center gap-2 text-sm">
           <input
@@ -243,9 +244,10 @@ export function WebAppsPanel({ isAdmin }: { isAdmin: boolean }) {
               </div>
 
               {app.description && (
-                <p className="mt-3 whitespace-pre-line text-sm text-muted-foreground">
-                  {app.description}
-                </p>
+                <div
+                  className="prose-site mt-3 max-w-none text-sm text-muted-foreground [&_img]:max-w-full"
+                  dangerouslySetInnerHTML={{ __html: app.description }}
+                />
               )}
 
               <dl className="mt-4 space-y-1.5 text-sm">
