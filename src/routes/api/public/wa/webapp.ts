@@ -8,7 +8,13 @@ const cors = {
 
 type Row = Record<string, unknown>;
 
-type PageImage = { id: number; alt: string; orderNo: number; url: string };
+type PageImage = {
+  id: number;
+  alt: string;
+  hyperlink: string;
+  orderNo: number;
+  url: string;
+};
 
 type PageNode = {
   id: number;
