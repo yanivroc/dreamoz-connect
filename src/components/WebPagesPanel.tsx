@@ -99,9 +99,19 @@ export function WebPagesPanel({ appId }: { appId: number }) {
   const refresh = () =>
     queryClient.invalidateQueries({ queryKey: ["web-pages", appId] });
 
+  const nextOrder = (parentId: number | null) => {
+    const siblings = parentId === null ? parents : childrenOf(parentId);
+    return siblings.reduce((max, p) => Math.max(max, p.orderNo), 0) + 1;
+  };
+
+  const editingPage = editingId === null ? null : (pages.find((p) => p.id === editingId) ?? null);
+  const editingImages: WebPageImage[] = editingPage
+    ? [...editingPage.images].sort((a, b) => a.orderNo - b.orderNo || a.id - b.id)
+    : [];
+
   function reset() {
     setEditingId(null);
-    setForm(emptyForm);
+    setForm({ ...emptyForm, orderNo: nextOrder(null) });
   }
 
   function startEdit(page: WebPage) {
