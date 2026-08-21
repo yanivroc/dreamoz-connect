@@ -175,6 +175,35 @@ export function ApiPanel({ appId }: { appId: number }) {
           </p>
         </div>
       </div>
+
+      <div className="rounded-2xl border border-border/60 p-5 text-xs text-muted-foreground">
+        <p className="text-sm font-semibold text-foreground">
+          Deployment configuration
+        </p>
+        <p className="mt-1">
+          Maps, payment and email credentials are secrets, so they are never stored
+          in the app database. Set them as environment variables in your deployment
+          (Vercel → Settings → Environment Variables):
+        </p>
+        <ul className="mt-3 grid gap-1 font-mono sm:grid-cols-2">
+          {[
+            "GoogleMapsKey",
+            "SQUARE_ENVIRONMENT",
+            "SQUARE_APPLICATION_ID",
+            "SQUARE_LOCATION_ID",
+            "SQUARE_ACCESS_TOKEN",
+            "MAIL_FROM_NAME",
+            "MAIL_FROM_EMAIL",
+            "SMTP_HOST",
+            "SMTP_PORT",
+            "SMTP_SECURE",
+            "SMTP_USER",
+            "SMTP_PASSWORD",
+          ].map((key) => (
+            <li key={key}>{key}</li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }
