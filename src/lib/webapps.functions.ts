@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { sanitizeHtml } from "./sanitize-html";
+import { stripHtml } from "./sanitize-html";
 
 export type WebApp = {
   id: number;
