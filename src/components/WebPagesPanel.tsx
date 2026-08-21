@@ -17,6 +17,17 @@ import {
 } from "@/lib/webpages.functions";
 import { encodeImage, imageSrc } from "@/lib/image-upload";
 import { RichTextEditor } from "@/components/RichTextEditor";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
 
 const inputClass =
   "w-full rounded-lg border border-border/70 bg-background px-3 py-2 text-sm outline-none transition focus:border-primary";
@@ -81,6 +92,9 @@ export function WebPagesPanel({ appId }: { appId: number }) {
   const [orderTouched, setOrderTouched] = useState(false);
   const [links, setLinks] = useState<Record<number, string>>({});
   const [collapsed, setCollapsed] = useState<Set<number>>(new Set());
+  const [pendingDelete, setPendingDelete] = useState<WebPage | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
 
   const { data, isLoading, error } = useQuery<WebPage[]>({
     queryKey: ["web-pages", appId],
@@ -191,21 +205,28 @@ export function WebPagesPanel({ appId }: { appId: number }) {
     }
   }
 
-  async function onDelete(page: WebPage) {
-    if (
-      typeof window !== "undefined" &&
-      !window.confirm(`Delete "${page.title}" and its sub pages?`)
-    )
-      return;
+  async function confirmDelete() {
+    const page = pendingDelete;
+    if (!page) return;
+    const kids = childrenOf(page.id);
+    setDeleting(true);
     try {
       await remove({ data: { id: page.id } });
-      if (editingId === page.id) reset();
-      toast.success("Page deleted.");
+      if (editingId === page.id || kids.some((c) => c.id === editingId)) reset();
+      setPendingDelete(null);
+      toast.success(
+        kids.length > 0
+          ? `Deleted 1 page and ${kids.length} sub page${kids.length === 1 ? "" : "s"}.`
+          : "Deleted 1 page.",
+      );
       await refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not delete the page.");
+    } finally {
+      setDeleting(false);
     }
   }
+
 
   async function onDrop(targetId: number) {
     if (dragId === null || dragId === targetId) return;
@@ -357,7 +378,7 @@ export function WebPagesPanel({ appId }: { appId: number }) {
             </button>
             <button
               type="button"
-              onClick={() => onDelete(page)}
+              onClick={() => setPendingDelete(page)}
               className="rounded-full border border-destructive/50 px-3 py-1 text-xs text-destructive transition hover:bg-destructive/10"
             >
               Delete
@@ -692,6 +713,51 @@ export function WebPagesPanel({ appId }: { appId: number }) {
           })}
         </div>
       </div>
+
+      <AlertDialog
+        open={pendingDelete !== null}
+        onOpenChange={(open) => {
+          if (!open && !deleting) setPendingDelete(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Delete &quot;{pendingDelete?.title ?? ""}&quot;?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingDelete && childrenOf(pendingDelete.id).length > 0 ? (
+                <>
+                  This will also permanently delete{" "}
+                  {childrenOf(pendingDelete.id).length} sub page
+                  {childrenOf(pendingDelete.id).length === 1 ? "" : "s"} and all their
+                  images:{" "}
+                  {childrenOf(pendingDelete.id)
+                    .map((c) => c.title)
+                    .join(", ")}
+                  . This cannot be undone.
+                </>
+              ) : (
+                "This page and its images will be permanently deleted. This cannot be undone."
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleting}
+              onClick={(e) => {
+                e.preventDefault();
+                void confirmDelete();
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Deleting…" : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
+
