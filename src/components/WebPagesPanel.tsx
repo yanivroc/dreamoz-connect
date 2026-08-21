@@ -191,21 +191,28 @@ export function WebPagesPanel({ appId }: { appId: number }) {
     }
   }
 
-  async function onDelete(page: WebPage) {
-    if (
-      typeof window !== "undefined" &&
-      !window.confirm(`Delete "${page.title}" and its sub pages?`)
-    )
-      return;
+  async function confirmDelete() {
+    const page = pendingDelete;
+    if (!page) return;
+    const kids = childrenOf(page.id);
+    setDeleting(true);
     try {
       await remove({ data: { id: page.id } });
-      if (editingId === page.id) reset();
-      toast.success("Page deleted.");
+      if (editingId === page.id || kids.some((c) => c.id === editingId)) reset();
+      setPendingDelete(null);
+      toast.success(
+        kids.length > 0
+          ? `Deleted 1 page and ${kids.length} sub page${kids.length === 1 ? "" : "s"}.`
+          : "Deleted 1 page.",
+      );
       await refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not delete the page.");
+    } finally {
+      setDeleting(false);
     }
   }
+
 
   async function onDrop(targetId: number) {
     if (dragId === null || dragId === targetId) return;
