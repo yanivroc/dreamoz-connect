@@ -20,6 +20,7 @@ import { Route as CheckoutIndexRouteImport } from './routes/checkout.index'
 import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
 import { Route as PageSlugRouteImport } from './routes/page.$slug'
 import { Route as ApiAssetIdRouteImport } from './routes/api/asset.$id'
+import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
 import { Route as ApiPublicWaTokenRouteImport } from './routes/api/public/wa/token'
 import { Route as ApiPublicWaWebappRouteImport } from './routes/api/public/wa/webapp'
 
@@ -78,6 +79,11 @@ const ApiAssetIdRoute = ApiAssetIdRouteImport.update({
   path: '/api/asset/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHealthRoute = ApiPublicHealthRouteImport.update({
+  id: '/api/public/health',
+  path: '/api/public/health',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicWaTokenRoute = ApiPublicWaTokenRouteImport.update({
   id: '/api/public/wa/token',
   path: '/api/public/wa/token',
@@ -101,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/page/$slug': typeof PageSlugRoute
   '/checkout/': typeof CheckoutIndexRoute
   '/api/asset/$id': typeof ApiAssetIdRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/wa/token': typeof ApiPublicWaTokenRoute
   '/api/public/wa/webapp': typeof ApiPublicWaWebappRoute
 }
@@ -116,6 +123,7 @@ export interface FileRoutesByTo {
   '/page/$slug': typeof PageSlugRoute
   '/checkout': typeof CheckoutIndexRoute
   '/api/asset/$id': typeof ApiAssetIdRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/wa/token': typeof ApiPublicWaTokenRoute
   '/api/public/wa/webapp': typeof ApiPublicWaWebappRoute
 }
@@ -132,6 +140,7 @@ export interface FileRoutesById {
   '/page/$slug': typeof PageSlugRoute
   '/checkout/': typeof CheckoutIndexRoute
   '/api/asset/$id': typeof ApiAssetIdRoute
+  '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/wa/token': typeof ApiPublicWaTokenRoute
   '/api/public/wa/webapp': typeof ApiPublicWaWebappRoute
 }
@@ -149,6 +158,7 @@ export interface FileRouteTypes {
     | '/page/$slug'
     | '/checkout/'
     | '/api/asset/$id'
+    | '/api/public/health'
     | '/api/public/wa/token'
     | '/api/public/wa/webapp'
   fileRoutesByTo: FileRoutesByTo
@@ -164,6 +174,7 @@ export interface FileRouteTypes {
     | '/page/$slug'
     | '/checkout'
     | '/api/asset/$id'
+    | '/api/public/health'
     | '/api/public/wa/token'
     | '/api/public/wa/webapp'
   id:
@@ -179,6 +190,7 @@ export interface FileRouteTypes {
     | '/page/$slug'
     | '/checkout/'
     | '/api/asset/$id'
+    | '/api/public/health'
     | '/api/public/wa/token'
     | '/api/public/wa/webapp'
   fileRoutesById: FileRoutesById
@@ -195,6 +207,7 @@ export interface RootRouteChildren {
   PageSlugRoute: typeof PageSlugRoute
   CheckoutIndexRoute: typeof CheckoutIndexRoute
   ApiAssetIdRoute: typeof ApiAssetIdRoute
+  ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicWaTokenRoute: typeof ApiPublicWaTokenRoute
   ApiPublicWaWebappRoute: typeof ApiPublicWaWebappRoute
 }
@@ -278,6 +291,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAssetIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/health': {
+      id: '/api/public/health'
+      path: '/api/public/health'
+      fullPath: '/api/public/health'
+      preLoaderRoute: typeof ApiPublicHealthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/wa/token': {
       id: '/api/public/wa/token'
       path: '/api/public/wa/token'
@@ -307,6 +327,7 @@ const rootRouteChildren: RootRouteChildren = {
   PageSlugRoute: PageSlugRoute,
   CheckoutIndexRoute: CheckoutIndexRoute,
   ApiAssetIdRoute: ApiAssetIdRoute,
+  ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicWaTokenRoute: ApiPublicWaTokenRoute,
   ApiPublicWaWebappRoute: ApiPublicWaWebappRoute,
 }
