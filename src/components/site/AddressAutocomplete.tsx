@@ -173,6 +173,7 @@ export function AddressAutocomplete({
       <Input
         id={id}
         value={value}
+        required={required}
         autoComplete="off"
         placeholder={placeholder ?? "Start typing your address"}
         onChange={(e) => {
