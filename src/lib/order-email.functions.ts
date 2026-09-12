@@ -109,10 +109,6 @@ export const sendOrderEmails = createServerFn({ method: "POST" })
   }
 </p>`;
 
-    const receiptLine = data.receiptUrl
-      ? `<p style="font-family:Arial,sans-serif;font-size:14px;"><a href="${esc(data.receiptUrl)}">View your Square receipt</a></p>`
-      : "";
-
     const reference = `<p style="font-family:Arial,sans-serif;font-size:14px;">Payment reference: <strong>${esc(data.paymentId)}</strong></p>`;
 
     const buyerHtml = `
@@ -122,7 +118,6 @@ export const sendOrderEmails = createServerFn({ method: "POST" })
   ${reference}
   ${summary}
   ${buyerBlock}
-  ${receiptLine}
   <p style="font-size:13px;color:#666;">— ${esc(brand)}</p>
 </div>`;
 
@@ -132,7 +127,6 @@ export const sendOrderEmails = createServerFn({ method: "POST" })
   ${summary}
   <h3 style="font-size:15px;">Customer</h3>
   ${buyerBlock}
-  ${receiptLine}
 </div>`;
 
     const errors: string[] = [];

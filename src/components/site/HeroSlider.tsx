@@ -37,7 +37,7 @@ export function HeroSlider({ page }: { page: WaPage }) {
       <div className="mx-auto flex min-h-[70vh] max-w-6xl flex-col justify-center px-6 py-24 text-left">
         <div className="max-w-2xl">
           <h1 className="text-4xl font-bold text-foreground sm:text-5xl">{page.title}</h1>
-          <RichText html={page.description} className="mt-6" />
+          <RichText html={page.description} className="home-copy mt-6 max-w-xl" />
           {page.hyperlink ? (
             <a
               href={page.hyperlink}
