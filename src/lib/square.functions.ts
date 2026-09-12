@@ -32,10 +32,10 @@ const checkoutSchema = z.object({
     name: z.string().min(1).max(120),
     email: z.string().email().max(160),
     phone: z.string().trim().min(1, "Phone number is required").max(40),
-    address: z.string().max(200).optional().default(""),
-    city: z.string().max(80).optional().default(""),
-    postcode: z.string().max(20).optional().default(""),
-    country: z.string().max(60).optional().default("Australia"),
+    address: z.string().trim().min(1, "Address is required").max(200),
+    city: z.string().trim().min(1, "City is required").max(80),
+    postcode: z.string().trim().min(1, "Postcode is required").max(20),
+    country: z.string().trim().min(1, "Country is required").max(60),
   }),
   items: z
     .array(

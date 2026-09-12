@@ -16,6 +16,7 @@ interface Props {
   onSelect: (parsed: ParsedAddress) => void;
   placeholder?: string;
   className?: string;
+  required?: boolean;
 }
 
 interface PlacePrediction {
@@ -117,6 +118,7 @@ export function AddressAutocomplete({
   onSelect,
   placeholder,
   className,
+  required,
 }: Props) {
   const [predictions, setPredictions] = useState<PlacePrediction[]>([]);
   const [open, setOpen] = useState(false);
@@ -171,6 +173,7 @@ export function AddressAutocomplete({
       <Input
         id={id}
         value={value}
+        required={required}
         autoComplete="off"
         placeholder={placeholder ?? "Start typing your address"}
         onChange={(e) => {

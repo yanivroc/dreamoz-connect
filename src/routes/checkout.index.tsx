@@ -108,8 +108,16 @@ function CheckoutPage() {
   }, [squareConfig]);
 
   const handlePay = async () => {
-    if (!form.name || !form.email || !form.phone.trim()) {
-      toast.error("Please enter your name, email, and phone number.");
+    if (
+      !form.name.trim() ||
+      !form.email.trim() ||
+      !form.phone.trim() ||
+      !form.address.trim() ||
+      !form.city.trim() ||
+      !form.postcode.trim() ||
+      !form.country.trim()
+    ) {
+      toast.error("Please enter your full name, email, phone, address, city, postcode, and country.");
       return;
     }
     if (!cardRef.current) {
@@ -189,7 +197,7 @@ function CheckoutPage() {
             [
               ["name", "Full name"],
               ["email", "Email"],
-              ["phone", "Phone *"],
+              ["phone", "Phone"],
               ["address", "Address"],
               ["city", "City"],
               ["postcode", "Postcode"],
@@ -203,6 +211,7 @@ function CheckoutPage() {
                   id="address"
                   value={form.address}
                   className="mt-1.5"
+                  required
                   onChange={(v) => setForm((f) => ({ ...f, address: v }))}
                   onSelect={(p) =>
                     setForm((f) => ({
@@ -219,7 +228,7 @@ function CheckoutPage() {
                   id={key}
                   value={form[key]}
                   type={key === "email" ? "email" : "text"}
-                  required={key === "name" || key === "email" || key === "phone"}
+                  required
                   onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
                   className="mt-1.5"
                 />
