@@ -108,8 +108,8 @@ function CheckoutPage() {
   }, [squareConfig]);
 
   const handlePay = async () => {
-    if (!form.name || !form.email) {
-      toast.error("Please enter your name and email.");
+    if (!form.name || !form.email || !form.phone.trim()) {
+      toast.error("Please enter your name, email, and phone number.");
       return;
     }
     if (!cardRef.current) {

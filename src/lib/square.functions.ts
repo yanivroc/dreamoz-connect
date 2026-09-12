@@ -31,7 +31,7 @@ const checkoutSchema = z.object({
   customer: z.object({
     name: z.string().min(1).max(120),
     email: z.string().email().max(160),
-    phone: z.string().max(40).optional().default(""),
+    phone: z.string().trim().min(1, "Phone number is required").max(40),
     address: z.string().max(200).optional().default(""),
     city: z.string().max(80).optional().default(""),
     postcode: z.string().max(20).optional().default(""),
