@@ -1,3 +1,4 @@
+import type { Client } from "@libsql/client";
 const enc = new TextEncoder();
 
 function b64url(bytes: Uint8Array): string {
@@ -90,16 +91,14 @@ function safeEqual(a: string, b: string): boolean {
   return diff === 0;
 }
 
-type MinimalDb = {
-  execute(q: { sql: string; args: unknown[] }): Promise<{ rows: unknown[] }>;
-};
+
 
 /**
  * Verifies an apiKey/apiSecret pair and returns the app id, or null.
  * Accepts the legacy SESSION_SECRET-based hash once and upgrades it in place.
  */
 export async function verifyApiCredentials(
-  db: MinimalDb,
+  db: Client,
   apiKey: string,
   apiSecret: string,
 ): Promise<number | null> {
