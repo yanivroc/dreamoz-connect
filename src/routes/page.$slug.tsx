@@ -102,7 +102,10 @@ function PageDetail() {
               {formatMoney(page.product.price ?? 0, currency)}
             </p>
           ) : null}
-          <RichText html={page.description} className={isProductPage(page) ? "mt-4" : ""} />
+          <RichText
+            html={page.description}
+            className={isProductPage(page) ? "home-copy mt-4" : "home-copy"}
+          />
           {isProductPage(page) ? <AddToCartPanel page={page} /> : null}
         </div>
       ) : (
@@ -112,7 +115,7 @@ function PageDetail() {
               {formatMoney(page.product.price ?? 0, currency)}
             </p>
           ) : null}
-          <RichText html={page.description} className="mt-6 max-w-3xl" />
+          <RichText html={page.description} className="home-copy mt-6 max-w-3xl" />
           <PageMedia page={page} />
           {isProductPage(page) ? <AddToCartPanel page={page} /> : null}
         </>
