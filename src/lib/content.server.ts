@@ -13,7 +13,14 @@ async function resolveAppId(): Promise<number> {
   const apiKey = process.env["DREAMOZTECH_API_KEY"]?.trim();
   const apiSecret = process.env["DREAMOZTECH_API_SECRET"]?.trim();
   if (!apiKey || !apiSecret) {
-    throw new Error("DREAMOZTECH_API_KEY / DREAMOZTECH_API_SECRET are not configured.");
+    const missing = [
+      ...(!apiKey ? ["DREAMOZTECH_API_KEY"] : []),
+      ...(!apiSecret ? ["DREAMOZTECH_API_SECRET"] : []),
+    ];
+    throw new Error(
+      `Missing required environment variable(s): ${missing.join(", ")}. ` +
+        `Check they are scoped to this deployment's environment and redeploy.`,
+    );
   }
   const { dbClient, ensureWebPagesTables } = await import("./db.server");
   const db = dbClient();
