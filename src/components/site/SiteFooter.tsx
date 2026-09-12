@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { siteContentQuery } from "@/lib/content-query";
 import { slugify, sortPages } from "@/lib/content-types";
+import { RichText } from "@/components/site/RichText";
 
 export function SiteFooter() {
   const { data } = useQuery(siteContentQuery);
@@ -15,9 +16,10 @@ export function SiteFooter() {
           <p className="text-lg font-bold text-foreground">
             {content?.webApp?.title ?? "DreamozTech"}
           </p>
-          <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted-foreground">
-            {content?.webApp?.description}
-          </p>
+          <RichText
+            html={content?.webApp?.description ?? ""}
+            className="mt-3 max-w-xs text-sm leading-relaxed text-muted-foreground"
+          />
         </div>
 
         <div>
