@@ -35,23 +35,17 @@ export const Route = createFileRoute("/api/public/wa/token")({
         }
         await ensureWebPagesTables(db);
 
-        const res = await db.execute({
-          sql: "SELECT app_id, secret_hash FROM web_app_api_keys WHERE api_key = ? LIMIT 1",
-          args: [parsed.data.apiKey],
-        });
-        const row = res.rows[0] as Record<string, unknown> | undefined;
-        const { hmacHex, signToken } = await import("@/lib/webapi.server");
-        const provided = await hmacHex(`secret:${parsed.data.apiSecret}`);
-        const stored = row ? String(row["secret_hash"] ?? "") : "";
-        let diff = provided.length === stored.length ? 0 : 1;
-        for (let i = 0; i < provided.length && i < stored.length; i++) {
-          diff |= provided.charCodeAt(i) ^ stored.charCodeAt(i);
-        }
-        if (!row || diff !== 0) {
+        const { verifyApiCredentials, signToken } = await import("@/lib/webapi.server");
+        const appId = await verifyApiCredentials(
+          db,
+          parsed.data.apiKey,
+          parsed.data.apiSecret,
+        );
+        if (appId === null) {
           return Response.json({ error: "Invalid credentials." }, { status: 401, headers: cors });
         }
 
-        const { token, expiresIn } = await signToken(Number(row["app_id"]));
+        const { token, expiresIn } = await signToken(appId);
         return Response.json({ token, tokenType: "Bearer", expiresIn }, { headers: { ...cors, "Cache-Control": "no-store" } });
       },
     },

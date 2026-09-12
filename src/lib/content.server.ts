@@ -20,20 +20,10 @@ async function resolveAppId(): Promise<number> {
   if (!db) throw new Error("Database is not configured.");
   await ensureWebPagesTables(db);
 
-  const res = await db.execute({
-    sql: "SELECT app_id, secret_hash FROM web_app_api_keys WHERE api_key = ? LIMIT 1",
-    args: [apiKey],
-  });
-  const row = res.rows[0] as Record<string, unknown> | undefined;
-  const { hmacHex } = await import("./webapi.server");
-  const provided = await hmacHex(`secret:${apiSecret}`);
-  const stored = row ? String(row["secret_hash"] ?? "") : "";
-  let diff = provided.length === stored.length ? 0 : 1;
-  for (let i = 0; i < provided.length && i < stored.length; i++) {
-    diff |= provided.charCodeAt(i) ^ stored.charCodeAt(i);
-  }
-  if (!row || diff !== 0) throw new Error("Invalid DREAMOZTECH API credentials.");
-  return Number(row["app_id"]);
+  const { verifyApiCredentials } = await import("./webapi.server");
+  const appId = await verifyApiCredentials(db, apiKey, apiSecret);
+  if (appId === null) throw new Error("Invalid DREAMOZTECH API credentials.");
+  return appId;
 }
 
 async function load(): Promise<SiteContent> {

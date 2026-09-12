@@ -1,3 +1,4 @@
+import type { Client } from "@libsql/client";
 const enc = new TextEncoder();
 
 function b64url(bytes: Uint8Array): string {
@@ -72,4 +73,57 @@ export async function verifyToken(token: string): Promise<number | null> {
   if (!Number.isFinite(appId) || !Number.isFinite(exp)) return null;
   if (exp * 1000 < Date.now()) return null;
   return appId;
+}
+
+/**
+ * Fingerprint for stored API secrets. Deliberately independent of
+ * SESSION_SECRET so rotating the session key can never invalidate API keys.
+ */
+export async function secretFingerprint(secret: string): Promise<string> {
+  const buf = await crypto.subtle.digest("SHA-256", enc.encode(`wa-secret:v2:${secret}`));
+  return toHex(buf);
+}
+
+function safeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+
+
+/**
+ * Verifies an apiKey/apiSecret pair and returns the app id, or null.
+ * Accepts the legacy SESSION_SECRET-based hash once and upgrades it in place.
+ */
+export async function verifyApiCredentials(
+  db: Client,
+  apiKey: string,
+  apiSecret: string,
+): Promise<number | null> {
+  const res = await db.execute({
+    sql: "SELECT app_id, secret_hash FROM web_app_api_keys WHERE api_key = ? LIMIT 1",
+    args: [apiKey],
+  });
+  const row = res.rows[0] as Record<string, unknown> | undefined;
+  if (!row) return null;
+  const stored = String(row["secret_hash"] ?? "");
+  const appId = Number(row["app_id"]);
+
+  if (safeEqual(await secretFingerprint(apiSecret), stored)) return appId;
+
+  // Legacy hash (HMAC with SESSION_SECRET) — accept once, then upgrade.
+  if (safeEqual(await hmacHex(`secret:${apiSecret}`), stored)) {
+    try {
+      await db.execute({
+        sql: "UPDATE web_app_api_keys SET secret_hash = ? WHERE api_key = ?",
+        args: [await secretFingerprint(apiSecret), apiKey],
+      });
+    } catch {
+      // Upgrade is best-effort.
+    }
+    return appId;
+  }
+  return null;
 }

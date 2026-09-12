@@ -59,7 +59,7 @@ export const getApiCredentials = createServerFn({ method: "GET" })
   .handler(async ({ data }): Promise<ApiCredentials> => {
     const ctx = await requireUser();
     const ownerId = await assertApp(ctx, data.appId);
-    const { randomKey, hmacHex } = await import("./webapi.server");
+    const { randomKey, secretFingerprint } = await import("./webapi.server");
 
     const existing = await ctx.db.execute({
       sql: "SELECT * FROM web_app_api_keys WHERE app_id = ? LIMIT 1",
@@ -82,7 +82,7 @@ export const getApiCredentials = createServerFn({ method: "GET" })
     await ctx.db.execute({
       sql: `INSERT INTO web_app_api_keys (app_id, user_id, api_key, secret_hash, created_at, rotated_at)
             VALUES (?, ?, ?, ?, ?, NULL)`,
-      args: [data.appId, ownerId, apiKey, await hmacHex(`secret:${apiSecret}`), now],
+      args: [data.appId, ownerId, apiKey, await secretFingerprint(apiSecret), now],
     });
     return { appId: data.appId, apiKey, apiSecret, createdAt: now, rotatedAt: null };
   });
@@ -92,7 +92,7 @@ export const rotateApiSecret = createServerFn({ method: "POST" })
   .handler(async ({ data }): Promise<ApiCredentials> => {
     const ctx = await requireUser();
     const ownerId = await assertApp(ctx, data.appId);
-    const { randomKey, hmacHex } = await import("./webapi.server");
+    const { randomKey, secretFingerprint } = await import("./webapi.server");
 
     const existing = await ctx.db.execute({
       sql: "SELECT api_key, created_at FROM web_app_api_keys WHERE app_id = ? LIMIT 1",
@@ -102,7 +102,7 @@ export const rotateApiSecret = createServerFn({ method: "POST" })
     const apiKey = row ? String(row["api_key"] ?? "") : randomKey("WA", 18);
     const apiSecret = randomKey("SEC", 32);
     const now = new Date().toISOString();
-    const secretHash = await hmacHex(`secret:${apiSecret}`);
+    const secretHash = await secretFingerprint(apiSecret);
 
     if (row) {
       await ctx.db.execute({
