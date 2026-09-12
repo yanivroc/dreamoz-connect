@@ -4,8 +4,8 @@ import { createFileRoute } from "@tanstack/react-router";
 // missing (names only, never values) so deployments can be verified without
 // digging through function logs.
 const REQUIRED_VARS = [
-  "DREAMOZTECH_API_KEY",
-  "DREAMOZTECH_API_SECRET",
+  "DREAMOZ_API_KEY",
+  "DREAMOZ_API_SECRET",
   "TURSO_DATABASE_URL",
   "TURSO_AUTH_TOKEN",
   "SESSION_SECRET",
