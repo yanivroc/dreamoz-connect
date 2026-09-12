@@ -1,5 +1,5 @@
 // Server-only: loads the public site content straight from the web app that
-// belongs to DREAMOZTECH_API_KEY / DREAMOZTECH_API_SECRET (the same keys the
+// belongs to DREAMOZ_API_KEY / DREAMOZ_API_SECRET (the same keys the
 // API tab issues). No HTTP round-trip to /api/public/wa/* is needed because the
 // builder lives in this project.
 import type { SiteContent } from "./content-types";
@@ -10,12 +10,12 @@ let cache: { content: SiteContent; expires: number } | null = null;
 let inflight: Promise<SiteContent> | null = null;
 
 async function resolveAppId(): Promise<number> {
-  const apiKey = process.env["DREAMOZTECH_API_KEY"]?.trim();
-  const apiSecret = process.env["DREAMOZTECH_API_SECRET"]?.trim();
+  const apiKey = process.env["DREAMOZ_API_KEY"]?.trim();
+  const apiSecret = process.env["DREAMOZ_API_SECRET"]?.trim();
   if (!apiKey || !apiSecret) {
     const missing = [
-      ...(!apiKey ? ["DREAMOZTECH_API_KEY"] : []),
-      ...(!apiSecret ? ["DREAMOZTECH_API_SECRET"] : []),
+      ...(!apiKey ? ["DREAMOZ_API_KEY"] : []),
+      ...(!apiSecret ? ["DREAMOZ_API_SECRET"] : []),
     ];
     throw new Error(
       `Missing required environment variable(s): ${missing.join(", ")}. ` +
@@ -29,7 +29,7 @@ async function resolveAppId(): Promise<number> {
 
   const { verifyApiCredentials } = await import("./webapi.server");
   const appId = await verifyApiCredentials(db, apiKey, apiSecret);
-  if (appId === null) throw new Error("Invalid DREAMOZTECH API credentials.");
+  if (appId === null) throw new Error("Invalid DREAMOZ API credentials.");
   return appId;
 }
 
