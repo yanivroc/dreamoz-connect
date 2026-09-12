@@ -2,7 +2,7 @@
 // The in-app TanStack route (src/routes/api/public/wa/token.ts) is not served
 // on Vercel, so this function handles /api/public/wa/token in production.
 import { createClient } from "@libsql/client/web";
-import { createHmac, timingSafeEqual } from "crypto";
+import { createHash, createHmac, timingSafeEqual } from "crypto";
 
 export const config = { runtime: "nodejs" };
 
@@ -21,6 +21,15 @@ function tokenSecret(): string {
 
 function hmacHex(value: string): string {
   return createHmac("sha256", tokenSecret()).update(value).digest("hex");
+}
+
+function fingerprint(secret: string): string {
+  return createHash("sha256").update(`wa-secret:v2:${secret}`).digest("hex");
+}
+
+function safeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(Buffer.from(a), Buffer.from(b));
 }
 
 function b64url(input: string): string {
@@ -104,12 +113,19 @@ export default async function handler(req: any, res: any) {
     return;
   }
 
-  const provided = hmacHex(`secret:${apiSecret}`);
   const stored = row ? String(row["secret_hash"] ?? "") : "";
-  const ok =
-    !!row &&
-    provided.length === stored.length &&
-    timingSafeEqual(Buffer.from(provided), Buffer.from(stored));
+  let ok = !!row && safeEqual(fingerprint(apiSecret), stored);
+  if (!ok && row && safeEqual(hmacHex(`secret:${apiSecret}`), stored)) {
+    ok = true;
+    try {
+      await db.execute({
+        sql: "UPDATE web_app_api_keys SET secret_hash = ? WHERE api_key = ?",
+        args: [fingerprint(apiSecret), apiKey],
+      });
+    } catch {
+      // best-effort upgrade
+    }
+  }
   if (!ok) {
     send(res, 401, { error: "Invalid credentials." });
     return;
