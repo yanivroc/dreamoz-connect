@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { siteContentQuery } from "@/lib/content-query";
-import { SiteLayout } from "@/components/SiteLayout";
 import { SignUpForm } from "@/components/SignUpForm";
 
 export const Route = createFileRoute("/signup")({
@@ -29,7 +28,7 @@ export const Route = createFileRoute("/signup")({
 function SignUpPage() {
 
   return (
-    <SiteLayout>
+    <>
       <section className="hero-surface border-b border-border/60">
         <div className="mx-auto w-full max-w-7xl px-5 py-14">
           <h1 className="text-4xl font-bold md:text-5xl">Create your account</h1>
@@ -45,6 +44,6 @@ function SignUpPage() {
           <SignUpForm />
         </div>
       </section>
-    </SiteLayout>
+    </>
   );
 }

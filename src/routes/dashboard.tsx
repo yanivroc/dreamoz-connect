@@ -1,5 +1,4 @@
 import { createFileRoute, redirect, Link } from "@tanstack/react-router";
-import { SiteLayout } from "@/components/SiteLayout";
 import { me, type CurrentUser } from "@/lib/auth.functions";
 import { AdminUsersPanel } from "@/components/AdminUsersPanel";
 
@@ -30,7 +29,7 @@ function DashboardPage() {
   const { user } = Route.useLoaderData() as { user: CurrentUser };
 
   return (
-    <SiteLayout>
+    <>
       <section className="hero-surface border-b border-border/60">
         <div className="mx-auto w-full max-w-7xl px-5 py-14">
           <h1 className="text-4xl font-bold md:text-5xl">Dashboard</h1>
@@ -84,6 +83,6 @@ function DashboardPage() {
           </div>
         )}
       </section>
-    </SiteLayout>
+    </>
   );
 }

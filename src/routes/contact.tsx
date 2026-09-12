@@ -2,7 +2,6 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Mail, Link2 } from "lucide-react";
 import { siteContentQuery } from "@/lib/content-query";
-import { SiteLayout } from "@/components/SiteLayout";
 import { ContactForm } from "@/components/ContactForm";
 
 export const Route = createFileRoute("/contact")({
@@ -35,7 +34,7 @@ function Contact() {
   const email = app.email?.trim();
 
   return (
-    <SiteLayout>
+    <>
       <section className="hero-surface border-b border-border/60">
         <div className="mx-auto w-full max-w-7xl px-5 py-14">
           <h1 className="text-4xl font-bold md:text-5xl">Contact {brand}</h1>
@@ -88,6 +87,6 @@ function Contact() {
           </dl>
         </div>
       </section>
-    </SiteLayout>
+    </>
   );
 }

@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { siteContentQuery } from "@/lib/content-query";
-import { SiteLayout } from "@/components/SiteLayout";
 import { LoginForm } from "@/components/LoginForm";
 
 export const Route = createFileRoute("/login")({
@@ -34,7 +33,7 @@ function LoginPage() {
   const { redirect } = Route.useSearch();
 
   return (
-    <SiteLayout>
+    <>
       <section className="hero-surface border-b border-border/60">
         <div className="mx-auto w-full max-w-7xl px-5 py-14">
           <h1 className="text-4xl font-bold md:text-5xl">Sign in</h1>
@@ -49,6 +48,6 @@ function LoginPage() {
           <LoginForm redirectTo={redirect} />
         </div>
       </section>
-    </SiteLayout>
+    </>
   );
 }

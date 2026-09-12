@@ -2,7 +2,6 @@ import { useState } from "react";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { SiteLayout } from "@/components/SiteLayout";
 import { me, type CurrentUser } from "@/lib/auth.functions";
 import { WebAppsPanel } from "@/components/WebAppsPanel";
 import { WebPagesPanel } from "@/components/WebPagesPanel";
@@ -66,7 +65,7 @@ function BuildWebAppsPage() {
   const selected = appId ?? list[0]?.id ?? null;
 
   return (
-    <SiteLayout>
+    <>
       <section className="hero-surface border-b border-border/60">
         <div className="mx-auto w-full max-w-7xl px-5 py-14">
           <h1 className="text-4xl font-bold md:text-5xl">Build Web Apps</h1>
@@ -130,6 +129,6 @@ function BuildWebAppsPage() {
         )}
         {tab === "api" && selected !== null && <ApiPanel appId={selected} />}
       </section>
-    </SiteLayout>
+    </>
   );
 }
