@@ -16,6 +16,7 @@ interface Props {
   onSelect: (parsed: ParsedAddress) => void;
   placeholder?: string;
   className?: string;
+  required?: boolean;
 }
 
 interface PlacePrediction {
