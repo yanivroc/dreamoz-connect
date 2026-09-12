@@ -69,7 +69,7 @@ export const createSquarePayment = createServerFn({ method: "POST" })
     }
 
     // Price the order server-side from the CMS — never trust client amounts.
-    const { fetchSiteContent } = await import("./dreamoz.server");
+    const { fetchSiteContent } = await import("./content.server");
     const { flattenPages } = await import("./content-types");
     const { priceOrder } = await import("./pricing");
 

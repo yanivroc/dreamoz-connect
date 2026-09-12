@@ -48,8 +48,8 @@ const fmt = (n: number, cur: string) => {
 export const sendOrderEmails = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => schema.parse(data))
   .handler(async ({ data }): Promise<OrderEmailResult> => {
-    const { sendMail } = await import("./mail.server");
-    const { fetchSiteContent } = await import("./dreamoz.server");
+    const { sendMail } = await import("./mailer.server");
+    const { fetchSiteContent } = await import("./content.server");
     const { flattenPages } = await import("./content-types");
     const { priceOrder } = await import("./pricing");
 

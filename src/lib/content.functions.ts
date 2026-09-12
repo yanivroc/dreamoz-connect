@@ -9,7 +9,7 @@ export interface ContentResult {
 export const getSiteContent = createServerFn({ method: "GET" }).handler(
   async (): Promise<ContentResult> => {
     try {
-      const { fetchSiteContent } = await import("./dreamoz.server");
+      const { fetchSiteContent } = await import("./content.server");
       const content = await fetchSiteContent();
       return { content, error: null };
     } catch (err) {
