@@ -20,10 +20,10 @@ export const sendContactEmail = createServerFn({ method: "POST" })
     }
 
     const { getMailConfig, sendMail } = await import("./mailer.server");
-    const { getContactInfo } = await import("./dreamoz.server");
+    const { fetchSiteContent } = await import("./content.server");
 
-    const member = await getContactInfo();
-    const toEmail = member.memberEmail ?? "support@dreamoztech.com";
+    const content = await fetchSiteContent();
+    const toEmail = content.webApp.email?.trim() || "support@dreamoztech.com";
     const config = getMailConfig();
 
     const safe = (s: string) =>

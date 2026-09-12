@@ -72,9 +72,9 @@ export const signUp = createServerFn({ method: "POST" })
 </div>`,
       });
       try {
-        const { getContactInfo } = await import("./dreamoz.server");
-        const member = await getContactInfo();
-        const adminEmail = member.memberEmail?.trim() || "support@dreamoztech.com";
+        const { fetchSiteContent } = await import("./content.server");
+        const content = await fetchSiteContent();
+        const adminEmail = content.webApp.email?.trim() || "support@dreamoztech.com";
         await sendMail({
           from: { email: config.emailFrom, name: config.fromName },
           to: [{ email: adminEmail }],
