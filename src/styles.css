@@ -135,7 +135,7 @@
   h3,
   h4 {
     font-family: var(--font-display);
-    letter-spacing: -0.02em;
+    letter-spacing: 0;
     line-height: 1.15;
     text-wrap: balance;
   }
@@ -162,6 +162,106 @@
 
 @utility shadow-card {
   box-shadow: var(--shadow-card);
+}
+
+@utility home-copy {
+  max-width: 42rem;
+  color: var(--color-muted-foreground);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.75;
+
+  &,
+  & * {
+    font-family: var(--font-sans) !important;
+    letter-spacing: 0 !important;
+  }
+
+  & p,
+  & h1,
+  & h2,
+  & h3,
+  & h4,
+  & h5,
+  & h6,
+  & li,
+  & div,
+  & span,
+  & blockquote,
+  & center,
+  & [align="center"] {
+    text-align: left !important;
+  }
+
+  & p,
+  & ul,
+  & ol,
+  & blockquote {
+    margin: 0 0 1rem !important;
+    color: var(--color-muted-foreground) !important;
+    font-size: 1rem !important;
+    line-height: 1.75 !important;
+  }
+
+  & h1,
+  & h2,
+  & h3,
+  & h4,
+  & h5,
+  & h6 {
+    margin: 1.5rem 0 0.65rem !important;
+    color: var(--color-foreground) !important;
+    font-family: var(--font-display) !important;
+    font-weight: 600 !important;
+    line-height: 1.25 !important;
+  }
+
+  & h1,
+  & h2 {
+    font-size: 1.5rem !important;
+  }
+
+  & h3 {
+    font-size: 1.25rem !important;
+  }
+
+  & h4,
+  & h5,
+  & h6 {
+    font-size: 1.05rem !important;
+  }
+
+  & ul,
+  & ol {
+    padding-left: 1.25rem !important;
+  }
+
+  & ul {
+    list-style: disc !important;
+  }
+
+  & ol {
+    list-style: decimal !important;
+  }
+
+  & li {
+    margin-bottom: 0.4rem !important;
+  }
+
+  & a {
+    color: var(--color-primary) !important;
+    font-weight: 600 !important;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+  }
+
+  & > :first-child {
+    margin-top: 0 !important;
+  }
+
+  & > :last-child {
+    margin-bottom: 0 !important;
+  }
 }
 
 @utility prose-api {
