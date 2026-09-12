@@ -80,15 +80,27 @@ function Index() {
                 <div className="min-w-0">
                   <h2 className="text-3xl font-bold text-foreground">{page.title}</h2>
                   <RichText html={page.description} className="mt-5" />
-                  {children.length === 0 ? (
-                    <Link
-                      to="/page/$slug"
-                      params={{ slug: slugify(page.title) }}
-                      className="mt-6 inline-block text-sm font-semibold text-primary hover:underline"
-                    >
-                      Read more about {page.title}
-                    </Link>
-                  ) : null}
+                  <div className="mt-6 flex flex-wrap items-center gap-4">
+                    {children.length === 0 ? (
+                      <Link
+                        to="/page/$slug"
+                        params={{ slug: slugify(page.title) }}
+                        className="inline-block text-sm font-semibold text-primary hover:underline"
+                      >
+                        Read more about {page.title}
+                      </Link>
+                    ) : null}
+                    {page.hyperlink ? (
+                      <a
+                        href={page.hyperlink}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-block text-sm font-semibold text-primary hover:underline"
+                      >
+                        Visit link
+                      </a>
+                    ) : null}
+                  </div>
                 </div>
                 <div className="min-w-0">
                   <PageMedia page={page} wide={wideMedia} compact={compactMedia} />
