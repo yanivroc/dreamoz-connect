@@ -11,7 +11,7 @@ export function SiteFooter() {
 
   return (
     <footer className="border-t border-border bg-card/40">
-      <div className="mx-auto grid max-w-6xl gap-8 px-6 py-12 sm:grid-cols-3">
+      <div className="mx-auto grid max-w-6xl gap-8 px-6 py-12 sm:grid-cols-2">
         <div>
           <p className="text-lg font-bold text-foreground">
             {content?.webApp?.title ?? "DreamozTech"}
@@ -39,25 +39,6 @@ export function SiteFooter() {
           </ul>
         </div>
 
-        <div>
-          <p className="text-sm font-semibold text-foreground">Contact</p>
-          {content?.webApp?.email ? (
-            <a
-              href={`mailto:${content.webApp.email}`}
-              className="mt-3 block text-sm text-muted-foreground hover:text-primary"
-            >
-              {content.webApp.email}
-            </a>
-          ) : null}
-          {content?.webApp?.link ? (
-            <a
-              href={content.webApp.link}
-              className="mt-2 block text-sm text-muted-foreground hover:text-primary"
-            >
-              {content.webApp.link}
-            </a>
-          ) : null}
-        </div>
       </div>
       <p className="border-t border-border py-5 text-center text-xs text-muted-foreground">
         © {new Date().getFullYear()} {content?.webApp?.title ?? "DreamozTech"}. All rights reserved.

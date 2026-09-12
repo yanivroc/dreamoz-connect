@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Mail, Link2 } from "lucide-react";
 import { siteContentQuery } from "@/lib/content-query";
 import { ContactForm } from "@/components/ContactForm";
 
@@ -31,7 +30,6 @@ function Contact() {
   const { data } = useSuspenseQuery(siteContentQuery);
   const app = data.content.webApp;
   const brand = app.title?.trim() || "DreamozTech";
-  const email = app.email?.trim();
 
   return (
     <>
@@ -45,46 +43,12 @@ function Contact() {
         </div>
       </section>
 
-      <section className="mx-auto grid w-full max-w-7xl gap-10 px-5 py-16 md:grid-cols-2">
-        <div className="rounded-xl border border-border/70 bg-surface p-7 shadow-card">
+      <section className="mx-auto w-full max-w-7xl px-5 py-16">
+        <div className="max-w-3xl rounded-xl border border-border/70 bg-surface p-7 shadow-card">
           <h2 className="text-xl font-semibold">Send us a message</h2>
           <div className="mt-6">
             <ContactForm />
           </div>
-        </div>
-
-        <div className="rounded-xl border border-border/70 bg-surface p-7 shadow-card">
-          <h2 className="text-xl font-semibold">Contact details</h2>
-          <div className="mt-6 flex flex-wrap gap-3">
-            {email ? (
-              <a
-                href={`mailto:${email}`}
-                className="inline-flex items-center gap-2 rounded-full bg-gradient-accent px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-card transition hover:opacity-90"
-              >
-                <Mail size={18} />
-                Email Us
-              </a>
-            ) : null}
-            {app.link?.trim() ? (
-              <a
-                href={app.link}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-foreground transition hover:bg-surface/60"
-              >
-                <Link2 size={18} />
-                Website
-              </a>
-            ) : null}
-          </div>
-          <dl className="mt-6 space-y-4 text-sm">
-            {email ? (
-              <div>
-                <dt className="text-muted-foreground">Email</dt>
-                <dd className="text-foreground">{email}</dd>
-              </div>
-            ) : null}
-          </dl>
         </div>
       </section>
     </>

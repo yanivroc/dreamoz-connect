@@ -1,9 +1,25 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useNavigate, useRouter } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { login } from "@/lib/auth.functions";
+
+const CAPTCHA_STORAGE_KEY = "dreamoz-login-captcha";
+
+function createCaptcha(previous?: string | null) {
+  let a = 0;
+  let b = 0;
+  let value = "";
+
+  do {
+    a = 2 + Math.floor(Math.random() * 8);
+    b = 1 + Math.floor(Math.random() * 9);
+    value = `${a}:${b}`;
+  } while (value === previous);
+
+  return { a, b, value };
+}
 
 export function LoginForm({ redirectTo }: { redirectTo?: string | undefined }) {
   const submit = useServerFn(login);
@@ -12,10 +28,20 @@ export function LoginForm({ redirectTo }: { redirectTo?: string | undefined }) {
   const queryClient = useQueryClient();
   const [pending, setPending] = useState(false);
   const [seed, setSeed] = useState(0);
+  const [initialCaptcha, setInitialCaptcha] = useState({ a: 3, b: 2 });
   const captcha = useMemo(
-    () => ({ a: 3 + ((seed * 7) % 7), b: 2 + ((seed * 4) % 8) }),
-    [seed],
+    () =>
+      seed === 0
+        ? initialCaptcha
+        : { a: 2 + ((seed * 7) % 8), b: 1 + ((seed * 5) % 9) },
+    [initialCaptcha, seed],
   );
+
+  useEffect(() => {
+    const next = createCaptcha(window.sessionStorage.getItem(CAPTCHA_STORAGE_KEY));
+    window.sessionStorage.setItem(CAPTCHA_STORAGE_KEY, next.value);
+    setInitialCaptcha({ a: next.a, b: next.b });
+  }, []);
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
