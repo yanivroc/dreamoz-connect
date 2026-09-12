@@ -11,15 +11,15 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BuildWebAppsRouteImport } from './routes/build-web-apps'
+import { Route as CartRouteImport } from './routes/cart'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SignupRouteImport } from './routes/signup'
-import { Route as ApiMediaRouteImport } from './routes/api/media'
-import { Route as PostSlugRouteImport } from './routes/post.$slug'
+import { Route as CheckoutIndexRouteImport } from './routes/checkout.index'
+import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
+import { Route as PageSlugRouteImport } from './routes/page.$slug'
 import { Route as ApiAssetIdRouteImport } from './routes/api/asset.$id'
-import { Route as ApiPublicCacheBustRouteImport } from './routes/api/public/cache-bust'
-import { Route as ApiPublicCacheStatusRouteImport } from './routes/api/public/cache-status'
 import { Route as ApiPublicWaTokenRouteImport } from './routes/api/public/wa/token'
 import { Route as ApiPublicWaWebappRouteImport } from './routes/api/public/wa/webapp'
 
@@ -31,6 +31,11 @@ const IndexRoute = IndexRouteImport.update({
 const BuildWebAppsRoute = BuildWebAppsRouteImport.update({
   id: '/build-web-apps',
   path: '/build-web-apps',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CartRoute = CartRouteImport.update({
+  id: '/cart',
+  path: '/cart',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -53,29 +58,24 @@ const SignupRoute = SignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiMediaRoute = ApiMediaRouteImport.update({
-  id: '/api/media',
-  path: '/api/media',
+const CheckoutIndexRoute = CheckoutIndexRouteImport.update({
+  id: '/checkout/',
+  path: '/checkout/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PostSlugRoute = PostSlugRouteImport.update({
-  id: '/post/$slug',
-  path: '/post/$slug',
+const CheckoutSuccessRoute = CheckoutSuccessRouteImport.update({
+  id: '/checkout/success',
+  path: '/checkout/success',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PageSlugRoute = PageSlugRouteImport.update({
+  id: '/page/$slug',
+  path: '/page/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAssetIdRoute = ApiAssetIdRouteImport.update({
   id: '/api/asset/$id',
   path: '/api/asset/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicCacheBustRoute = ApiPublicCacheBustRouteImport.update({
-  id: '/api/public/cache-bust',
-  path: '/api/public/cache-bust',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicCacheStatusRoute = ApiPublicCacheStatusRouteImport.update({
-  id: '/api/public/cache-status',
-  path: '/api/public/cache-status',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicWaTokenRoute = ApiPublicWaTokenRouteImport.update({
@@ -92,30 +92,30 @@ const ApiPublicWaWebappRoute = ApiPublicWaWebappRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/build-web-apps': typeof BuildWebAppsRoute
+  '/cart': typeof CartRoute
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/api/media': typeof ApiMediaRoute
-  '/post/$slug': typeof PostSlugRoute
+  '/checkout/success': typeof CheckoutSuccessRoute
+  '/page/$slug': typeof PageSlugRoute
+  '/checkout/': typeof CheckoutIndexRoute
   '/api/asset/$id': typeof ApiAssetIdRoute
-  '/api/public/cache-bust': typeof ApiPublicCacheBustRoute
-  '/api/public/cache-status': typeof ApiPublicCacheStatusRoute
   '/api/public/wa/token': typeof ApiPublicWaTokenRoute
   '/api/public/wa/webapp': typeof ApiPublicWaWebappRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/build-web-apps': typeof BuildWebAppsRoute
+  '/cart': typeof CartRoute
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/api/media': typeof ApiMediaRoute
-  '/post/$slug': typeof PostSlugRoute
+  '/checkout/success': typeof CheckoutSuccessRoute
+  '/page/$slug': typeof PageSlugRoute
+  '/checkout': typeof CheckoutIndexRoute
   '/api/asset/$id': typeof ApiAssetIdRoute
-  '/api/public/cache-bust': typeof ApiPublicCacheBustRoute
-  '/api/public/cache-status': typeof ApiPublicCacheStatusRoute
   '/api/public/wa/token': typeof ApiPublicWaTokenRoute
   '/api/public/wa/webapp': typeof ApiPublicWaWebappRoute
 }
@@ -123,15 +123,15 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/build-web-apps': typeof BuildWebAppsRoute
+  '/cart': typeof CartRoute
   '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/api/media': typeof ApiMediaRoute
-  '/post/$slug': typeof PostSlugRoute
+  '/checkout/success': typeof CheckoutSuccessRoute
+  '/page/$slug': typeof PageSlugRoute
+  '/checkout/': typeof CheckoutIndexRoute
   '/api/asset/$id': typeof ApiAssetIdRoute
-  '/api/public/cache-bust': typeof ApiPublicCacheBustRoute
-  '/api/public/cache-status': typeof ApiPublicCacheStatusRoute
   '/api/public/wa/token': typeof ApiPublicWaTokenRoute
   '/api/public/wa/webapp': typeof ApiPublicWaWebappRoute
 }
@@ -140,45 +140,45 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/build-web-apps'
+    | '/cart'
     | '/contact'
     | '/dashboard'
     | '/login'
     | '/signup'
-    | '/api/media'
-    | '/post/$slug'
+    | '/checkout/success'
+    | '/page/$slug'
+    | '/checkout/'
     | '/api/asset/$id'
-    | '/api/public/cache-bust'
-    | '/api/public/cache-status'
     | '/api/public/wa/token'
     | '/api/public/wa/webapp'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/build-web-apps'
+    | '/cart'
     | '/contact'
     | '/dashboard'
     | '/login'
     | '/signup'
-    | '/api/media'
-    | '/post/$slug'
+    | '/checkout/success'
+    | '/page/$slug'
+    | '/checkout'
     | '/api/asset/$id'
-    | '/api/public/cache-bust'
-    | '/api/public/cache-status'
     | '/api/public/wa/token'
     | '/api/public/wa/webapp'
   id:
     | '__root__'
     | '/'
     | '/build-web-apps'
+    | '/cart'
     | '/contact'
     | '/dashboard'
     | '/login'
     | '/signup'
-    | '/api/media'
-    | '/post/$slug'
+    | '/checkout/success'
+    | '/page/$slug'
+    | '/checkout/'
     | '/api/asset/$id'
-    | '/api/public/cache-bust'
-    | '/api/public/cache-status'
     | '/api/public/wa/token'
     | '/api/public/wa/webapp'
   fileRoutesById: FileRoutesById
@@ -186,15 +186,15 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BuildWebAppsRoute: typeof BuildWebAppsRoute
+  CartRoute: typeof CartRoute
   ContactRoute: typeof ContactRoute
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
-  ApiMediaRoute: typeof ApiMediaRoute
-  PostSlugRoute: typeof PostSlugRoute
+  CheckoutSuccessRoute: typeof CheckoutSuccessRoute
+  PageSlugRoute: typeof PageSlugRoute
+  CheckoutIndexRoute: typeof CheckoutIndexRoute
   ApiAssetIdRoute: typeof ApiAssetIdRoute
-  ApiPublicCacheBustRoute: typeof ApiPublicCacheBustRoute
-  ApiPublicCacheStatusRoute: typeof ApiPublicCacheStatusRoute
   ApiPublicWaTokenRoute: typeof ApiPublicWaTokenRoute
   ApiPublicWaWebappRoute: typeof ApiPublicWaWebappRoute
 }
@@ -213,6 +213,13 @@ declare module '@tanstack/react-router' {
       path: '/build-web-apps'
       fullPath: '/build-web-apps'
       preLoaderRoute: typeof BuildWebAppsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cart': {
+      id: '/cart'
+      path: '/cart'
+      fullPath: '/cart'
+      preLoaderRoute: typeof CartRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -243,18 +250,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/media': {
-      id: '/api/media'
-      path: '/api/media'
-      fullPath: '/api/media'
-      preLoaderRoute: typeof ApiMediaRouteImport
+    '/checkout/': {
+      id: '/checkout/'
+      path: '/checkout'
+      fullPath: '/checkout/'
+      preLoaderRoute: typeof CheckoutIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/post/$slug': {
-      id: '/post/$slug'
-      path: '/post/$slug'
-      fullPath: '/post/$slug'
-      preLoaderRoute: typeof PostSlugRouteImport
+    '/checkout/success': {
+      id: '/checkout/success'
+      path: '/checkout/success'
+      fullPath: '/checkout/success'
+      preLoaderRoute: typeof CheckoutSuccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/page/$slug': {
+      id: '/page/$slug'
+      path: '/page/$slug'
+      fullPath: '/page/$slug'
+      preLoaderRoute: typeof PageSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/asset/$id': {
@@ -262,20 +276,6 @@ declare module '@tanstack/react-router' {
       path: '/api/asset/$id'
       fullPath: '/api/asset/$id'
       preLoaderRoute: typeof ApiAssetIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/cache-bust': {
-      id: '/api/public/cache-bust'
-      path: '/api/public/cache-bust'
-      fullPath: '/api/public/cache-bust'
-      preLoaderRoute: typeof ApiPublicCacheBustRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/cache-status': {
-      id: '/api/public/cache-status'
-      path: '/api/public/cache-status'
-      fullPath: '/api/public/cache-status'
-      preLoaderRoute: typeof ApiPublicCacheStatusRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/wa/token': {
@@ -298,15 +298,15 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BuildWebAppsRoute: BuildWebAppsRoute,
+  CartRoute: CartRoute,
   ContactRoute: ContactRoute,
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
-  ApiMediaRoute: ApiMediaRoute,
-  PostSlugRoute: PostSlugRoute,
+  CheckoutSuccessRoute: CheckoutSuccessRoute,
+  PageSlugRoute: PageSlugRoute,
+  CheckoutIndexRoute: CheckoutIndexRoute,
   ApiAssetIdRoute: ApiAssetIdRoute,
-  ApiPublicCacheBustRoute: ApiPublicCacheBustRoute,
-  ApiPublicCacheStatusRoute: ApiPublicCacheStatusRoute,
   ApiPublicWaTokenRoute: ApiPublicWaTokenRoute,
   ApiPublicWaWebappRoute: ApiPublicWaWebappRoute,
 }

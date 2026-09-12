@@ -1,6 +1,5 @@
 {
   "rewrites": [
-    { "source": "/api/media", "destination": "/api/blob-proxy" },
     { "source": "/api/public/wa/token", "destination": "/api/wa-token" },
     { "source": "/api/public/wa/webapp", "destination": "/api/wa-webapp" }
   ]

@@ -1,7 +1,4 @@
 import { createFileRoute, redirect, Link } from "@tanstack/react-router";
-import { overviewFn } from "@/lib/dreamoz.functions";
-import { SiteLayout } from "@/components/SiteLayout";
-import type { SiteOverview } from "@/lib/dreamoz.types";
 import { me, type CurrentUser } from "@/lib/auth.functions";
 import { AdminUsersPanel } from "@/components/AdminUsersPanel";
 
@@ -13,14 +10,8 @@ export const Route = createFileRoute("/dashboard")({
     }
     return { user };
   },
-  loader: async ({ context }) => {
-    const overview = await overviewFn();
-    return { overview, user: (context as { user: CurrentUser }).user };
-  },
-  head: ({ loaderData }) => ({
-    links: loaderData?.overview?.favicon
-      ? [{ rel: "icon", href: loaderData.overview.favicon }]
-      : [],
+  loader: async ({ context }) => ({ user: (context as { user: CurrentUser }).user }),
+  head: () => ({
     meta: [
       { title: "Dashboard | DreamozTech" },
       { name: "robots", content: "noindex, nofollow" },
@@ -35,17 +26,10 @@ export const Route = createFileRoute("/dashboard")({
 });
 
 function DashboardPage() {
-  const { overview, user } = Route.useLoaderData() as {
-    overview: SiteOverview;
-    user: CurrentUser;
-  };
+  const { user } = Route.useLoaderData() as { user: CurrentUser };
 
   return (
-    <SiteLayout
-      member={overview.member}
-      logo={overview.logo}
-      favicon={overview.favicon}
-    >
+    <>
       <section className="hero-surface border-b border-border/60">
         <div className="mx-auto w-full max-w-7xl px-5 py-14">
           <h1 className="text-4xl font-bold md:text-5xl">Dashboard</h1>
@@ -99,6 +83,6 @@ function DashboardPage() {
           </div>
         )}
       </section>
-    </SiteLayout>
+    </>
   );
 }

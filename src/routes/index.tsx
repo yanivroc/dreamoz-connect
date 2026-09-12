@@ -1,291 +1,105 @@
-import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { overviewFn } from "@/lib/dreamoz.functions";
-import { SiteLayout } from "@/components/SiteLayout";
-import type { SiteOverview } from "@/lib/dreamoz.types";
-import { MediaSlider } from "@/components/MediaSlider";
-
-function stripLinks(html: string) {
-  return html
-    .replace(/<a\b[^>]*>/gi, "")
-    .replace(/<\/a>/gi, "")
-    .replace(/<u\b[^>]*>/gi, "")
-    .replace(/<\/u>/gi, "");
-}
-
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { siteContentQuery } from "@/lib/content-query";
+import { slugify, sortPages } from "@/lib/content-types";
+import { HeroSlider } from "@/components/site/HeroSlider";
+import { RichText } from "@/components/site/RichText";
+import { PageMedia } from "@/components/site/PageMedia";
+import { PageCardGrid } from "@/components/site/PageCardGrid";
 
 export const Route = createFileRoute("/")({
-  loader: () => overviewFn(),
-  head: ({ loaderData }) => ({
-    meta: [
-      { title: "DreamozTech — Software Development & Web Platforms" },
-      {
-        name: "description",
-        content:
-          "DreamozTech builds custom software, websites and growth platforms for businesses in Melbourne and beyond.",
-      },
-      { property: "og:title", content: "DreamozTech — Software Development Company" },
-      {
-        property: "og:description",
-        content:
-          "Custom software, web platforms and digital growth engineering from Melbourne, Australia.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-      ...(loaderData?.member?.metaKey
-        ? [{ name: "keywords", content: loaderData.member.metaKey.replace(/\s+/g, " ").trim() }]
-        : []),
-    ],
-    links: loaderData?.favicon ? [{ rel: "icon", href: loaderData.favicon }] : [],
-  }),
-  component: Home,
+  loader: ({ context }) => context.queryClient.ensureQueryData(siteContentQuery),
+  head: ({ loaderData }) => {
+    const title = loaderData?.content.webApp.title
+      ? `${loaderData.content.webApp.title} — Digital Innovation Partner`
+      : "DreamozTech — Digital Innovation Partner";
+    const description =
+      loaderData?.content.webApp.description?.slice(0, 155) ||
+      "DreamozTech builds web apps, digital products and growth systems for ambitious businesses.";
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "website" },
+        { name: "twitter:card", content: "summary_large_image" },
+      ],
+    };
+  },
+  component: Index,
 });
 
-function Home() {
-  const { member, servicePages, logo, favicon, webTitle, webDescription } =
-    Route.useLoaderData() as SiteOverview;
-  const [activeSlug, setActiveSlug] = useState<string>("");
+function Index() {
+  const { data } = useSuspenseQuery(siteContentQuery);
+  const content = data.content;
+  const pages = sortPages(content.pages);
+  const [hero, ...rest] = pages;
+  const currency =
+    content.shippingRates.byAmount[0]?.currency ??
+    content.shippingRates.byQuantity[0]?.currency ??
+    "AUD";
 
-  useEffect(() => {
-    const sections = servicePages
-      .map((p) => document.getElementById(p.slug))
-      .filter((el): el is HTMLElement => Boolean(el));
-    if (sections.length === 0) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
-        if (visible?.target.id) setActiveSlug(visible.target.id);
-      },
-      { rootMargin: "-140px 0px -55% 0px", threshold: 0 },
+  if (!hero) {
+    return (
+      <div className="mx-auto max-w-2xl px-6 py-32 text-center">
+        <h1 className="text-3xl font-bold text-foreground">{content.webApp.title}</h1>
+        <p className="mt-3 text-muted-foreground">Content is being published. Check back soon.</p>
+      </div>
     );
-    sections.forEach((el) => observer.observe(el));
-    return () => observer.disconnect();
-  }, [servicePages]);
+  }
 
   return (
-    <SiteLayout member={member} logo={logo} favicon={favicon}>
-      <section className="hero-surface relative overflow-hidden border-b border-border/60">
-        <div className="mx-auto w-full max-w-7xl px-5 py-24 md:py-32">
-          <span className="inline-flex rounded-full border border-primary/40 bg-primary/5 px-3 py-1 text-xs uppercase tracking-[0.2em] text-primary">
-            {member.suburb}, {member.state}
-          </span>
-          <h1 className="mt-6 max-w-4xl text-4xl font-bold leading-[1.05] md:text-6xl">
-            {webTitle ?? member.memberFullName}
-          </h1>
-          {webDescription ? (
-            <div
-              className="prose-site mt-6 max-w-3xl text-lg text-muted-foreground"
-              dangerouslySetInnerHTML={{ __html: webDescription }}
-            />
-          ) : (
-            <p className="mt-6 max-w-3xl text-lg text-muted-foreground">
-              {member.metaDesc}
-            </p>
-          )}
-        </div>
-      </section>
+    <>
+      <HeroSlider page={hero} />
 
-      <nav className="sticky top-[72px] z-40 border-b border-border/60 bg-background/90 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto px-5 py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {servicePages.map((p, i) => (
-            <a
-              key={`nav-${p.slug}-${i}`}
-              href={`#${p.slug}`}
-              aria-current={activeSlug === p.slug ? "true" : undefined}
-              className={`shrink-0 rounded-full border px-4 py-1.5 text-sm transition ${
-                activeSlug === p.slug
-                  ? "border-primary/60 bg-primary/10 font-semibold text-primary shadow-glow"
-                  : "border-border/70 bg-surface/60 text-muted-foreground hover:border-primary/50 hover:text-primary"
-              }`}
-            >
-              {p.title}
-            </a>
-          ))}
-        </div>
-      </nav>
-
-
-      {servicePages.map((page, i) => (
-        <section
-          key={`${page.title}-${i}`}
-          id={page.slug}
-          className={`scroll-mt-36 border-b border-border/50 ${
-            i % 2 === 1 ? "bg-surface/40" : "bg-background"
-          }`}
-        >
-          <div className="mx-auto w-full max-w-7xl px-5 py-16 md:py-20">
-            <header className="grid gap-5 lg:grid-cols-[minmax(0,200px)_minmax(0,1fr)] lg:items-start lg:gap-8">
-              <div className="min-w-0">
-                <span className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <h2 className="mt-2 text-3xl font-bold md:text-4xl">{page.title}</h2>
-                <div className="mt-4 h-px w-16 bg-gradient-accent" />
-              </div>
-              {page.html ? (
-                <div
-                  className="prose-api min-w-0"
-                  dangerouslySetInnerHTML={{ __html: page.html }}
-                />
-              ) : null}
-            </header>
-
-
-            {page.title.toLowerCase() === "blog" ? (
-              page.posts.length > 0 && (
-                <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {page.posts.map((s, pi) => (
-                    <Link
-                      key={`${page.slug}-${s.slug}-${pi}`}
-                      to="/post/$slug"
-                      params={{ slug: s.slug }}
-                      className="group flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-surface shadow-card transition duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-glow"
-                    >
-                      {s.image ? (
-                        <img
-                          src={s.image}
-                          alt={s.title}
-                          loading="lazy"
-                          className="h-44 w-full object-cover transition duration-500 group-hover:scale-[1.03]"
-                        />
-                      ) : null}
-                      <div className="flex flex-1 flex-col p-5">
-                        <h3 className="text-base font-semibold group-hover:text-primary">
-                          {s.title}
-                        </h3>
-                        {s.categories.length > 0 && (
-                          <div className="mt-2 flex flex-wrap gap-2">
-                            {s.categories.map((c, ci) => (
-                              <span
-                                key={`${c}-${ci}`}
-                                className="rounded-full border border-border/70 px-2.5 py-0.5 text-xs text-muted-foreground"
-                              >
-                                {c}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                        <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
-                          {s.excerpt}
-                        </p>
-                        <span className="mt-4 text-sm font-semibold text-primary">
-                          Read more →
-                        </span>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )
-            ) : page.posts.length > 0 ? (
-              <div className="mt-10 grid gap-8">
-                {page.posts.map((s, pi) => {
-                  const isGrowth = page.title.toLowerCase() === "growth";
-                  const split =
-                    !isGrowth &&
-                    page.title.toLowerCase() === "about" &&
-                    page.posts.length === 1 &&
-                    s.images.length + s.videos.length === 1;
-                  const media =
-                    s.images.length > 0 || s.videos.length > 0 ? (
-                      <MediaSlider
-                        images={s.images}
-                        videos={s.videos}
-                        title={s.title}
-                        variant={
-                          page.title.toLowerCase() === "brand"
-                            ? "brand"
-                            : split || isGrowth
-                              ? "split"
-                              : "default"
-                        }
-                      />
-                    ) : null;
-                  return (
-                    <article
-                      key={`${page.slug}-${s.slug}-${pi}`}
-                      className={
-                        split
-                          ? "grid gap-10 overflow-hidden rounded-2xl border border-border/70 bg-surface p-7 shadow-card transition hover:border-primary/40 md:grid-cols-2 md:items-center md:p-9"
-                          : "overflow-hidden rounded-2xl border border-border/70 bg-surface p-7 shadow-card transition hover:border-primary/40 md:p-9"
-                      }
-                    >
-                      {isGrowth && media ? <div className="mb-8">{media}</div> : null}
-                      <div>
-                        <h3 className="text-xl font-semibold">{s.title}</h3>
-                        {s.categories.length > 0 && (
-                          <div className="mt-3 flex flex-wrap gap-2">
-                            {s.categories.map((c, ci) => (
-                              <span
-                                key={`${c}-${ci}`}
-                                className="rounded-full border border-primary/30 bg-primary/5 px-2.5 py-0.5 text-xs text-primary"
-                              >
-                                {c}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                        {s.html ? (
-                          <div
-                            className="prose-site mt-4 max-w-none"
-                            dangerouslySetInnerHTML={{ __html: s.html }}
-                          />
-                        ) : (
-                          <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                            {s.excerpt}
-                          </p>
-                        )}
-                        {s.attributes.length > 0 && (
-                          <dl
-                            className={`mt-6 grid gap-3 text-sm ${split ? "" : "sm:grid-cols-2 lg:grid-cols-3"}`}
-                          >
-                            {s.attributes.map((a, ai) => {
-                              const isFeature = page.title.toLowerCase() === "feature";
-                              return (
-                                <div
-                                  key={`${a.title}-${ai}`}
-                                  className="rounded-xl border border-border/60 bg-background/40 px-4 py-3 transition hover:border-primary/40"
-                                >
-                                  <dt
-                                    className="prose-site text-xs text-muted-foreground [&_i]:text-base [&_i]:text-primary"
-                                    dangerouslySetInnerHTML={{
-                                      __html: isFeature ? stripLinks(a.title) : a.title,
-                                    }}
-                                  />
-                                  <dd
-                                    className="prose-site mt-1 font-medium"
-                                    dangerouslySetInnerHTML={{
-                                      __html: isFeature ? stripLinks(a.value) : a.value,
-                                    }}
-                                  />
-                                </div>
-                              );
-                            })}
-                          </dl>
-                        )}
-                        {!split && !isGrowth && media ? <div className="mt-6">{media}</div> : null}
-                        {s.link ? (
-                          <a
-                            href={s.link}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="mt-5 inline-flex text-sm font-semibold text-primary hover:underline"
-                          >
-                            Learn more ↗
-                          </a>
-                        ) : null}
-                      </div>
-                      {split && media ? <div>{media}</div> : null}
-                    </article>
-                  );
-                })}
-              </div>
-            ) : null}
-          </div>
+      {sortPages(hero.children ?? []).length > 0 ? (
+        <section className="mx-auto max-w-6xl px-6 py-16">
+          <PageCardGrid pages={hero.children} currency={currency} />
         </section>
-      ))}
-    </SiteLayout>
+      ) : null}
+
+      {rest.map((page, i) => {
+        const children = sortPages(page.children ?? []);
+        const wideMedia = (page.images?.length ?? 0) > 1;
+        return (
+          <section
+            key={page.id}
+            className={i % 2 === 1 ? "bg-card/40 py-20" : "py-20"}
+            id={slugify(page.title)}
+          >
+            <div className="mx-auto max-w-6xl px-6">
+              <div
+                className={
+                  wideMedia
+                    ? "text-left"
+                    : "grid items-center gap-10 text-left lg:grid-cols-2"
+                }
+              >
+                <div className="min-w-0">
+                  <h2 className="text-3xl font-bold text-foreground">{page.title}</h2>
+                  <RichText html={page.description} className="mt-5" />
+                  {children.length === 0 ? (
+                    <Link
+                      to="/page/$slug"
+                      params={{ slug: slugify(page.title) }}
+                      className="mt-6 inline-block text-sm font-semibold text-primary hover:underline"
+                    >
+                      Read more about {page.title}
+                    </Link>
+                  ) : null}
+                </div>
+                <div className="min-w-0">
+                  <PageMedia page={page} wide={wideMedia} />
+                </div>
+              </div>
+              {children.length > 0 ? (
+                <PageCardGrid pages={children} currency={currency} />
+              ) : null}
+            </div>
+          </section>
+        );
+      })}
+    </>
   );
 }
-

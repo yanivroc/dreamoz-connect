@@ -1,13 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { overviewFn } from "@/lib/dreamoz.functions";
-import { SiteLayout } from "@/components/SiteLayout";
-import type { SiteOverview } from "@/lib/dreamoz.types";
+import { siteContentQuery } from "@/lib/content-query";
 import { SignUpForm } from "@/components/SignUpForm";
 
 export const Route = createFileRoute("/signup")({
-  loader: () => overviewFn(),
+  loader: async ({ context }) => {
+    const result = await context.queryClient.ensureQueryData(siteContentQuery);
+    return { brand: result.content.webApp.title?.trim() || "DreamozTech" };
+  },
   head: ({ loaderData }) => {
-    const brand = loaderData?.member?.memberFullName?.trim() || "DreamozTech";
+    const brand = loaderData?.brand || "DreamozTech";
     const title = `Sign Up | ${brand}`;
     const description = `Create your ${brand} account to get started with our software development, web platform and growth services.`;
     return {
@@ -19,17 +20,15 @@ export const Route = createFileRoute("/signup")({
         { property: "og:type", content: "website" },
         { name: "twitter:card", content: "summary_large_image" },
       ],
-      links: loaderData?.favicon ? [{ rel: "icon", href: loaderData.favicon }] : [],
     };
   },
   component: SignUpPage,
 });
 
 function SignUpPage() {
-  const { member, logo, favicon } = Route.useLoaderData() as SiteOverview;
 
   return (
-    <SiteLayout member={member} logo={logo} favicon={favicon}>
+    <>
       <section className="hero-surface border-b border-border/60">
         <div className="mx-auto w-full max-w-7xl px-5 py-14">
           <h1 className="text-4xl font-bold md:text-5xl">Create your account</h1>
@@ -45,6 +44,6 @@ function SignUpPage() {
           <SignUpForm />
         </div>
       </section>
-    </SiteLayout>
+    </>
   );
 }
