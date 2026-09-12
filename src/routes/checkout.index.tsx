@@ -108,8 +108,8 @@ function CheckoutPage() {
   }, [squareConfig]);
 
   const handlePay = async () => {
-    if (!form.name || !form.email) {
-      toast.error("Please enter your name and email.");
+    if (!form.name || !form.email || !form.phone.trim()) {
+      toast.error("Please enter your name, email, and phone number.");
       return;
     }
     if (!cardRef.current) {
@@ -189,7 +189,7 @@ function CheckoutPage() {
             [
               ["name", "Full name"],
               ["email", "Email"],
-              ["phone", "Phone"],
+              ["phone", "Phone *"],
               ["address", "Address"],
               ["city", "City"],
               ["postcode", "Postcode"],
@@ -219,6 +219,7 @@ function CheckoutPage() {
                   id={key}
                   value={form[key]}
                   type={key === "email" ? "email" : "text"}
+                  required={key === "name" || key === "email" || key === "phone"}
                   onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
                   className="mt-1.5"
                 />
