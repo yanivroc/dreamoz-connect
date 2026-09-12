@@ -118,6 +118,7 @@ export function AddressAutocomplete({
   onSelect,
   placeholder,
   className,
+  required,
 }: Props) {
   const [predictions, setPredictions] = useState<PlacePrediction[]>([]);
   const [open, setOpen] = useState(false);
