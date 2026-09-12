@@ -2,9 +2,7 @@ import { useState } from "react";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { overviewFn } from "@/lib/dreamoz.functions";
 import { SiteLayout } from "@/components/SiteLayout";
-import type { SiteOverview } from "@/lib/dreamoz.types";
 import { me, type CurrentUser } from "@/lib/auth.functions";
 import { WebAppsPanel } from "@/components/WebAppsPanel";
 import { WebPagesPanel } from "@/components/WebPagesPanel";
@@ -21,14 +19,8 @@ export const Route = createFileRoute("/build-web-apps")({
     }
     return { user };
   },
-  loader: async ({ context }) => {
-    const overview = await overviewFn();
-    return { overview, user: (context as { user: CurrentUser }).user };
-  },
-  head: ({ loaderData }) => ({
-    links: loaderData?.overview?.favicon
-      ? [{ rel: "icon", href: loaderData.overview.favicon }]
-      : [],
+  loader: async ({ context }) => ({ user: (context as { user: CurrentUser }).user }),
+  head: () => ({
     meta: [
       { title: "Build Web Apps | DreamozTech" },
       { name: "robots", content: "noindex, nofollow" },
@@ -59,10 +51,7 @@ const tabs: { id: Tab; label: string }[] = [
 ];
 
 function BuildWebAppsPage() {
-  const { overview, user } = Route.useLoaderData() as {
-    overview: SiteOverview;
-    user: CurrentUser;
-  };
+  const { user } = Route.useLoaderData() as { user: CurrentUser };
 
   const [tab, setTab] = useState<Tab>("apps");
   const [appId, setAppId] = useState<number | null>(null);
@@ -77,11 +66,7 @@ function BuildWebAppsPage() {
   const selected = appId ?? list[0]?.id ?? null;
 
   return (
-    <SiteLayout
-      member={overview.member}
-      logo={overview.logo}
-      favicon={overview.favicon}
-    >
+    <SiteLayout>
       <section className="hero-surface border-b border-border/60">
         <div className="mx-auto w-full max-w-7xl px-5 py-14">
           <h1 className="text-4xl font-bold md:text-5xl">Build Web Apps</h1>
