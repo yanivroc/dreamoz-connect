@@ -129,7 +129,7 @@ function PageDetail() {
           rel="noreferrer"
           className="mt-8 inline-block text-primary underline"
         >
-          {page.hyperlink}
+          Learn More
         </a>
       ) : null}
 
