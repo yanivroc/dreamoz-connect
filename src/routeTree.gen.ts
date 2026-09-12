@@ -16,13 +16,10 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as SignupRouteImport } from './routes/signup'
-import { Route as ApiMediaRouteImport } from './routes/api/media'
 import { Route as CheckoutIndexRouteImport } from './routes/checkout.index'
 import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
 import { Route as PageSlugRouteImport } from './routes/page.$slug'
 import { Route as ApiAssetIdRouteImport } from './routes/api/asset.$id'
-import { Route as ApiPublicCacheBustRouteImport } from './routes/api/public/cache-bust'
-import { Route as ApiPublicCacheStatusRouteImport } from './routes/api/public/cache-status'
 import { Route as ApiPublicWaTokenRouteImport } from './routes/api/public/wa/token'
 import { Route as ApiPublicWaWebappRouteImport } from './routes/api/public/wa/webapp'
 
@@ -61,11 +58,6 @@ const SignupRoute = SignupRouteImport.update({
   path: '/signup',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiMediaRoute = ApiMediaRouteImport.update({
-  id: '/api/media',
-  path: '/api/media',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const CheckoutIndexRoute = CheckoutIndexRouteImport.update({
   id: '/checkout/',
   path: '/checkout/',
@@ -84,16 +76,6 @@ const PageSlugRoute = PageSlugRouteImport.update({
 const ApiAssetIdRoute = ApiAssetIdRouteImport.update({
   id: '/api/asset/$id',
   path: '/api/asset/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicCacheBustRoute = ApiPublicCacheBustRouteImport.update({
-  id: '/api/public/cache-bust',
-  path: '/api/public/cache-bust',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiPublicCacheStatusRoute = ApiPublicCacheStatusRouteImport.update({
-  id: '/api/public/cache-status',
-  path: '/api/public/cache-status',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicWaTokenRoute = ApiPublicWaTokenRouteImport.update({
@@ -115,13 +97,10 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/api/media': typeof ApiMediaRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/page/$slug': typeof PageSlugRoute
   '/checkout/': typeof CheckoutIndexRoute
   '/api/asset/$id': typeof ApiAssetIdRoute
-  '/api/public/cache-bust': typeof ApiPublicCacheBustRoute
-  '/api/public/cache-status': typeof ApiPublicCacheStatusRoute
   '/api/public/wa/token': typeof ApiPublicWaTokenRoute
   '/api/public/wa/webapp': typeof ApiPublicWaWebappRoute
 }
@@ -133,13 +112,10 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/api/media': typeof ApiMediaRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/page/$slug': typeof PageSlugRoute
   '/checkout': typeof CheckoutIndexRoute
   '/api/asset/$id': typeof ApiAssetIdRoute
-  '/api/public/cache-bust': typeof ApiPublicCacheBustRoute
-  '/api/public/cache-status': typeof ApiPublicCacheStatusRoute
   '/api/public/wa/token': typeof ApiPublicWaTokenRoute
   '/api/public/wa/webapp': typeof ApiPublicWaWebappRoute
 }
@@ -152,13 +128,10 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
-  '/api/media': typeof ApiMediaRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/page/$slug': typeof PageSlugRoute
   '/checkout/': typeof CheckoutIndexRoute
   '/api/asset/$id': typeof ApiAssetIdRoute
-  '/api/public/cache-bust': typeof ApiPublicCacheBustRoute
-  '/api/public/cache-status': typeof ApiPublicCacheStatusRoute
   '/api/public/wa/token': typeof ApiPublicWaTokenRoute
   '/api/public/wa/webapp': typeof ApiPublicWaWebappRoute
 }
@@ -172,13 +145,10 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/login'
     | '/signup'
-    | '/api/media'
     | '/checkout/success'
     | '/page/$slug'
     | '/checkout/'
     | '/api/asset/$id'
-    | '/api/public/cache-bust'
-    | '/api/public/cache-status'
     | '/api/public/wa/token'
     | '/api/public/wa/webapp'
   fileRoutesByTo: FileRoutesByTo
@@ -190,13 +160,10 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/login'
     | '/signup'
-    | '/api/media'
     | '/checkout/success'
     | '/page/$slug'
     | '/checkout'
     | '/api/asset/$id'
-    | '/api/public/cache-bust'
-    | '/api/public/cache-status'
     | '/api/public/wa/token'
     | '/api/public/wa/webapp'
   id:
@@ -208,13 +175,10 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/login'
     | '/signup'
-    | '/api/media'
     | '/checkout/success'
     | '/page/$slug'
     | '/checkout/'
     | '/api/asset/$id'
-    | '/api/public/cache-bust'
-    | '/api/public/cache-status'
     | '/api/public/wa/token'
     | '/api/public/wa/webapp'
   fileRoutesById: FileRoutesById
@@ -227,13 +191,10 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
-  ApiMediaRoute: typeof ApiMediaRoute
   CheckoutSuccessRoute: typeof CheckoutSuccessRoute
   PageSlugRoute: typeof PageSlugRoute
   CheckoutIndexRoute: typeof CheckoutIndexRoute
   ApiAssetIdRoute: typeof ApiAssetIdRoute
-  ApiPublicCacheBustRoute: typeof ApiPublicCacheBustRoute
-  ApiPublicCacheStatusRoute: typeof ApiPublicCacheStatusRoute
   ApiPublicWaTokenRoute: typeof ApiPublicWaTokenRoute
   ApiPublicWaWebappRoute: typeof ApiPublicWaWebappRoute
 }
@@ -289,13 +250,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignupRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/media': {
-      id: '/api/media'
-      path: '/api/media'
-      fullPath: '/api/media'
-      preLoaderRoute: typeof ApiMediaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/checkout/': {
       id: '/checkout/'
       path: '/checkout'
@@ -324,20 +278,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAssetIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/cache-bust': {
-      id: '/api/public/cache-bust'
-      path: '/api/public/cache-bust'
-      fullPath: '/api/public/cache-bust'
-      preLoaderRoute: typeof ApiPublicCacheBustRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/public/cache-status': {
-      id: '/api/public/cache-status'
-      path: '/api/public/cache-status'
-      fullPath: '/api/public/cache-status'
-      preLoaderRoute: typeof ApiPublicCacheStatusRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/wa/token': {
       id: '/api/public/wa/token'
       path: '/api/public/wa/token'
@@ -363,13 +303,10 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
-  ApiMediaRoute: ApiMediaRoute,
   CheckoutSuccessRoute: CheckoutSuccessRoute,
   PageSlugRoute: PageSlugRoute,
   CheckoutIndexRoute: CheckoutIndexRoute,
   ApiAssetIdRoute: ApiAssetIdRoute,
-  ApiPublicCacheBustRoute: ApiPublicCacheBustRoute,
-  ApiPublicCacheStatusRoute: ApiPublicCacheStatusRoute,
   ApiPublicWaTokenRoute: ApiPublicWaTokenRoute,
   ApiPublicWaWebappRoute: ApiPublicWaWebappRoute,
 }
