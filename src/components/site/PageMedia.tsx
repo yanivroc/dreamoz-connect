@@ -23,6 +23,8 @@ export function PageMedia({
   const go = (delta: number) =>
     setIndex((i) => (i + delta + images.length) % Math.max(images.length, 1));
 
+  const imageHref = current?.hyperlink || page.hyperlink || null;
+
   const img = current ? (
     <img
       src={current.url}
@@ -62,8 +64,8 @@ export function PageMedia({
 
       {current ? (
         <div className="relative overflow-hidden rounded-xl border border-border bg-card/40 p-3">
-          {current.hyperlink ? (
-            <a href={current.hyperlink} target="_blank" rel="noreferrer" className="block">
+          {imageHref ? (
+            <a href={imageHref} target="_blank" rel="noreferrer" className="block">
               {img}
             </a>
           ) : (
