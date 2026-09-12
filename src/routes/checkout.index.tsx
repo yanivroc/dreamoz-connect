@@ -219,6 +219,7 @@ function CheckoutPage() {
                   id={key}
                   value={form[key]}
                   type={key === "email" ? "email" : "text"}
+                  required={key === "name" || key === "email" || key === "phone"}
                   onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
                   className="mt-1.5"
                 />
