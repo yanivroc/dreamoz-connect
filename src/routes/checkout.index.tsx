@@ -189,7 +189,7 @@ function CheckoutPage() {
             [
               ["name", "Full name"],
               ["email", "Email"],
-              ["phone", "Phone"],
+              ["phone", "Phone *"],
               ["address", "Address"],
               ["city", "City"],
               ["postcode", "Postcode"],
