@@ -6,10 +6,12 @@ export function PageMedia({
   page,
   wide = false,
   float = false,
+  compact = false,
 }: {
   page: WaPage;
   wide?: boolean;
   float?: boolean;
+  compact?: boolean;
 }) {
   const images = sortImages(page.images ?? []);
   const embedUrl = page.videoUrl || page.videoEmbed;
@@ -27,7 +29,11 @@ export function PageMedia({
       alt={current.alt || page.title}
       loading="lazy"
       className={`mx-auto max-w-full rounded-lg object-contain ${
-        wide ? "w-auto max-h-[70vh]" : "h-auto w-full"
+        compact
+          ? "h-auto max-h-64 w-auto sm:max-h-80"
+          : wide
+            ? "w-auto max-h-[70vh]"
+            : "h-auto w-full"
       }`}
     />
   ) : null;
@@ -35,7 +41,9 @@ export function PageMedia({
   return (
     <div
       className={
-        float
+        compact
+          ? "mx-auto mt-8 w-full max-w-2xl space-y-6"
+          : float
           ? "mt-8 w-full space-y-6 md:float-right md:mb-4 md:ml-8 md:mt-2 md:w-1/2 lg:w-[46%]"
           : "mt-8 space-y-6"
       }

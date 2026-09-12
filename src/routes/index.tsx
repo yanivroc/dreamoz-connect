@@ -62,6 +62,7 @@ function Index() {
       {rest.map((page, i) => {
         const children = sortPages(page.children ?? []);
         const wideMedia = (page.images?.length ?? 0) > 1;
+        const compactMedia = page.title.trim().toLowerCase().includes("testimonial");
         return (
           <section
             key={page.id}
@@ -90,7 +91,7 @@ function Index() {
                   ) : null}
                 </div>
                 <div className="min-w-0">
-                  <PageMedia page={page} wide={wideMedia} />
+                  <PageMedia page={page} wide={wideMedia} compact={compactMedia} />
                 </div>
               </div>
               {children.length > 0 ? (
