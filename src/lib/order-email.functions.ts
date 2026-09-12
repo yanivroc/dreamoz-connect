@@ -48,7 +48,9 @@ const fmt = (n: number, cur: string) => {
 export const sendOrderEmails = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => schema.parse(data))
   .handler(async ({ data }): Promise<OrderEmailResult> => {
-    const { sendMail } = await import("./mailer.server");
+    const { sendMail, getMailConfig } = await import("./mailer.server");
+    const mailCfg = getMailConfig();
+    const from = { email: mailCfg.emailFrom, name: mailCfg.fromName };
     const { fetchSiteContent } = await import("./content.server");
     const { flattenPages } = await import("./content-types");
     const { priceOrder } = await import("./pricing");
@@ -137,6 +139,7 @@ export const sendOrderEmails = createServerFn({ method: "POST" })
 
     try {
       await sendMail({
+        from,
         to: [{ email: data.buyer.email, name: data.buyer.name }],
         subject: `Your ${brand} order (${data.paymentId})`,
         htmlContent: buyerHtml,
@@ -149,6 +152,7 @@ export const sendOrderEmails = createServerFn({ method: "POST" })
     if (ownerEmail) {
       try {
         await sendMail({
+          from,
           to: [{ email: ownerEmail, name: brand }],
           subject: `New order from ${data.buyer.name} — ${fmt(priced.total, cur)}`,
           htmlContent: ownerHtml,
