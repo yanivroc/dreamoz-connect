@@ -20,7 +20,6 @@ import { Route as ApiMediaRouteImport } from './routes/api/media'
 import { Route as CheckoutIndexRouteImport } from './routes/checkout.index'
 import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
 import { Route as PageSlugRouteImport } from './routes/page.$slug'
-import { Route as PostSlugRouteImport } from './routes/post.$slug'
 import { Route as ApiAssetIdRouteImport } from './routes/api/asset.$id'
 import { Route as ApiPublicCacheBustRouteImport } from './routes/api/public/cache-bust'
 import { Route as ApiPublicCacheStatusRouteImport } from './routes/api/public/cache-status'
@@ -82,11 +81,6 @@ const PageSlugRoute = PageSlugRouteImport.update({
   path: '/page/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PostSlugRoute = PostSlugRouteImport.update({
-  id: '/post/$slug',
-  path: '/post/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiAssetIdRoute = ApiAssetIdRouteImport.update({
   id: '/api/asset/$id',
   path: '/api/asset/$id',
@@ -124,7 +118,6 @@ export interface FileRoutesByFullPath {
   '/api/media': typeof ApiMediaRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/page/$slug': typeof PageSlugRoute
-  '/post/$slug': typeof PostSlugRoute
   '/checkout/': typeof CheckoutIndexRoute
   '/api/asset/$id': typeof ApiAssetIdRoute
   '/api/public/cache-bust': typeof ApiPublicCacheBustRoute
@@ -143,7 +136,6 @@ export interface FileRoutesByTo {
   '/api/media': typeof ApiMediaRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/page/$slug': typeof PageSlugRoute
-  '/post/$slug': typeof PostSlugRoute
   '/checkout': typeof CheckoutIndexRoute
   '/api/asset/$id': typeof ApiAssetIdRoute
   '/api/public/cache-bust': typeof ApiPublicCacheBustRoute
@@ -163,7 +155,6 @@ export interface FileRoutesById {
   '/api/media': typeof ApiMediaRoute
   '/checkout/success': typeof CheckoutSuccessRoute
   '/page/$slug': typeof PageSlugRoute
-  '/post/$slug': typeof PostSlugRoute
   '/checkout/': typeof CheckoutIndexRoute
   '/api/asset/$id': typeof ApiAssetIdRoute
   '/api/public/cache-bust': typeof ApiPublicCacheBustRoute
@@ -184,7 +175,6 @@ export interface FileRouteTypes {
     | '/api/media'
     | '/checkout/success'
     | '/page/$slug'
-    | '/post/$slug'
     | '/checkout/'
     | '/api/asset/$id'
     | '/api/public/cache-bust'
@@ -203,7 +193,6 @@ export interface FileRouteTypes {
     | '/api/media'
     | '/checkout/success'
     | '/page/$slug'
-    | '/post/$slug'
     | '/checkout'
     | '/api/asset/$id'
     | '/api/public/cache-bust'
@@ -222,7 +211,6 @@ export interface FileRouteTypes {
     | '/api/media'
     | '/checkout/success'
     | '/page/$slug'
-    | '/post/$slug'
     | '/checkout/'
     | '/api/asset/$id'
     | '/api/public/cache-bust'
@@ -242,7 +230,6 @@ export interface RootRouteChildren {
   ApiMediaRoute: typeof ApiMediaRoute
   CheckoutSuccessRoute: typeof CheckoutSuccessRoute
   PageSlugRoute: typeof PageSlugRoute
-  PostSlugRoute: typeof PostSlugRoute
   CheckoutIndexRoute: typeof CheckoutIndexRoute
   ApiAssetIdRoute: typeof ApiAssetIdRoute
   ApiPublicCacheBustRoute: typeof ApiPublicCacheBustRoute
@@ -330,13 +317,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PageSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/post/$slug': {
-      id: '/post/$slug'
-      path: '/post/$slug'
-      fullPath: '/post/$slug'
-      preLoaderRoute: typeof PostSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/asset/$id': {
       id: '/api/asset/$id'
       path: '/api/asset/$id'
@@ -386,7 +366,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiMediaRoute: ApiMediaRoute,
   CheckoutSuccessRoute: CheckoutSuccessRoute,
   PageSlugRoute: PageSlugRoute,
-  PostSlugRoute: PostSlugRoute,
   CheckoutIndexRoute: CheckoutIndexRoute,
   ApiAssetIdRoute: ApiAssetIdRoute,
   ApiPublicCacheBustRoute: ApiPublicCacheBustRoute,
