@@ -211,6 +211,7 @@ function CheckoutPage() {
                   id="address"
                   value={form.address}
                   className="mt-1.5"
+                  required
                   onChange={(v) => setForm((f) => ({ ...f, address: v }))}
                   onSelect={(p) =>
                     setForm((f) => ({
