@@ -149,6 +149,7 @@ function CheckoutPage() {
         const mailed = await sendEmails({
           data: {
             paymentId: payment.paymentId ?? "",
+            orderNo: payment.orderNo ?? "",
             receiptUrl: payment.receiptUrl ?? null,
             buyer: form,
             items: items.map((i) => ({ id: i.id, title: i.title, qty: i.qty })),
@@ -165,7 +166,7 @@ function CheckoutPage() {
       clear();
       void navigate({
         to: "/checkout/success",
-        search: { payment: payment.paymentId ?? "" },
+        search: { payment: payment.paymentId ?? "", order: payment.orderNo ?? "" },
       });
     } catch (err) {
       console.error(err);
