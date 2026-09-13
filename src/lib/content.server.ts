@@ -9,6 +9,11 @@ const CONTENT_TTL_MS = 60_000;
 let cache: { content: SiteContent; expires: number } | null = null;
 let inflight: Promise<SiteContent> | null = null;
 
+/** The web app id that the public site (and its checkout) belongs to. */
+export async function resolveSiteAppId(): Promise<number> {
+  return resolveAppId();
+}
+
 async function resolveAppId(): Promise<number> {
   const apiKey = process.env["DREAMOZ_API_KEY"]?.trim();
   const apiSecret = process.env["DREAMOZ_API_SECRET"]?.trim();

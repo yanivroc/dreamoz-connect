@@ -188,3 +188,51 @@ export async function ensureWebPagesTables(db: Client): Promise<void> {
   );
   webPagesReady = true;
 }
+
+let ordersReady = false;
+
+export async function ensureOrdersTables(db: Client): Promise<void> {
+  if (ordersReady) return;
+  await db.execute(`CREATE TABLE IF NOT EXISTS orders (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    app_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    order_no TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'waiting_for_confirmation',
+    payment_provider TEXT NOT NULL DEFAULT 'square',
+    payment_id TEXT NOT NULL,
+    receipt_url TEXT,
+    buyer_name TEXT NOT NULL,
+    buyer_email TEXT NOT NULL,
+    buyer_phone TEXT NOT NULL DEFAULT '',
+    buyer_address TEXT NOT NULL DEFAULT '',
+    buyer_city TEXT NOT NULL DEFAULT '',
+    buyer_postcode TEXT NOT NULL DEFAULT '',
+    buyer_country TEXT NOT NULL DEFAULT '',
+    subtotal REAL NOT NULL,
+    shipping REAL NOT NULL,
+    total REAL NOT NULL,
+    currency TEXT NOT NULL,
+    notes TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    payment_confirmed_at TEXT,
+    completed_at TEXT,
+    cancelled_at TEXT
+  )`);
+  await db.execute(`CREATE UNIQUE INDEX IF NOT EXISTS orders_order_no ON orders (order_no)`);
+  await db.execute(`CREATE UNIQUE INDEX IF NOT EXISTS orders_payment_id ON orders (payment_id)`);
+  await db.execute(`CREATE INDEX IF NOT EXISTS orders_app ON orders (app_id)`);
+  await db.execute(`CREATE INDEX IF NOT EXISTS orders_status ON orders (status)`);
+  await db.execute(`CREATE TABLE IF NOT EXISTS order_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_id INTEGER NOT NULL,
+    page_id INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    qty INTEGER NOT NULL,
+    unit_price REAL NOT NULL,
+    line_total REAL NOT NULL
+  )`);
+  await db.execute(`CREATE INDEX IF NOT EXISTS order_items_order ON order_items (order_id)`);
+  ordersReady = true;
+}
