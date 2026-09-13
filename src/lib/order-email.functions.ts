@@ -3,6 +3,7 @@ import { z } from "zod";
 
 const schema = z.object({
   paymentId: z.string().min(1).max(200),
+  orderNo: z.string().max(40).optional().default(""),
   receiptUrl: z.string().url().max(1000).optional().nullable(),
   buyer: z.object({
     name: z.string().min(1).max(120),
@@ -109,7 +110,11 @@ export const sendOrderEmails = createServerFn({ method: "POST" })
   }
 </p>`;
 
-    const reference = `<p style="font-family:Arial,sans-serif;font-size:14px;">Payment reference: <strong>${esc(data.paymentId)}</strong></p>`;
+    const orderLine = data.orderNo
+      ? `Order number: <strong>${esc(data.orderNo)}</strong><br/>`
+      : "";
+    const reference = `<p style="font-family:Arial,sans-serif;font-size:14px;">${orderLine}Payment reference: <strong>${esc(data.paymentId)}</strong></p>`;
+    const label = data.orderNo || data.paymentId;
 
     const buyerHtml = `
 <div style="font-family:Arial,sans-serif;color:#111;">
@@ -123,7 +128,8 @@ export const sendOrderEmails = createServerFn({ method: "POST" })
 
     const ownerHtml = `
 <div style="font-family:Arial,sans-serif;color:#111;">
-  <h2>New order — ${esc(data.paymentId)}</h2>
+  <h2>New order — ${esc(label)}</h2>
+  ${reference}
   ${summary}
   <h3 style="font-size:15px;">Customer</h3>
   ${buyerBlock}
@@ -135,7 +141,7 @@ export const sendOrderEmails = createServerFn({ method: "POST" })
       await sendMail({
         from,
         to: [{ email: data.buyer.email, name: data.buyer.name }],
-        subject: `Your ${brand} order (${data.paymentId})`,
+        subject: `Your ${brand} order (${label})`,
         htmlContent: buyerHtml,
       });
     } catch (err) {

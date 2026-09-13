@@ -2,7 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { CheckCircle2 } from "lucide-react";
 import { z } from "zod";
 
-const searchSchema = z.object({ payment: z.string().optional().default("") });
+const searchSchema = z.object({
+  payment: z.string().optional().default(""),
+  order: z.string().optional().default(""),
+});
 
 export const Route = createFileRoute("/checkout/success")({
   validateSearch: searchSchema,
@@ -21,7 +24,7 @@ export const Route = createFileRoute("/checkout/success")({
 });
 
 function SuccessPage() {
-  const { payment } = Route.useSearch();
+  const { payment, order } = Route.useSearch();
 
   return (
     <div className="mx-auto max-w-2xl px-6 py-24 text-center">
@@ -30,8 +33,13 @@ function SuccessPage() {
       <p className="mt-3 text-muted-foreground">
         Your payment was successful and a confirmation email is on its way.
       </p>
-      {payment ? (
+      {order ? (
         <p className="mt-4 text-sm text-muted-foreground">
+          Order number: <span className="font-semibold text-foreground">{order}</span>
+        </p>
+      ) : null}
+      {payment ? (
+        <p className="mt-1 text-sm text-muted-foreground">
           Payment reference: <span className="text-foreground">{payment}</span>
         </p>
       ) : null}

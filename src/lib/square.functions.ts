@@ -53,9 +53,20 @@ export interface CheckoutResult {
   ok: boolean;
   paymentId?: string;
   receiptUrl?: string;
+  orderNo?: string;
   amount?: number;
   currency?: string;
   error?: string;
+}
+
+function makeOrderNo(): string {
+  const d = new Date();
+  const ymd = `${d.getUTCFullYear()}${String(d.getUTCMonth() + 1).padStart(2, "0")}${String(d.getUTCDate()).padStart(2, "0")}`;
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const bytes = crypto.getRandomValues(new Uint8Array(5));
+  let suffix = "";
+  for (const b of bytes) suffix += alphabet[b % alphabet.length];
+  return `DT-${ymd}-${suffix}`;
 }
 
 export const createSquarePayment = createServerFn({ method: "POST" })
@@ -120,14 +131,69 @@ export const createSquarePayment = createServerFn({ method: "POST" })
       return { ok: false, error: detail };
     }
 
+    // Persist the order. A DB problem must never lose a captured payment, so
+    // failures are logged and checkout still succeeds.
+    let orderNo: string | undefined;
+    try {
+      const { resolveSiteAppId } = await import("./content.server");
+      const { dbClient, ensureOrdersTables } = await import("./db.server");
+      const db = dbClient();
+      if (!db) throw new Error("Database is not configured.");
+      await ensureOrdersTables(db);
+      const appId = await resolveSiteAppId();
+      const ownerRes = await db.execute({
+        sql: "SELECT user_id FROM web_apps WHERE id = ? LIMIT 1",
+        args: [appId],
+      });
+      const ownerId = Number((ownerRes.rows[0] as Record<string, unknown> | undefined)?.["user_id"] ?? 0);
+      const now = new Date().toISOString();
+      const candidate = makeOrderNo();
+      const ins = await db.execute({
+        sql: `INSERT INTO orders (app_id, user_id, order_no, status, payment_provider, payment_id, receipt_url,
+                buyer_name, buyer_email, buyer_phone, buyer_address, buyer_city, buyer_postcode, buyer_country,
+                subtotal, shipping, total, currency, created_at, updated_at)
+              VALUES (?, ?, ?, 'waiting_for_confirmation', 'square', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        args: [
+          appId,
+          ownerId,
+          candidate,
+          body.payment.id,
+          body.payment.receipt_url ?? null,
+          data.customer.name,
+          data.customer.email,
+          data.customer.phone,
+          data.customer.address,
+          data.customer.city,
+          data.customer.postcode,
+          data.customer.country,
+          priced.subtotal,
+          priced.shipping,
+          priced.total,
+          priced.currency,
+          now,
+          now,
+        ],
+      });
+      const orderId = Number(ins.lastInsertRowid);
+      for (const line of priced.lines) {
+        await db.execute({
+          sql: `INSERT INTO order_items (order_id, page_id, title, qty, unit_price, line_total)
+                VALUES (?, ?, ?, ?, ?, ?)`,
+          args: [orderId, line.id, line.title, line.qty, line.price, line.lineTotal],
+        });
+      }
+      orderNo = candidate;
+    } catch (err) {
+      console.error("order persistence failed", body.payment.id, err);
+    }
+
     // Confirmation emails are sent separately (see order-email.functions.ts) so
     // a mail problem can never fail a captured payment.
-
-
     return {
       ok: true,
       paymentId: body.payment.id,
       ...(body.payment.receipt_url ? { receiptUrl: body.payment.receipt_url } : {}),
+      ...(orderNo ? { orderNo } : {}),
       amount: priced.total,
       currency: priced.currency,
     };
