@@ -165,7 +165,7 @@ export const sendOrderEmails = createServerFn({ method: "POST" })
         to: [{ email: data.buyer.email, name: data.buyer.name }],
         subject: `Your ${brand} order (${label})`,
         htmlContent: buyerHtml,
-        attachment,
+        ...(attachment ? { attachment } : {}),
       });
     } catch (err) {
       console.error("buyer order email failed", err);
@@ -180,6 +180,7 @@ export const sendOrderEmails = createServerFn({ method: "POST" })
           subject: `New order from ${data.buyer.name} — ${fmt(priced.total, cur)}`,
           htmlContent: ownerHtml,
           replyTo: { email: data.buyer.email, name: data.buyer.name },
+          ...(attachment ? { attachment } : {}),
         });
       } catch (err) {
         console.error("owner order email failed", err);
