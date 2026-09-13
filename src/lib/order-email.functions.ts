@@ -137,12 +137,35 @@ export const sendOrderEmails = createServerFn({ method: "POST" })
 
     const errors: string[] = [];
 
+    // Invoice PDF attachment (never blocks the email if it fails).
+    let attachment: { name: string; content: string }[] | undefined;
+    try {
+      const { buildInvoicePdf } = await import("./invoice.server");
+      const content = await buildInvoicePdf({
+        orderNo: data.orderNo,
+        paymentId: data.paymentId,
+        date: new Date(),
+        brand,
+        ownerEmail,
+        buyer: data.buyer,
+        lines: priced.lines,
+        subtotal: priced.subtotal,
+        shipping: priced.shipping,
+        total: priced.total,
+        currency: cur,
+      });
+      attachment = [{ name: `Invoice-${label.replace(/[^\w.\-]/g, "_")}.pdf`, content }];
+    } catch (err) {
+      console.error("invoice pdf generation failed", err);
+    }
+
     try {
       await sendMail({
         from,
         to: [{ email: data.buyer.email, name: data.buyer.name }],
         subject: `Your ${brand} order (${label})`,
         htmlContent: buyerHtml,
+        attachment,
       });
     } catch (err) {
       console.error("buyer order email failed", err);
