@@ -212,6 +212,36 @@ export function ApiPanel({ appId }: { appId: number }) {
           ))}
         </ul>
       </div>
+
+      <AlertDialog
+        open={confirmRotate}
+        onOpenChange={(open) => {
+          if (!open && !rotating) setConfirmRotate(false);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Regenerate the API secret?</AlertDialogTitle>
+            <AlertDialogDescription>
+              The current secret stops working immediately. Anything using it will need the new
+              secret.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={rotating}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={rotating}
+              onClick={(e) => {
+                e.preventDefault();
+                void onRotate().finally(() => setConfirmRotate(false));
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {rotating ? "Regenerating…" : "Regenerate"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
