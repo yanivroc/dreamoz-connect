@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
+import { siteCurrency } from "./content-types";
 import type { SiteContent, WaPage } from "./content-types";
 
 export interface CartItem {
@@ -133,7 +134,7 @@ export function calcTotals(items: CartItem[], content: SiteContent): Totals {
     (a, b) => a.threshold - b.threshold,
   );
 
-  let currency = "AUD";
+  const currency = siteCurrency(content);
   let ruleShipping = 0;
 
   const qtyMatch = byQuantity.filter((r) => qty >= r.threshold).pop() ?? byQuantity[0];
@@ -141,7 +142,6 @@ export function calcTotals(items: CartItem[], content: SiteContent): Totals {
 
   const candidates = [qtyMatch, amountMatch].filter(Boolean);
   if (candidates.length > 0) {
-    currency = candidates[0]!.currency || "AUD";
     ruleShipping = Math.min(...candidates.map((r) => r!.rate));
   }
 

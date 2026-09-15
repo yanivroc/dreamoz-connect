@@ -1,3 +1,4 @@
+import { siteCurrency } from "./content-types";
 import type { SiteContent, WaPage } from "./content-types";
 import { calcTotals, type CartItem } from "./cart";
 
@@ -35,7 +36,7 @@ export function priceOrder(
         subtotal: 0,
         shipping: 0,
         total: 0,
-        currency: "AUD",
+        currency: siteCurrency(content),
         error: `"${item.title}" is no longer available.`,
       };
     }
