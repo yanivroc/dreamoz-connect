@@ -49,6 +49,7 @@ export function ApiPanel({ appId }: { appId: number }) {
   const [secret, setSecret] = useState<string | null>(null);
   const [origin, setOrigin] = useState("");
   const [rotating, setRotating] = useState(false);
+  const [confirmRotate, setConfirmRotate] = useState(false);
 
   useEffect(() => {
     setOrigin(window.location.origin);
