@@ -29,6 +29,7 @@ export type WebPage = {
   minQty: number | null;
   maxQty: number | null;
   shippingPrice: number | null;
+  weight: number | null;
   createdAt: string;
   updatedAt: string;
   images: WebPageImage[];
@@ -36,6 +37,7 @@ export type WebPage = {
 
 export type AppSettings = {
   appId: number;
+  country: CountryCode;
   logo: { mime: string; data: string } | null;
   favicon: { mime: string; data: string } | null;
 };
