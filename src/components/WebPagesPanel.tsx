@@ -106,6 +106,13 @@ export function WebPagesPanel({ appId }: { appId: number }) {
     queryFn: () => fetchPages({ data: { appId } }),
   });
 
+  const fetchSettings = useServerFn(getAppSettings);
+  const { data: settings } = useQuery<AppSettings>({
+    queryKey: ["app-settings", appId],
+    queryFn: () => fetchSettings({ data: { appId } }),
+  });
+  const weightUnit = weightUnitFor(settings?.country);
+
   const pages = useMemo(() => data ?? [], [data]);
   const parents = useMemo(
     () =>
