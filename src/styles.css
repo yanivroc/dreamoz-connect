@@ -462,3 +462,9 @@
 }
 
 
+/* Toast close button pinned to the top-right */
+[data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-close-button="true"] {
+  left: auto !important;
+  right: -8px !important;
+  transform: translate(35%, -35%) !important;
+}
