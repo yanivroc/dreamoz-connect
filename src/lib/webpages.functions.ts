@@ -214,6 +214,7 @@ function normalizeProduct(data: PageInput) {
     minQty,
     maxQty,
     shippingPrice: data.shippingPrice ?? null,
+    weight: data.weight ?? null,
   };
 }
 
