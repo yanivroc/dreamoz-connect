@@ -313,7 +313,7 @@ export const updateWebPage = createServerFn({ method: "POST" })
       sql: `UPDATE web_pages SET parent_id = ?, order_no = ?, title = ?, description = ?,
               seo_description = ?, keywords = ?, enabled = ?, video_url = ?, video_embed = ?,
               hyperlink = ?, product_enabled = ?, price = ?, min_qty = ?, max_qty = ?, shipping_price = ?,
-              updated_at = ?
+              weight = ?, updated_at = ?
             WHERE id = ?`,
       args: [
         p.parentId,
