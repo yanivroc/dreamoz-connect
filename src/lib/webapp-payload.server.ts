@@ -1,4 +1,5 @@
 import type { Client } from "@libsql/client";
+import { normalizeCountry } from "./locale";
 
 type Row = Record<string, unknown>;
 
@@ -28,6 +29,7 @@ export type PayloadPage = {
     minQty: number | null;
     maxQty: number | null;
     shippingPrice: number | null;
+    weight: number | null;
   };
   images: PayloadImage[];
   createdAt: string;
@@ -46,7 +48,7 @@ export type WebAppPayload = {
     createdAt: string;
     updatedAt: string;
   };
-  settings: { logo: string | null; favicon: string | null };
+  settings: { country: string; logo: string | null; favicon: string | null };
   shippingRates: {
     byQuantity: { type: string; threshold: number; rate: number; currency: string }[];
     byAmount: { type: string; threshold: number; rate: number; currency: string }[];
@@ -124,6 +126,7 @@ export async function buildWebAppPayload(
       minQty: num(r["min_qty"]),
       maxQty: num(r["max_qty"]),
       shippingPrice: num(r["shipping_price"]),
+      weight: num(r["weight"]),
     },
     images: images.get(Number(r["id"])) ?? [],
     createdAt: String(r["created_at"] ?? ""),
@@ -170,6 +173,7 @@ export async function buildWebAppPayload(
       updatedAt: String(app["updated_at"] ?? ""),
     },
     settings: {
+      country: normalizeCountry(s?.["country"]),
       logo: logoData ? `data:${String(s?.["logo_mime"] ?? "")};base64,${logoData}` : null,
       favicon: favData ? `data:${String(s?.["favicon_mime"] ?? "")};base64,${favData}` : null,
     },
