@@ -271,7 +271,7 @@ function CheckoutPage() {
                 {item.title} × {item.qty}
               </span>
               <span className="text-foreground">
-                {formatMoney(item.price * item.qty, totals.currency)}
+                {formatMoney(item.price * item.qty, totals.currency, { code: false })}
               </span>
             </li>
           ))}
@@ -279,7 +279,7 @@ function CheckoutPage() {
         <div className="mt-4 space-y-2 border-t border-border pt-4 text-sm">
           <div className="flex justify-between text-muted-foreground">
             <span>Shipping</span>
-            <span>{formatMoney(totals.shipping, totals.currency)}</span>
+            <span>{formatMoney(totals.shipping, totals.currency, { code: false })}</span>
           </div>
           <div className="flex justify-between text-base font-semibold text-foreground">
             <span>Total</span>
