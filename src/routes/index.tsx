@@ -35,10 +35,7 @@ function Index() {
   const content = data.content;
   const pages = sortPages(content.pages);
   const [hero, ...rest] = pages;
-  const currency =
-    content.shippingRates.byAmount[0]?.currency ??
-    content.shippingRates.byQuantity[0]?.currency ??
-    "AUD";
+  const currency = siteCurrency(content);
 
   if (!hero) {
     return (

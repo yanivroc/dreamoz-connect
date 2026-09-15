@@ -65,10 +65,7 @@ function PageDetail() {
   const canFloatMedia =
     (page.images?.length ?? 0) >= 1 && !page.videoUrl && !page.videoEmbed;
   const children = sortPages(page.children ?? []);
-  const currency =
-    content.shippingRates.byAmount[0]?.currency ??
-    content.shippingRates.byQuantity[0]?.currency ??
-    "AUD";
+  const currency = siteCurrency(content);
 
   return (
     <article className="mx-auto max-w-5xl px-6 py-16">
