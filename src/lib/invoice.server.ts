@@ -31,10 +31,15 @@ export interface InvoiceInput {
 }
 
 const money = (n: number, cur: string) => {
+  const code = (cur || "AUD").toUpperCase();
   try {
-    return new Intl.NumberFormat("en-AU", { style: "currency", currency: cur }).format(n);
+    return `${code} ${new Intl.NumberFormat("en-AU", {
+      style: "currency",
+      currency: code,
+      currencyDisplay: "narrowSymbol",
+    }).format(n)}`;
   } catch {
-    return `${n.toFixed(2)} ${cur}`;
+    return `${code} ${n.toFixed(2)}`;
   }
 };
 

@@ -138,5 +138,14 @@ export function sanitizeHtml(html: string): string {
 }
 
 export function formatMoney(amount: number, currency = "AUD"): string {
-  return new Intl.NumberFormat("en-AU", { style: "currency", currency }).format(amount);
+  const code = (currency || "AUD").toUpperCase();
+  try {
+    return `${code} ${new Intl.NumberFormat("en-AU", {
+      style: "currency",
+      currency: code,
+      currencyDisplay: "narrowSymbol",
+    }).format(amount)}`;
+  } catch {
+    return `${code} ${amount.toFixed(2)}`;
+  }
 }
