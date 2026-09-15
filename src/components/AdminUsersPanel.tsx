@@ -10,6 +10,16 @@ import {
   adminResetPassword,
   type AdminUser,
 } from "@/lib/admin.functions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export function AdminUsersPanel({ currentUserId }: { currentUserId: number }) {
   const fetchUsers = useServerFn(listUsers);
@@ -20,6 +30,7 @@ export function AdminUsersPanel({ currentUserId }: { currentUserId: number }) {
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState<number | null>(null);
   const [includeDeleted, setIncludeDeleted] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<AdminUser | null>(null);
 
   const { data, isLoading, error } = useQuery<AdminUser[]>({
     queryKey: ["admin-users", includeDeleted],
@@ -155,19 +166,7 @@ export function AdminUsersPanel({ currentUserId }: { currentUserId: number }) {
                         <button
                           type="button"
                           disabled={isSelf || busy === u.id}
-                          onClick={() => {
-                            if (
-                              !window.confirm(
-                                `Delete ${u.email}? You can restore them later.`,
-                              )
-                            )
-                              return;
-                            void run(
-                              u.id,
-                              () => removeUser({ data: { id: u.id } }),
-                              "User deleted.",
-                            );
-                          }}
+                          onClick={() => setPendingDelete(u)}
                           className="rounded-full border border-destructive/60 px-3 py-1 text-xs text-destructive transition hover:bg-destructive/10 disabled:opacity-60"
                         >
                           Delete
@@ -181,6 +180,39 @@ export function AdminUsersPanel({ currentUserId }: { currentUserId: number }) {
           </tbody>
         </table>
       </div>
+
+      <AlertDialog
+        open={pendingDelete !== null}
+        onOpenChange={(open) => {
+          if (!open && busy === null) setPendingDelete(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {pendingDelete?.email}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              They will lose access straight away. You can restore them later.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={busy !== null}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={busy !== null}
+              onClick={(e) => {
+                e.preventDefault();
+                const u = pendingDelete;
+                if (!u) return;
+                void run(u.id, () => removeUser({ data: { id: u.id } }), "User deleted.").finally(
+                  () => setPendingDelete(null),
+                );
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {busy !== null ? "Deleting…" : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

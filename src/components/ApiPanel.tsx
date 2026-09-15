@@ -7,6 +7,16 @@ import {
   rotateApiSecret,
   type ApiCredentials,
 } from "@/lib/webapi.functions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 function Copy({ value }: { value: string }) {
   return (
@@ -39,6 +49,7 @@ export function ApiPanel({ appId }: { appId: number }) {
   const [secret, setSecret] = useState<string | null>(null);
   const [origin, setOrigin] = useState("");
   const [rotating, setRotating] = useState(false);
+  const [confirmRotate, setConfirmRotate] = useState(false);
 
   useEffect(() => {
     setOrigin(window.location.origin);
@@ -54,9 +65,6 @@ export function ApiPanel({ appId }: { appId: number }) {
   }, [data]);
 
   async function onRotate() {
-    if (!window.confirm("Regenerate the API secret? The current secret stops working.")) {
-      return;
-    }
     setRotating(true);
     try {
       const res = await rotate({ data: { appId } });
@@ -110,7 +118,7 @@ export function ApiPanel({ appId }: { appId: number }) {
         </div>
         <button
           type="button"
-          onClick={onRotate}
+          onClick={() => setConfirmRotate(true)}
           disabled={rotating}
           className="rounded-full border border-border/70 px-4 py-2 text-sm transition hover:bg-surface/60 disabled:opacity-60"
         >
@@ -204,6 +212,36 @@ export function ApiPanel({ appId }: { appId: number }) {
           ))}
         </ul>
       </div>
+
+      <AlertDialog
+        open={confirmRotate}
+        onOpenChange={(open) => {
+          if (!open && !rotating) setConfirmRotate(false);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Regenerate the API secret?</AlertDialogTitle>
+            <AlertDialogDescription>
+              The current secret stops working immediately. Anything using it will need the new
+              secret.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={rotating}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={rotating}
+              onClick={(e) => {
+                e.preventDefault();
+                void onRotate().finally(() => setConfirmRotate(false));
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {rotating ? "Regenerating…" : "Regenerate"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
