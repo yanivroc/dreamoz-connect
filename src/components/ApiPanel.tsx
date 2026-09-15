@@ -118,7 +118,7 @@ export function ApiPanel({ appId }: { appId: number }) {
         </div>
         <button
           type="button"
-          onClick={onRotate}
+          onClick={() => setConfirmRotate(true)}
           disabled={rotating}
           className="rounded-full border border-border/70 px-4 py-2 text-sm transition hover:bg-surface/60 disabled:opacity-60"
         >
