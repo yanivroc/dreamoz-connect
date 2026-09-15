@@ -65,9 +65,6 @@ export function ApiPanel({ appId }: { appId: number }) {
   }, [data]);
 
   async function onRotate() {
-    if (!window.confirm("Regenerate the API secret? The current secret stops working.")) {
-      return;
-    }
     setRotating(true);
     try {
       const res = await rotate({ data: { appId } });
