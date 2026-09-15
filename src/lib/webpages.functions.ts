@@ -545,12 +545,13 @@ export const getAppSettings = createServerFn({ method: "GET" })
     });
     const row = res.rows[0] as Record<string, unknown> | undefined;
     if (!row) {
-      return { appId: data.appId, logo: null, favicon: null };
+      return { appId: data.appId, country: DEFAULT_COUNTRY, logo: null, favicon: null };
     }
     const logoData = row["logo_data"] ? String(row["logo_data"]) : "";
     const favData = row["favicon_data"] ? String(row["favicon_data"]) : "";
     return {
       appId: data.appId,
+      country: normalizeCountry(row["country"]),
       logo: logoData ? { mime: String(row["logo_mime"] ?? ""), data: logoData } : null,
       favicon: favData
         ? { mime: String(row["favicon_mime"] ?? ""), data: favData }
