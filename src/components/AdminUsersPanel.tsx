@@ -166,19 +166,7 @@ export function AdminUsersPanel({ currentUserId }: { currentUserId: number }) {
                         <button
                           type="button"
                           disabled={isSelf || busy === u.id}
-                          onClick={() => {
-                            if (
-                              !window.confirm(
-                                `Delete ${u.email}? You can restore them later.`,
-                              )
-                            )
-                              return;
-                            void run(
-                              u.id,
-                              () => removeUser({ data: { id: u.id } }),
-                              "User deleted.",
-                            );
-                          }}
+                          onClick={() => setPendingDelete(u)}
                           className="rounded-full border border-destructive/60 px-3 py-1 text-xs text-destructive transition hover:bg-destructive/10 disabled:opacity-60"
                         >
                           Delete
