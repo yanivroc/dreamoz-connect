@@ -564,6 +564,9 @@ export const saveAppSettings = createServerFn({ method: "POST" })
     z
       .object({
         appId: z.coerce.number().int(),
+        country: z
+          .enum(COUNTRY_CODES as [CountryCode, ...CountryCode[]])
+          .default(DEFAULT_COUNTRY),
         logo: z
           .object({
             mime: z.string().refine((v) => IMAGE_MIMES.includes(v), "Unsupported image type."),
