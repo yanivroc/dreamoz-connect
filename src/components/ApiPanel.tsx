@@ -152,7 +152,7 @@ export function ApiPanel({ appId }: { appId: number }) {
 {
   "webApp": { "id": 1, "title": "…", "description": "…", "email": "…",
               "link": "…", "enabled": true, "createdAt": "…", "updatedAt": "…" },
-  "settings": { "logo": "data:image/png;base64,…", "favicon": "…" },
+  "settings": { "country": "AU", "logo": "data:image/png;base64,…", "favicon": "…" },
   "shippingRates": {
     "byQuantity": [{ "type": "qty", "threshold": 10, "rate": 9.95, "currency": "AUD" }],
     "byAmount": [{ "type": "amount", "threshold": 100, "rate": 0, "currency": "AUD" }]
@@ -163,7 +163,7 @@ export function ApiPanel({ appId }: { appId: number }) {
       "description": "…", "seoDescription": "…", "keywords": "…",
       "enabled": true, "videoUrl": "", "videoEmbed": "", "hyperlink": "",
       "product": { "enabled": false, "price": null, "minQty": null,
-                   "maxQty": null, "shippingPrice": null },
+                   "maxQty": null, "shippingPrice": null, "weight": null },
       "images": [{ "id": 3, "alt": "", "orderNo": 0, "url": "data:image/…" }],
       "children": [ { "…": "sub page, same shape" } ]
     }
