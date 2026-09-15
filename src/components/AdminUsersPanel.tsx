@@ -10,6 +10,16 @@ import {
   adminResetPassword,
   type AdminUser,
 } from "@/lib/admin.functions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export function AdminUsersPanel({ currentUserId }: { currentUserId: number }) {
   const fetchUsers = useServerFn(listUsers);
@@ -20,6 +30,7 @@ export function AdminUsersPanel({ currentUserId }: { currentUserId: number }) {
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState<number | null>(null);
   const [includeDeleted, setIncludeDeleted] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<AdminUser | null>(null);
 
   const { data, isLoading, error } = useQuery<AdminUser[]>({
     queryKey: ["admin-users", includeDeleted],
