@@ -180,6 +180,39 @@ export function AdminUsersPanel({ currentUserId }: { currentUserId: number }) {
           </tbody>
         </table>
       </div>
+
+      <AlertDialog
+        open={pendingDelete !== null}
+        onOpenChange={(open) => {
+          if (!open && busy === null) setPendingDelete(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete {pendingDelete?.email}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              They will lose access straight away. You can restore them later.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={busy !== null}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={busy !== null}
+              onClick={(e) => {
+                e.preventDefault();
+                const u = pendingDelete;
+                if (!u) return;
+                void run(u.id, () => removeUser({ data: { id: u.id } }), "User deleted.").finally(
+                  () => setPendingDelete(null),
+                );
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {busy !== null ? "Deleting…" : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
