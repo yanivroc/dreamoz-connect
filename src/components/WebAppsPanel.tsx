@@ -328,11 +328,7 @@ export function WebAppsPanel({ isAdmin }: { isAdmin: boolean }) {
                 <button
                   type="button"
                   disabled={busy === app.id}
-                  onClick={() => {
-                    if (!window.confirm(`Delete "${app.title}"?`)) return;
-                    if (editingId === app.id) reset();
-                    void run(app.id, () => remove({ data: { id: app.id } }), "Deleted.");
-                  }}
+                  onClick={() => setPendingDelete(app)}
                   className="rounded-full border border-destructive/60 px-3 py-1 text-xs text-destructive transition hover:bg-destructive/10 disabled:opacity-60"
                 >
                   Delete
@@ -342,6 +338,40 @@ export function WebAppsPanel({ isAdmin }: { isAdmin: boolean }) {
           ))}
         </div>
       </div>
+
+      <AlertDialog
+        open={pendingDelete !== null}
+        onOpenChange={(open) => {
+          if (!open && busy === null) setPendingDelete(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete "{pendingDelete?.title}"?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This web app, its pages and settings will be permanently deleted.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={busy !== null}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={busy !== null}
+              onClick={(e) => {
+                e.preventDefault();
+                const app = pendingDelete;
+                if (!app) return;
+                if (editingId === app.id) reset();
+                void run(app.id, () => remove({ data: { id: app.id } }), "Deleted.").finally(() =>
+                  setPendingDelete(null),
+                );
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {busy !== null ? "Deleting…" : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
