@@ -6,6 +6,8 @@ import {
   findParent,
   formatMoney,
   isProductPage,
+  siteCurrency,
+  siteWeightUnit,
   slugify,
   sortPages,
 } from "@/lib/content-types";
@@ -66,6 +68,10 @@ function PageDetail() {
     (page.images?.length ?? 0) >= 1 && !page.videoUrl && !page.videoEmbed;
   const children = sortPages(page.children ?? []);
   const currency = siteCurrency(content);
+  const weightLabel =
+    isProductPage(page) && page.product.weight != null
+      ? `${page.product.weight} ${siteWeightUnit(content)}`
+      : null;
 
   return (
     <article className="mx-auto max-w-5xl px-6 py-16">
@@ -103,6 +109,9 @@ function PageDetail() {
             html={page.description}
             className={isProductPage(page) ? "home-copy mt-4" : "home-copy"}
           />
+          {weightLabel ? (
+            <p className="mt-3 text-sm text-muted-foreground">Weight: {weightLabel}</p>
+          ) : null}
           {isProductPage(page) ? <AddToCartPanel page={page} /> : null}
         </div>
       ) : (
@@ -114,6 +123,9 @@ function PageDetail() {
           ) : null}
           <RichText html={page.description} className="home-copy mt-6 max-w-3xl" />
           <PageMedia page={page} />
+          {weightLabel ? (
+            <p className="mt-3 text-sm text-muted-foreground">Weight: {weightLabel}</p>
+          ) : null}
           {isProductPage(page) ? <AddToCartPanel page={page} /> : null}
         </>
       )}

@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { siteContentQuery } from "@/lib/content-query";
-import { slugify, sortPages } from "@/lib/content-types";
+import { siteCurrency, slugify, sortPages } from "@/lib/content-types";
 import { HeroSlider } from "@/components/site/HeroSlider";
 import { RichText } from "@/components/site/RichText";
 import { PageMedia } from "@/components/site/PageMedia";
