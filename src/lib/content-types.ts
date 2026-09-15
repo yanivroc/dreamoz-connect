@@ -137,15 +137,22 @@ export function sanitizeHtml(html: string): string {
     .replace(/javascript:/gi, "");
 }
 
-export function formatMoney(amount: number, currency = "AUD"): string {
+export function formatMoney(
+  amount: number,
+  currency = "AUD",
+  options?: { code?: boolean },
+): string {
   const code = (currency || "AUD").toUpperCase();
+  const showCode = options?.code !== false;
   try {
-    return `${code} ${new Intl.NumberFormat("en-AU", {
+    const formatted = new Intl.NumberFormat("en-AU", {
       style: "currency",
       currency: code,
       currencyDisplay: "narrowSymbol",
-    }).format(amount)}`;
+    }).format(amount);
+    return showCode ? `${code} ${formatted}` : formatted;
   } catch {
-    return `${code} ${amount.toFixed(2)}`;
+    const fallback = amount.toFixed(2);
+    return showCode ? `${code} ${fallback}` : fallback;
   }
 }
