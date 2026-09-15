@@ -12,6 +12,16 @@ import {
 } from "@/lib/webapps.functions";
 import { formatDateTime } from "@/lib/format";
 import { stripHtml } from "@/lib/sanitize-html";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type FormState = {
   title: string;
@@ -61,6 +71,7 @@ export function WebAppsPanel({ isAdmin }: { isAdmin: boolean }) {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
   const [busy, setBusy] = useState<number | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<WebApp | null>(null);
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
 
