@@ -146,6 +146,7 @@ function mapPage(r: unknown): WebPage {
     minQty: num(row["min_qty"]),
     maxQty: num(row["max_qty"]),
     shippingPrice: num(row["shipping_price"]),
+    weight: num(row["weight"]),
     createdAt: String(row["created_at"] ?? ""),
     updatedAt: String(row["updated_at"] ?? ""),
     images: [],
