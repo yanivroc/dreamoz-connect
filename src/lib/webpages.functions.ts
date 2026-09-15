@@ -331,6 +331,7 @@ export const updateWebPage = createServerFn({ method: "POST" })
         p.minQty,
         p.maxQty,
         p.shippingPrice,
+        p.weight,
         new Date().toISOString(),
         data.id,
       ],
