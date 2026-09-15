@@ -183,6 +183,7 @@ const pageShape = {
   minQty: z.coerce.number().int().min(0).max(1_000_000).nullable().optional(),
   maxQty: z.coerce.number().int().min(0).max(1_000_000).nullable().optional(),
   shippingPrice: z.coerce.number().min(0).max(1_000_000).nullable().optional(),
+  weight: z.coerce.number().min(0).max(100_000).nullable().optional(),
 };
 
 type PageInput = z.infer<z.ZodObject<typeof pageShape>>;
