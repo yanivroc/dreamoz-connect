@@ -589,10 +589,11 @@ export const saveAppSettings = createServerFn({ method: "POST" })
     const ownerId = await assertApp(ctx, data.appId);
     const now = new Date().toISOString();
     await ctx.db.execute({
-      sql: `INSERT INTO web_app_settings (app_id, user_id, logo_mime, logo_data,
+      sql: `INSERT INTO web_app_settings (app_id, user_id, country, logo_mime, logo_data,
               favicon_mime, favicon_data, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(app_id) DO UPDATE SET
+              country = excluded.country,
               logo_mime = excluded.logo_mime,
               logo_data = excluded.logo_data,
               favicon_mime = excluded.favicon_mime,
@@ -601,6 +602,7 @@ export const saveAppSettings = createServerFn({ method: "POST" })
       args: [
         data.appId,
         ownerId,
+        data.country,
         data.logo?.mime ?? null,
         data.logo?.data ?? null,
         data.favicon?.mime ?? null,
