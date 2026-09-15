@@ -7,6 +7,16 @@ import {
   rotateApiSecret,
   type ApiCredentials,
 } from "@/lib/webapi.functions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 function Copy({ value }: { value: string }) {
   return (
