@@ -7,7 +7,9 @@ import {
   saveShippingRates,
   type ShippingRatesResult,
 } from "@/lib/webpages.functions";
-import { detectCurrency, formatMoney } from "@/lib/currency";
+import { formatMoney } from "@/lib/currency";
+import { currencyFor } from "@/lib/locale";
+import { getAppSettings, type AppSettings } from "@/lib/webpages.functions";
 
 const inputClass =
   "w-full rounded-lg border border-border/70 bg-background px-3 py-2 text-sm outline-none transition focus:border-primary";
@@ -106,17 +108,18 @@ export function ShippingRatesPanel({ appId }: { appId: number }) {
 
   const [qtyRows, setQtyRows] = useState<Row[]>([]);
   const [amountRows, setAmountRows] = useState<Row[]>([]);
-  const [currency, setCurrency] = useState("AUD");
+  const fetchSettings = useServerFn(getAppSettings);
+  const { data: settings } = useQuery<AppSettings>({
+    queryKey: ["app-settings", appId],
+    queryFn: () => fetchSettings({ data: { appId } }),
+  });
+  const currency = currencyFor(settings?.country);
   const [saving, setSaving] = useState(false);
 
   const { data, isLoading, error } = useQuery<ShippingRatesResult>({
     queryKey: ["shipping-rates", appId],
     queryFn: () => fetchRates({ data: { appId } }),
   });
-
-  useEffect(() => {
-    setCurrency(detectCurrency());
-  }, []);
 
   useEffect(() => {
     if (!data) return;
@@ -201,7 +204,7 @@ export function ShippingRatesPanel({ appId }: { appId: number }) {
       <div>
         <h3 className="text-xl font-semibold">Shipping rates</h3>
         <p className="mt-1 text-sm text-muted-foreground">
-          Currency detected from your location: <strong>{currency}</strong>
+          Currency from your general settings country: <strong>{currency}</strong>
           {preview ? ` (e.g. ${preview})` : ""}
         </p>
       </div>

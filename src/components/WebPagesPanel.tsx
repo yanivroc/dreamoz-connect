@@ -12,9 +12,12 @@ import {
   deletePageImage,
   updatePageImage,
   reorderPageImages,
+  getAppSettings,
+  type AppSettings,
   type WebPage,
   type WebPageImage,
 } from "@/lib/webpages.functions";
+import { weightUnitFor } from "@/lib/locale";
 import { encodeImage, imageSrc } from "@/lib/image-upload";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import {
@@ -48,6 +51,7 @@ type FormState = {
   minQty: string;
   maxQty: string;
   shippingPrice: string;
+  weight: string;
 };
 
 const emptyForm: FormState = {
@@ -66,6 +70,7 @@ const emptyForm: FormState = {
   minQty: "",
   maxQty: "",
   shippingPrice: "",
+  weight: "",
 };
 
 const numOrNull = (v: string) => (v.trim() === "" ? null : Number(v));
@@ -100,6 +105,13 @@ export function WebPagesPanel({ appId }: { appId: number }) {
     queryKey: ["web-pages", appId],
     queryFn: () => fetchPages({ data: { appId } }),
   });
+
+  const fetchSettings = useServerFn(getAppSettings);
+  const { data: settings } = useQuery<AppSettings>({
+    queryKey: ["app-settings", appId],
+    queryFn: () => fetchSettings({ data: { appId } }),
+  });
+  const weightUnit = weightUnitFor(settings?.country);
 
   const pages = useMemo(() => data ?? [], [data]);
   const parents = useMemo(
@@ -159,6 +171,7 @@ export function WebPagesPanel({ appId }: { appId: number }) {
       minQty: page.minQty?.toString() ?? "",
       maxQty: page.maxQty?.toString() ?? "",
       shippingPrice: page.shippingPrice?.toString() ?? "",
+      weight: page.weight?.toString() ?? "",
     });
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -186,6 +199,7 @@ export function WebPagesPanel({ appId }: { appId: number }) {
       minQty: numOrNull(form.minQty),
       maxQty: numOrNull(form.maxQty),
       shippingPrice: numOrNull(form.shippingPrice),
+      weight: numOrNull(form.weight),
     };
     setSaving(true);
     try {
@@ -563,6 +577,20 @@ export function WebPagesPanel({ appId }: { appId: number }) {
                     step="0.01"
                     value={form.shippingPrice}
                     onChange={(e) => setForm({ ...form, shippingPrice: e.target.value })}
+                  />
+                </label>
+                <label className="space-y-1.5 text-sm">
+                  <span className="text-muted-foreground">
+                    Weight ({weightUnit}, optional)
+                  </span>
+                  <input
+                    className={inputClass}
+                    type="number"
+                    min={0}
+                    max={100000}
+                    step="0.001"
+                    value={form.weight}
+                    onChange={(e) => setForm({ ...form, weight: e.target.value })}
                   />
                 </label>
                 <label className="space-y-1.5 text-sm">

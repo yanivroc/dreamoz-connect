@@ -8,6 +8,7 @@ import {
   type AppSettings,
 } from "@/lib/webpages.functions";
 import { encodeImage, imageSrc } from "@/lib/image-upload";
+import { COUNTRIES, COUNTRY_CODES, DEFAULT_COUNTRY, type CountryCode } from "@/lib/locale";
 
 type Media = { mime: string; data: string } | null;
 
@@ -18,6 +19,7 @@ export function AppSettingsPanel({ appId }: { appId: number }) {
 
   const [logo, setLogo] = useState<Media>(null);
   const [favicon, setFavicon] = useState<Media>(null);
+  const [country, setCountry] = useState<CountryCode>(DEFAULT_COUNTRY);
   const [saving, setSaving] = useState(false);
 
   const { data, isLoading, error } = useQuery<AppSettings>({
@@ -27,6 +29,7 @@ export function AppSettingsPanel({ appId }: { appId: number }) {
 
   useEffect(() => {
     if (!data) return;
+    setCountry(data.country);
     setLogo(data.logo);
     setFavicon(data.favicon);
   }, [data]);
@@ -47,6 +50,7 @@ export function AppSettingsPanel({ appId }: { appId: number }) {
       await save({
         data: {
           appId,
+          country,
           logo,
           favicon,
         },
@@ -74,6 +78,24 @@ export function AppSettingsPanel({ appId }: { appId: number }) {
       className="max-w-2xl space-y-6 rounded-2xl border border-border/60 bg-surface/40 p-6 shadow-card"
     >
       <h3 className="text-xl font-semibold">General settings</h3>
+
+      <label className="block max-w-xs space-y-1.5 text-sm">
+        <span className="text-muted-foreground">Country</span>
+        <select
+          className="w-full rounded-lg border border-border/70 bg-background px-3 py-2 text-sm outline-none transition focus:border-primary"
+          value={country}
+          onChange={(e) => setCountry(e.target.value as CountryCode)}
+        >
+          {COUNTRY_CODES.map((code) => (
+            <option key={code} value={code}>
+              {COUNTRIES[code].label} — {COUNTRIES[code].currency} / {COUNTRIES[code].weightUnit}
+            </option>
+          ))}
+        </select>
+        <span className="block text-xs text-muted-foreground">
+          Sets the currency shown on products, cart and checkout, and the weight unit.
+        </span>
+      </label>
 
       <div className="space-y-2">
         <span className="text-sm text-muted-foreground">Logo image</span>

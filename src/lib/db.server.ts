@@ -126,6 +126,11 @@ export async function ensureWebPagesTables(db: Client): Promise<void> {
   } catch {
     // Column already exists.
   }
+  try {
+    await db.execute(`ALTER TABLE web_pages ADD COLUMN weight REAL`);
+  } catch {
+    // Column already exists.
+  }
   await db.execute(`CREATE TABLE IF NOT EXISTS web_app_settings (
     app_id INTEGER PRIMARY KEY,
     user_id INTEGER NOT NULL,
@@ -139,6 +144,13 @@ export async function ensureWebPagesTables(db: Client): Promise<void> {
     await db.execute(`ALTER TABLE web_app_settings DROP COLUMN default_shipping_price`);
   } catch {
     // Column already dropped (or unsupported); ignored.
+  }
+  try {
+    await db.execute(
+      `ALTER TABLE web_app_settings ADD COLUMN country TEXT NOT NULL DEFAULT 'AU'`,
+    );
+  } catch {
+    // Column already exists.
   }
   await db.execute(`CREATE TABLE IF NOT EXISTS web_app_shipping_rates (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

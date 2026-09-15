@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { siteContentQuery } from "@/lib/content-query";
-import { slugify, sortPages } from "@/lib/content-types";
+import { siteCurrency, slugify, sortPages } from "@/lib/content-types";
 import { HeroSlider } from "@/components/site/HeroSlider";
 import { RichText } from "@/components/site/RichText";
 import { PageMedia } from "@/components/site/PageMedia";
@@ -35,10 +35,7 @@ function Index() {
   const content = data.content;
   const pages = sortPages(content.pages);
   const [hero, ...rest] = pages;
-  const currency =
-    content.shippingRates.byAmount[0]?.currency ??
-    content.shippingRates.byQuantity[0]?.currency ??
-    "AUD";
+  const currency = siteCurrency(content);
 
   if (!hero) {
     return (

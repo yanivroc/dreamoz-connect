@@ -1,3 +1,17 @@
+import { currencyFor, DEFAULT_COUNTRY, weightUnitFor } from "./locale";
+
+/** Currency the shop displays, driven by the web app's country setting. */
+export function siteCurrency(content: Pick<SiteContent, "settings"> | null | undefined): string {
+  return currencyFor(content?.settings?.country);
+}
+
+/** Weight unit the shop displays, driven by the web app's country setting. */
+export function siteWeightUnit(
+  content: Pick<SiteContent, "settings"> | null | undefined,
+): string {
+  return weightUnitFor(content?.settings?.country);
+}
+
 export interface WaImage {
   id: number;
   alt: string;
@@ -12,6 +26,7 @@ export interface WaProduct {
   minQty: number | null;
   maxQty: number | null;
   shippingPrice: number | null;
+  weight: number | null;
 }
 
 export interface WaPage {
@@ -47,7 +62,7 @@ export interface SiteContent {
     link: string;
     enabled: boolean;
   };
-  settings: { logo: string | null; favicon: string | null };
+  settings: { country: string; logo: string | null; favicon: string | null };
   shippingRates: { byQuantity: WaShippingRate[]; byAmount: WaShippingRate[] };
   pages: WaPage[];
 }
@@ -61,7 +76,7 @@ export const EMPTY_CONTENT: SiteContent = {
     link: "",
     enabled: true,
   },
-  settings: { logo: null, favicon: null },
+  settings: { country: DEFAULT_COUNTRY, logo: null, favicon: null },
   shippingRates: { byQuantity: [], byAmount: [] },
   pages: [],
 };

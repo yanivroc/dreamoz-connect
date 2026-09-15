@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { sanitizeHtml } from "./sanitize-html";
+import { COUNTRY_CODES, DEFAULT_COUNTRY, normalizeCountry, type CountryCode } from "./locale";
 
 export type WebPageImage = {
   id: number;
@@ -29,6 +30,7 @@ export type WebPage = {
   minQty: number | null;
   maxQty: number | null;
   shippingPrice: number | null;
+  weight: number | null;
   createdAt: string;
   updatedAt: string;
   images: WebPageImage[];
@@ -36,6 +38,7 @@ export type WebPage = {
 
 export type AppSettings = {
   appId: number;
+  country: CountryCode;
   logo: { mime: string; data: string } | null;
   favicon: { mime: string; data: string } | null;
 };
@@ -143,6 +146,7 @@ function mapPage(r: unknown): WebPage {
     minQty: num(row["min_qty"]),
     maxQty: num(row["max_qty"]),
     shippingPrice: num(row["shipping_price"]),
+    weight: num(row["weight"]),
     createdAt: String(row["created_at"] ?? ""),
     updatedAt: String(row["updated_at"] ?? ""),
     images: [],
@@ -179,6 +183,7 @@ const pageShape = {
   minQty: z.coerce.number().int().min(0).max(1_000_000).nullable().optional(),
   maxQty: z.coerce.number().int().min(0).max(1_000_000).nullable().optional(),
   shippingPrice: z.coerce.number().min(0).max(1_000_000).nullable().optional(),
+  weight: z.coerce.number().min(0).max(100_000).nullable().optional(),
 };
 
 type PageInput = z.infer<z.ZodObject<typeof pageShape>>;
@@ -194,6 +199,7 @@ function normalizeProduct(data: PageInput) {
       minQty: null,
       maxQty: null,
       shippingPrice: null,
+      weight: null,
     };
   }
   const minQty = data.minQty ?? null;
@@ -208,6 +214,7 @@ function normalizeProduct(data: PageInput) {
     minQty,
     maxQty,
     shippingPrice: data.shippingPrice ?? null,
+    weight: data.weight ?? null,
   };
 }
 
@@ -262,8 +269,8 @@ export const createWebPage = createServerFn({ method: "POST" })
     const res = await ctx.db.execute({
       sql: `INSERT INTO web_pages (app_id, user_id, parent_id, order_no, title, description,
               seo_description, keywords, enabled, video_url, video_embed, hyperlink,
-              product_enabled, price, min_qty, max_qty, shipping_price, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              product_enabled, price, min_qty, max_qty, shipping_price, weight, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         data.appId,
         ownerId,
@@ -282,6 +289,7 @@ export const createWebPage = createServerFn({ method: "POST" })
         p.minQty,
         p.maxQty,
         p.shippingPrice,
+        p.weight,
         now,
         now,
       ],
@@ -305,7 +313,7 @@ export const updateWebPage = createServerFn({ method: "POST" })
       sql: `UPDATE web_pages SET parent_id = ?, order_no = ?, title = ?, description = ?,
               seo_description = ?, keywords = ?, enabled = ?, video_url = ?, video_embed = ?,
               hyperlink = ?, product_enabled = ?, price = ?, min_qty = ?, max_qty = ?, shipping_price = ?,
-              updated_at = ?
+              weight = ?, updated_at = ?
             WHERE id = ?`,
       args: [
         p.parentId,
@@ -323,6 +331,7 @@ export const updateWebPage = createServerFn({ method: "POST" })
         p.minQty,
         p.maxQty,
         p.shippingPrice,
+        p.weight,
         new Date().toISOString(),
         data.id,
       ],
@@ -536,12 +545,13 @@ export const getAppSettings = createServerFn({ method: "GET" })
     });
     const row = res.rows[0] as Record<string, unknown> | undefined;
     if (!row) {
-      return { appId: data.appId, logo: null, favicon: null };
+      return { appId: data.appId, country: DEFAULT_COUNTRY, logo: null, favicon: null };
     }
     const logoData = row["logo_data"] ? String(row["logo_data"]) : "";
     const favData = row["favicon_data"] ? String(row["favicon_data"]) : "";
     return {
       appId: data.appId,
+      country: normalizeCountry(row["country"]),
       logo: logoData ? { mime: String(row["logo_mime"] ?? ""), data: logoData } : null,
       favicon: favData
         ? { mime: String(row["favicon_mime"] ?? ""), data: favData }
@@ -554,6 +564,9 @@ export const saveAppSettings = createServerFn({ method: "POST" })
     z
       .object({
         appId: z.coerce.number().int(),
+        country: z
+          .enum(COUNTRY_CODES as [CountryCode, ...CountryCode[]])
+          .default(DEFAULT_COUNTRY),
         logo: z
           .object({
             mime: z.string().refine((v) => IMAGE_MIMES.includes(v), "Unsupported image type."),
@@ -576,10 +589,11 @@ export const saveAppSettings = createServerFn({ method: "POST" })
     const ownerId = await assertApp(ctx, data.appId);
     const now = new Date().toISOString();
     await ctx.db.execute({
-      sql: `INSERT INTO web_app_settings (app_id, user_id, logo_mime, logo_data,
+      sql: `INSERT INTO web_app_settings (app_id, user_id, country, logo_mime, logo_data,
               favicon_mime, favicon_data, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(app_id) DO UPDATE SET
+              country = excluded.country,
               logo_mime = excluded.logo_mime,
               logo_data = excluded.logo_data,
               favicon_mime = excluded.favicon_mime,
@@ -588,6 +602,7 @@ export const saveAppSettings = createServerFn({ method: "POST" })
       args: [
         data.appId,
         ownerId,
+        data.country,
         data.logo?.mime ?? null,
         data.logo?.data ?? null,
         data.favicon?.mime ?? null,
