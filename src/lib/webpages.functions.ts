@@ -289,6 +289,7 @@ export const createWebPage = createServerFn({ method: "POST" })
         p.minQty,
         p.maxQty,
         p.shippingPrice,
+        p.weight,
         now,
         now,
       ],
