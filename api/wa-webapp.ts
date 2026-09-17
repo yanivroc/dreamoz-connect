@@ -31,8 +31,7 @@ type PageNode = {
   seoDescription: string;
   keywords: string;
   enabled: boolean;
-  videoUrl: string;
-  videoEmbed: string;
+  embedCode: string;
   hyperlink: string;
   product: {
     enabled: boolean;
@@ -125,6 +124,25 @@ export default async function handler(req: any, res: any) {
   const db = createClient(authToken ? { url, authToken } : { url });
 
   try {
+    const pageColumns = await db.execute("PRAGMA table_info(web_pages)");
+    const columnNames = new Set(
+      pageColumns.rows.map((row) => String((row as unknown as Row)["name"])),
+    );
+    if (columnNames.has("video_embed") && !columnNames.has("embed_code")) {
+      await db.execute("ALTER TABLE web_pages RENAME COLUMN video_embed TO embed_code");
+      columnNames.delete("video_embed");
+      columnNames.add("embed_code");
+    } else if (columnNames.has("video_embed") && columnNames.has("embed_code")) {
+      await db.execute(
+        "UPDATE web_pages SET embed_code = video_embed WHERE embed_code = '' AND video_embed <> ''",
+      );
+      await db.execute("ALTER TABLE web_pages DROP COLUMN video_embed");
+      columnNames.delete("video_embed");
+    }
+    if (columnNames.has("video_url")) {
+      await db.execute("ALTER TABLE web_pages DROP COLUMN video_url");
+    }
+
     const appRes = await db.execute({
       sql: "SELECT * FROM web_apps WHERE id = ? LIMIT 1",
       args: [appId],
@@ -180,8 +198,7 @@ export default async function handler(req: any, res: any) {
       seoDescription: String(r["seo_description"] ?? ""),
       keywords: String(r["keywords"] ?? ""),
       enabled: Number(r["enabled"] ?? 0) === 1,
-      videoUrl: String(r["video_url"] ?? ""),
-      videoEmbed: String(r["video_embed"] ?? ""),
+      embedCode: String(r["embed_code"] ?? ""),
       hyperlink: String(r["hyperlink"] ?? ""),
       product: {
         enabled: Number(r["product_enabled"] ?? 0) === 1,

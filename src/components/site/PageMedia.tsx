@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { sortImages, type WaPage } from "@/lib/content-types";
+import { parseEmbedCode } from "@/lib/embed-code";
 
 export function PageMedia({
   page,
@@ -14,10 +15,10 @@ export function PageMedia({
   compact?: boolean;
 }) {
   const images = sortImages(page.images ?? []);
-  const embedUrl = page.videoUrl || page.videoEmbed;
+  const embed = parseEmbedCode(page.embedCode ?? "");
   const [index, setIndex] = useState(0);
 
-  if (images.length === 0 && !embedUrl) return null;
+  if (images.length === 0 && !embed) return null;
 
   const current = images[Math.min(index, images.length - 1)];
   const go = (delta: number) =>
@@ -46,17 +47,20 @@ export function PageMedia({
         compact
           ? "mx-auto mt-8 w-full max-w-2xl space-y-6"
           : float
-          ? "mt-8 w-full space-y-6 md:float-right md:mb-4 md:ml-8 md:mt-2 md:w-1/2 lg:w-[46%]"
-          : "mt-8 space-y-6"
+            ? "mt-8 w-full space-y-6 md:float-right md:mb-4 md:ml-8 md:mt-2 md:w-1/2 lg:w-[46%]"
+            : "mt-8 space-y-6"
       }
     >
-      {embedUrl ? (
+      {embed ? (
         <div className="aspect-video overflow-hidden rounded-xl border border-border">
           <iframe
-            src={embedUrl}
-            title={`${page.title} video`}
+            src={embed.src}
+            title={embed.title || `${page.title} embedded content`}
             className="h-full w-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture"
+            loading="lazy"
+            referrerPolicy="strict-origin-when-cross-origin"
+            sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
             allowFullScreen
           />
         </div>
