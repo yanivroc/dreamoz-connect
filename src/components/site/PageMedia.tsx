@@ -3,19 +3,40 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { sortImages, type WaPage } from "@/lib/content-types";
 import { parseEmbedCode } from "@/lib/embed-code";
 
+export function PageEmbed({ page, className = "" }: { page: WaPage; className?: string }) {
+  const embed = parseEmbedCode(page.embedCode ?? "");
+  if (!embed) return null;
+  return (
+    <div className={`aspect-video overflow-hidden rounded-xl border border-border ${className}`}>
+      <iframe
+        src={embed.src}
+        title={embed.title || `${page.title} embedded content`}
+        className="h-full w-full"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture"
+        loading="lazy"
+        referrerPolicy="strict-origin-when-cross-origin"
+        sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
+        allowFullScreen
+      />
+    </div>
+  );
+}
+
 export function PageMedia({
   page,
   wide = false,
   float = false,
   compact = false,
+  embed: showEmbed = true,
 }: {
   page: WaPage;
   wide?: boolean;
   float?: boolean;
   compact?: boolean;
+  embed?: boolean;
 }) {
   const images = sortImages(page.images ?? []);
-  const embed = parseEmbedCode(page.embedCode ?? "");
+  const embed = showEmbed ? parseEmbedCode(page.embedCode ?? "") : null;
   const [index, setIndex] = useState(0);
 
   if (images.length === 0 && !embed) return null;

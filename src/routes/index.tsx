@@ -4,7 +4,7 @@ import { siteContentQuery } from "@/lib/content-query";
 import { siteCurrency, slugify, sortPages } from "@/lib/content-types";
 import { HeroSlider } from "@/components/site/HeroSlider";
 import { RichText } from "@/components/site/RichText";
-import { PageMedia } from "@/components/site/PageMedia";
+import { PageEmbed, PageMedia } from "@/components/site/PageMedia";
 import { PageCardGrid } from "@/components/site/PageCardGrid";
 
 export const Route = createFileRoute("/")({
@@ -77,6 +77,7 @@ function Index() {
                 <div className="min-w-0">
                   <h2 className="text-3xl font-bold text-foreground">{page.title}</h2>
                   <RichText html={page.description} className="home-copy mt-5" />
+                  <PageEmbed page={page} className="mt-6" />
                   <div className="mt-6 flex flex-wrap items-center gap-4">
                     {children.length === 0 ? (
                       <Link
@@ -100,7 +101,7 @@ function Index() {
                   </div>
                 </div>
                 <div className="min-w-0">
-                  <PageMedia page={page} wide={wideMedia} compact={compactMedia} />
+                  <PageMedia page={page} wide={wideMedia} compact={compactMedia} embed={false} />
                 </div>
               </div>
               {children.length > 0 ? (
