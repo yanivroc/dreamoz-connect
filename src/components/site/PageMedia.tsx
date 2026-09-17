@@ -47,8 +47,8 @@ export function PageMedia({
         compact
           ? "mx-auto mt-8 w-full max-w-2xl space-y-6"
           : float
-          ? "mt-8 w-full space-y-6 md:float-right md:mb-4 md:ml-8 md:mt-2 md:w-1/2 lg:w-[46%]"
-          : "mt-8 space-y-6"
+            ? "mt-8 w-full space-y-6 md:float-right md:mb-4 md:ml-8 md:mt-2 md:w-1/2 lg:w-[46%]"
+            : "mt-8 space-y-6"
       }
     >
       {embed ? (
