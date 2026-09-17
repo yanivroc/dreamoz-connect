@@ -77,6 +77,7 @@ function Index() {
                 <div className="min-w-0">
                   <h2 className="text-3xl font-bold text-foreground">{page.title}</h2>
                   <RichText html={page.description} className="home-copy mt-5" />
+                  <PageEmbed page={page} className="mt-6" />
                   <div className="mt-6 flex flex-wrap items-center gap-4">
                     {children.length === 0 ? (
                       <Link
