@@ -58,6 +58,9 @@ export function PageMedia({
             title={embed.title || `${page.title} embedded content`}
             className="h-full w-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture"
+            loading="lazy"
+            referrerPolicy="strict-origin-when-cross-origin"
+            sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
             allowFullScreen
           />
         </div>

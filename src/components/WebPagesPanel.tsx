@@ -20,6 +20,7 @@ import {
 import { weightUnitFor } from "@/lib/locale";
 import { encodeImage, imageSrc } from "@/lib/image-upload";
 import { RichTextEditor } from "@/components/RichTextEditor";
+import { isSafeEmbedCode } from "@/lib/embed-code";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -177,6 +178,10 @@ export function WebPagesPanel({ appId }: { appId: number }) {
     e.preventDefault();
     if (!form.title.trim()) {
       toast.error("Page title is required.");
+      return;
+    }
+    if (!isSafeEmbedCode(form.embedCode)) {
+      toast.error("Embed code must be one iframe with an HTTPS source.");
       return;
     }
     const payload = {

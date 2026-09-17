@@ -100,15 +100,23 @@ export async function ensureWebPagesTables(db: Client): Promise<void> {
   await db.execute(
     `CREATE INDEX IF NOT EXISTS web_pages_parent ON web_pages (parent_id)`,
   );
-  try {
+  const pageColumns = await db.execute(`PRAGMA table_info(web_pages)`);
+  const columnNames = new Set(
+    pageColumns.rows.map((row) => String((row as unknown as Record<string, unknown>)["name"])),
+  );
+  if (columnNames.has("video_embed") && !columnNames.has("embed_code")) {
     await db.execute(`ALTER TABLE web_pages RENAME COLUMN video_embed TO embed_code`);
-  } catch {
-    // Column was already renamed (or this is a new table).
+    columnNames.delete("video_embed");
+    columnNames.add("embed_code");
+  } else if (columnNames.has("video_embed") && columnNames.has("embed_code")) {
+    await db.execute(
+      `UPDATE web_pages SET embed_code = video_embed WHERE embed_code = '' AND video_embed <> ''`,
+    );
+    await db.execute(`ALTER TABLE web_pages DROP COLUMN video_embed`);
+    columnNames.delete("video_embed");
   }
-  try {
+  if (columnNames.has("video_url")) {
     await db.execute(`ALTER TABLE web_pages DROP COLUMN video_url`);
-  } catch {
-    // Column was already removed (or DROP COLUMN is unsupported).
   }
   await db.execute(`CREATE TABLE IF NOT EXISTS web_page_images (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
