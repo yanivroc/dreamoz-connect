@@ -31,8 +31,7 @@ type PageNode = {
   seoDescription: string;
   keywords: string;
   enabled: boolean;
-  videoUrl: string;
-  videoEmbed: string;
+  embedCode: string;
   hyperlink: string;
   product: {
     enabled: boolean;
@@ -180,8 +179,7 @@ export default async function handler(req: any, res: any) {
       seoDescription: String(r["seo_description"] ?? ""),
       keywords: String(r["keywords"] ?? ""),
       enabled: Number(r["enabled"] ?? 0) === 1,
-      videoUrl: String(r["video_url"] ?? ""),
-      videoEmbed: String(r["video_embed"] ?? ""),
+      embedCode: String(r["embed_code"] ?? ""),
       hyperlink: String(r["hyperlink"] ?? ""),
       product: {
         enabled: Number(r["product_enabled"] ?? 0) === 1,

@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { sanitizeHtml } from "./sanitize-html";
+import { isSafeEmbedCode } from "./embed-code";
 import { COUNTRY_CODES, DEFAULT_COUNTRY, normalizeCountry, type CountryCode } from "./locale";
 
 export type WebPageImage = {
@@ -22,8 +23,7 @@ export type WebPage = {
   seoDescription: string;
   keywords: string;
   enabled: boolean;
-  videoUrl: string;
-  videoEmbed: string;
+  embedCode: string;
   hyperlink: string;
   productEnabled: boolean;
   price: number | null;
@@ -138,8 +138,7 @@ function mapPage(r: unknown): WebPage {
     seoDescription: String(row["seo_description"] ?? ""),
     keywords: String(row["keywords"] ?? ""),
     enabled: Number(row["enabled"] ?? 1) === 1,
-    videoUrl: String(row["video_url"] ?? ""),
-    videoEmbed: String(row["video_embed"] ?? ""),
+    embedCode: String(row["embed_code"] ?? ""),
     hyperlink: String(row["hyperlink"] ?? ""),
     productEnabled: Number(row["product_enabled"] ?? 0) === 1,
     price: num(row["price"]),
@@ -162,14 +161,13 @@ const pageShape = {
   seoDescription: z.string().trim().max(300),
   keywords: z.string().trim().max(500),
   enabled: z.boolean(),
-  videoUrl: z
+  embedCode: z
     .string()
     .trim()
-    .max(500)
-    .refine((v) => v === "" || /^https?:\/\/\S+$/i.test(v), {
-      message: "Video link must start with http:// or https://",
+    .max(4000)
+    .refine(isSafeEmbedCode, {
+      message: "Embed code must be one iframe with an HTTPS source.",
     }),
-  videoEmbed: z.string().trim().max(4000),
   hyperlink: z
     .string()
     .trim()
@@ -268,9 +266,9 @@ export const createWebPage = createServerFn({ method: "POST" })
     const now = new Date().toISOString();
     const res = await ctx.db.execute({
       sql: `INSERT INTO web_pages (app_id, user_id, parent_id, order_no, title, description,
-              seo_description, keywords, enabled, video_url, video_embed, hyperlink,
+              seo_description, keywords, enabled, embed_code, hyperlink,
               product_enabled, price, min_qty, max_qty, shipping_price, weight, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         data.appId,
         ownerId,
@@ -281,8 +279,7 @@ export const createWebPage = createServerFn({ method: "POST" })
         data.seoDescription,
         data.keywords,
         data.enabled ? 1 : 0,
-        data.videoUrl,
-        data.videoEmbed,
+        data.embedCode,
         data.hyperlink,
         p.productEnabled ? 1 : 0,
         p.price,
@@ -311,7 +308,7 @@ export const updateWebPage = createServerFn({ method: "POST" })
     }
     await ctx.db.execute({
       sql: `UPDATE web_pages SET parent_id = ?, order_no = ?, title = ?, description = ?,
-              seo_description = ?, keywords = ?, enabled = ?, video_url = ?, video_embed = ?,
+              seo_description = ?, keywords = ?, enabled = ?, embed_code = ?,
               hyperlink = ?, product_enabled = ?, price = ?, min_qty = ?, max_qty = ?, shipping_price = ?,
               weight = ?, updated_at = ?
             WHERE id = ?`,
@@ -323,8 +320,7 @@ export const updateWebPage = createServerFn({ method: "POST" })
         data.seoDescription,
         data.keywords,
         data.enabled ? 1 : 0,
-        data.videoUrl,
-        data.videoEmbed,
+        data.embedCode,
         data.hyperlink,
         p.productEnabled ? 1 : 0,
         p.price,

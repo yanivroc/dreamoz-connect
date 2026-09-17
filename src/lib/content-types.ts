@@ -38,8 +38,7 @@ export interface WaPage {
   seoDescription: string | null;
   keywords: string | null;
   enabled: boolean;
-  videoUrl: string | null;
-  videoEmbed: string | null;
+  embedCode: string | null;
   hyperlink: string | null;
   product: WaProduct;
   images: WaImage[];

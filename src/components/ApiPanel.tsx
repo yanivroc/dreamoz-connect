@@ -169,7 +169,7 @@ export function ApiPanel({ appId }: { appId: number }) {
     {
       "id": 10, "parentId": null, "orderNo": 0, "title": "Home",
       "description": "…", "seoDescription": "…", "keywords": "…",
-      "enabled": true, "videoUrl": "", "videoEmbed": "", "hyperlink": "",
+      "enabled": true, "embedCode": "<iframe src=\"https://…\"></iframe>", "hyperlink": "",
       "product": { "enabled": false, "price": null, "minQty": null,
                    "maxQty": null, "shippingPrice": null, "weight": null },
       "images": [{ "id": 3, "alt": "", "orderNo": 0, "url": "data:image/…" }],

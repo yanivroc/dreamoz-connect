@@ -43,8 +43,7 @@ type FormState = {
   seoDescription: string;
   keywords: string;
   enabled: boolean;
-  videoUrl: string;
-  videoEmbed: string;
+  embedCode: string;
   hyperlink: string;
   productEnabled: boolean;
   price: string;
@@ -62,8 +61,7 @@ const emptyForm: FormState = {
   seoDescription: "",
   keywords: "",
   enabled: false,
-  videoUrl: "",
-  videoEmbed: "",
+  embedCode: "",
   hyperlink: "",
   productEnabled: false,
   price: "",
@@ -163,8 +161,7 @@ export function WebPagesPanel({ appId }: { appId: number }) {
       seoDescription: page.seoDescription,
       keywords: page.keywords,
       enabled: page.enabled,
-      videoUrl: page.videoUrl,
-      videoEmbed: page.videoEmbed,
+      embedCode: page.embedCode,
       hyperlink: page.hyperlink,
       productEnabled: page.productEnabled,
       price: page.price?.toString() ?? "",
@@ -191,8 +188,7 @@ export function WebPagesPanel({ appId }: { appId: number }) {
       seoDescription: form.seoDescription,
       keywords: form.keywords,
       enabled: form.enabled,
-      videoUrl: form.videoUrl,
-      videoEmbed: form.videoEmbed,
+      embedCode: form.embedCode,
       hyperlink: form.hyperlink,
       productEnabled: form.parentId !== null && form.productEnabled,
       price: numOrNull(form.price),
@@ -498,28 +494,20 @@ export function WebPagesPanel({ appId }: { appId: number }) {
           </label>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <label className="space-y-1.5 text-sm">
-            <span className="text-muted-foreground">Video link</span>
-            <textarea
-              className={`${inputClass} min-h-20`}
-              rows={3}
-              maxLength={500}
-              placeholder="https://youtube.com/…"
-              value={form.videoUrl}
-              onChange={(e) => setForm({ ...form, videoUrl: e.target.value })}
-            />
-          </label>
-          <label className="space-y-1.5 text-sm">
-            <span className="text-muted-foreground">Video embed code</span>
-            <textarea
-              className={`${inputClass} min-h-20`}
-              maxLength={4000}
-              value={form.videoEmbed}
-              onChange={(e) => setForm({ ...form, videoEmbed: e.target.value })}
-            />
-          </label>
-        </div>
+        <label className="block space-y-1.5 text-sm">
+          <span className="text-muted-foreground">Embed code</span>
+          <textarea
+            className={`${inputClass} min-h-20`}
+            rows={4}
+            maxLength={4000}
+            placeholder={'<iframe src="https://…"></iframe>'}
+            value={form.embedCode}
+            onChange={(e) => setForm({ ...form, embedCode: e.target.value })}
+          />
+          <span className="block text-xs text-muted-foreground">
+            Paste an iframe embed from Google Maps, YouTube, Vimeo or another HTTPS service.
+          </span>
+        </label>
 
         <label className="block space-y-1.5 text-sm">
           <span className="text-muted-foreground">Hyperlink (optional)</span>

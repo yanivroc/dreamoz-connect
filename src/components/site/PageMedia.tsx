@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { sortImages, type WaPage } from "@/lib/content-types";
+import { parseEmbedCode } from "@/lib/embed-code";
 
 export function PageMedia({
   page,
@@ -14,10 +15,10 @@ export function PageMedia({
   compact?: boolean;
 }) {
   const images = sortImages(page.images ?? []);
-  const embedUrl = page.videoUrl || page.videoEmbed;
+  const embed = parseEmbedCode(page.embedCode ?? "");
   const [index, setIndex] = useState(0);
 
-  if (images.length === 0 && !embedUrl) return null;
+  if (images.length === 0 && !embed) return null;
 
   const current = images[Math.min(index, images.length - 1)];
   const go = (delta: number) =>
@@ -50,11 +51,11 @@ export function PageMedia({
           : "mt-8 space-y-6"
       }
     >
-      {embedUrl ? (
+      {embed ? (
         <div className="aspect-video overflow-hidden rounded-xl border border-border">
           <iframe
-            src={embedUrl}
-            title={`${page.title} video`}
+            src={embed.src}
+            title={embed.title || `${page.title} embedded content`}
             className="h-full w-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; picture-in-picture"
             allowFullScreen

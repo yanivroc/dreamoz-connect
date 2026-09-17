@@ -85,8 +85,7 @@ export async function ensureWebPagesTables(db: Client): Promise<void> {
     seo_description TEXT NOT NULL DEFAULT '',
     keywords TEXT NOT NULL DEFAULT '',
     enabled INTEGER NOT NULL DEFAULT 1,
-    video_url TEXT NOT NULL DEFAULT '',
-    video_embed TEXT NOT NULL DEFAULT '',
+    embed_code TEXT NOT NULL DEFAULT '',
     product_enabled INTEGER NOT NULL DEFAULT 0,
     price REAL,
     min_qty INTEGER,
@@ -101,6 +100,16 @@ export async function ensureWebPagesTables(db: Client): Promise<void> {
   await db.execute(
     `CREATE INDEX IF NOT EXISTS web_pages_parent ON web_pages (parent_id)`,
   );
+  try {
+    await db.execute(`ALTER TABLE web_pages RENAME COLUMN video_embed TO embed_code`);
+  } catch {
+    // Column was already renamed (or this is a new table).
+  }
+  try {
+    await db.execute(`ALTER TABLE web_pages DROP COLUMN video_url`);
+  } catch {
+    // Column was already removed (or DROP COLUMN is unsupported).
+  }
   await db.execute(`CREATE TABLE IF NOT EXISTS web_page_images (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     page_id INTEGER NOT NULL,
