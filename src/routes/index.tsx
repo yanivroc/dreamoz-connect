@@ -4,7 +4,7 @@ import { siteContentQuery } from "@/lib/content-query";
 import { siteCurrency, slugify, sortPages } from "@/lib/content-types";
 import { HeroSlider } from "@/components/site/HeroSlider";
 import { RichText } from "@/components/site/RichText";
-import { PageMedia } from "@/components/site/PageMedia";
+import { PageEmbed, PageMedia } from "@/components/site/PageMedia";
 import { PageCardGrid } from "@/components/site/PageCardGrid";
 
 export const Route = createFileRoute("/")({
@@ -101,7 +101,7 @@ function Index() {
                   </div>
                 </div>
                 <div className="min-w-0">
-                  <PageMedia page={page} wide={wideMedia} compact={compactMedia} />
+                  <PageMedia page={page} wide={wideMedia} compact={compactMedia} embed={false} />
                 </div>
               </div>
               {children.length > 0 ? (
