@@ -9,6 +9,7 @@ export type BillingPayment = {
   currency: string;
   periodEnd: string;
   receiptUrl: string | null;
+  invoiceNo: string | null;
   createdAt: string;
 };
 
