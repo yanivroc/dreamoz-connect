@@ -261,7 +261,7 @@ function makeInvoiceNo(date: Date): string {
 }
 
 function planInvoiceDescription(plan: PlanSetting): string {
-  return `DreamozTech ${plan.label} plan — ${plan.days} days access`;
+  return `DreamozTech ${plan.label} plan - ${plan.days} days access`;
 }
 
 async function buildPlanInvoicePdf(args: {
