@@ -15,6 +15,7 @@ import { RichText } from "@/components/site/RichText";
 import { PageMedia } from "@/components/site/PageMedia";
 import { PageCardGrid } from "@/components/site/PageCardGrid";
 import { AddToCartPanel } from "@/components/site/AddToCartPanel";
+import { PageContactForm } from "@/components/site/PageContactForm";
 
 export const Route = createFileRoute("/page/$slug")({
   loader: async ({ context, params }) => {
@@ -141,6 +142,8 @@ function PageDetail() {
           Learn More
         </a>
       ) : null}
+
+      {page.contactEnabled ? <PageContactForm pageId={page.id} /> : null}
 
       {children.length > 0 ? (
         <section className="mt-16">

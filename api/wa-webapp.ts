@@ -33,6 +33,7 @@ type PageNode = {
   enabled: boolean;
   embedCode: string;
   hyperlink: string;
+  contactEnabled: boolean;
   product: {
     enabled: boolean;
     price: number | null;
@@ -180,6 +181,7 @@ export default async function handler(req: any, res: any) {
         id: Number(r["id"]),
         alt: String(r["alt"] ?? ""),
         hyperlink: String(r["hyperlink"] ?? ""),
+        contactEnabled: Number(r["contact_enabled"] ?? 0) === 1,
         orderNo: Number(r["order_no"] ?? 0),
         url: `data:${String(r["mime"] ?? "")};base64,${String(r["data"] ?? "")}`,
       });
