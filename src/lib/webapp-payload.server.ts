@@ -22,6 +22,7 @@ export type PayloadPage = {
   enabled: boolean;
   embedCode: string;
   hyperlink: string;
+  contactEnabled: boolean;
   product: {
     enabled: boolean;
     price: number | null;
@@ -117,6 +118,7 @@ export async function buildWebAppPayload(
     keywords: String(r["keywords"] ?? ""),
     enabled: Number(r["enabled"] ?? 0) === 1,
     embedCode: String(r["embed_code"] ?? ""),
+    contactEnabled: Number(r["contact_enabled"] ?? 0) === 1,
     hyperlink: String(r["hyperlink"] ?? ""),
     product: {
       enabled: Number(r["product_enabled"] ?? 0) === 1,

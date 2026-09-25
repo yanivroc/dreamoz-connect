@@ -47,6 +47,7 @@ type FormState = {
   embedCode: string;
   hyperlink: string;
   productEnabled: boolean;
+  contactEnabled: boolean;
   price: string;
   minQty: string;
   maxQty: string;
@@ -65,6 +66,7 @@ const emptyForm: FormState = {
   embedCode: "",
   hyperlink: "",
   productEnabled: false,
+  contactEnabled: false,
   price: "",
   minQty: "",
   maxQty: "",
@@ -165,6 +167,7 @@ export function WebPagesPanel({ appId }: { appId: number }) {
       embedCode: page.embedCode,
       hyperlink: page.hyperlink,
       productEnabled: page.productEnabled,
+      contactEnabled: page.contactEnabled,
       price: page.price?.toString() ?? "",
       minQty: page.minQty?.toString() ?? "",
       maxQty: page.maxQty?.toString() ?? "",
@@ -196,6 +199,7 @@ export function WebPagesPanel({ appId }: { appId: number }) {
       embedCode: form.embedCode,
       hyperlink: form.hyperlink,
       productEnabled: form.parentId !== null && form.productEnabled,
+      contactEnabled: form.contactEnabled,
       price: numOrNull(form.price),
       minQty: numOrNull(form.minQty),
       maxQty: numOrNull(form.maxQty),
@@ -534,6 +538,22 @@ export function WebPagesPanel({ appId }: { appId: number }) {
           />
           <span>Enabled</span>
         </label>
+
+        <div className="rounded-xl border border-border/60 p-4">
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={form.contactEnabled}
+              onChange={(e) => setForm({ ...form, contactEnabled: e.target.checked })}
+            />
+            <span>This is a contact page</span>
+          </label>
+          <p className="mt-1 pl-6 text-xs text-muted-foreground">
+            Shows a contact form (name, email, phone, message and two attachments) at the
+            bottom of this page. Messages appear in the Contacts tab.
+          </p>
+        </div>
+
 
         {form.parentId !== null && (
           <div className="space-y-4 rounded-xl border border-border/60 p-4">

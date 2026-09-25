@@ -39,6 +39,7 @@ export interface WaPage {
   keywords: string | null;
   enabled: boolean;
   embedCode: string | null;
+  contactEnabled?: boolean;
   hyperlink: string | null;
   product: WaProduct;
   images: WaImage[];

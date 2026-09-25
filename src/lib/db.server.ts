@@ -148,6 +148,29 @@ export async function ensureWebPagesTables(db: Client): Promise<void> {
   } catch {
     // Column already exists.
   }
+  try {
+    await db.execute(
+      `ALTER TABLE web_pages ADD COLUMN contact_enabled INTEGER NOT NULL DEFAULT 0`,
+    );
+  } catch {
+    // Column already exists.
+  }
+  await db.execute(`CREATE TABLE IF NOT EXISTS contact_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    app_id INTEGER NOT NULL,
+    page_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    phone TEXT NOT NULL DEFAULT '',
+    message TEXT NOT NULL,
+    attachment1_asset_id TEXT,
+    attachment2_asset_id TEXT,
+    is_read INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL
+  )`);
+  await db.execute(
+    `CREATE INDEX IF NOT EXISTS contact_messages_app ON contact_messages (app_id)`,
+  );
   await db.execute(`CREATE TABLE IF NOT EXISTS web_app_settings (
     app_id INTEGER PRIMARY KEY,
     user_id INTEGER NOT NULL,

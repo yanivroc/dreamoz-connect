@@ -81,6 +81,7 @@ export function ApiPanel({ appId }: { appId: number }) {
   const base = origin || "https://your-site.com";
   const tokenUrl = `${base}/api/public/wa/token`;
   const webappUrl = `${base}/api/public/wa/webapp`;
+  const contactsUrl = `${base}/api/public/wa/contacts`;
 
   if (isLoading) return <p className="text-sm text-muted-foreground">Loading API keys…</p>;
   if (error) {
@@ -170,6 +171,7 @@ export function ApiPanel({ appId }: { appId: number }) {
       "id": 10, "parentId": null, "orderNo": 0, "title": "Home",
       "description": "…", "seoDescription": "…", "keywords": "…",
       "enabled": true, "embedCode": "<iframe src="https://…"></iframe>", "hyperlink": "",
+      "contactEnabled": false,
       "product": { "enabled": false, "price": null, "minQty": null,
                    "maxQty": null, "shippingPrice": null, "weight": null },
       "images": [{ "id": 3, "alt": "", "orderNo": 0, "url": "data:image/…" }],
@@ -180,6 +182,40 @@ export function ApiPanel({ appId }: { appId: number }) {
           <p className="text-xs text-muted-foreground">
             Tokens are valid for 1 hour and are scoped to this web app only. Requests
             without a valid bearer token return 401.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <h3 className="font-semibold">3. Contact messages</h3>
+          <div className="flex items-center gap-2">
+            <code className="flex-1 overflow-x-auto rounded-lg border border-border/70 bg-background px-3 py-2 text-xs">
+              GET | POST {contactsUrl}
+            </code>
+            <Copy value={contactsUrl} />
+          </div>
+          <Code>{`# List messages (optional ?pageId=10&limit=100&offset=0)
+curl ${contactsUrl} \\
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+// response
+{ "messages": [ { "id": 1, "pageId": 10, "pageTitle": "Contact", "name": "…",
+    "email": "…", "phone": "…", "message": "…", "isRead": false,
+    "createdAt": "…", "attachments": [ { "id": "…", "name": "cv.pdf",
+    "mime": "application/pdf", "url": "/api/asset/…" } ] } ] }
+
+# Submit a message to a page with "contactEnabled": true
+curl -X POST ${contactsUrl} \\
+  -H "Authorization: Bearer YOUR_TOKEN" \\
+  -H "Content-Type: application/json" \\
+  -d '{"pageId":10,"name":"Jane","email":"jane@example.com","phone":"0400 000 000",
+       "message":"Hello","attachment1":{"name":"cv.pdf","mime":"application/pdf",
+       "data":"BASE64…"},"attachment2":null}'
+
+// response
+{ "ok": true, "id": 2 }`}</Code>
+          <p className="text-xs text-muted-foreground">
+            Attachments are optional: PDF, PNG, JPEG, WEBP or GIF, up to 1.5MB each (base64).
+            Attachment URLs require the same bearer token.
           </p>
         </div>
       </div>

@@ -21,6 +21,7 @@ import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
 import { Route as PageSlugRouteImport } from './routes/page.$slug'
 import { Route as ApiAssetIdRouteImport } from './routes/api/asset.$id'
 import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
+import { Route as ApiPublicWaContactsRouteImport } from './routes/api/public/wa/contacts'
 import { Route as ApiPublicWaTokenRouteImport } from './routes/api/public/wa/token'
 import { Route as ApiPublicWaWebappRouteImport } from './routes/api/public/wa/webapp'
 
@@ -84,6 +85,11 @@ const ApiPublicHealthRoute = ApiPublicHealthRouteImport.update({
   path: '/api/public/health',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicWaContactsRoute = ApiPublicWaContactsRouteImport.update({
+  id: '/api/public/wa/contacts',
+  path: '/api/public/wa/contacts',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicWaTokenRoute = ApiPublicWaTokenRouteImport.update({
   id: '/api/public/wa/token',
   path: '/api/public/wa/token',
@@ -108,6 +114,7 @@ export interface FileRoutesByFullPath {
   '/checkout/': typeof CheckoutIndexRoute
   '/api/asset/$id': typeof ApiAssetIdRoute
   '/api/public/health': typeof ApiPublicHealthRoute
+  '/api/public/wa/contacts': typeof ApiPublicWaContactsRoute
   '/api/public/wa/token': typeof ApiPublicWaTokenRoute
   '/api/public/wa/webapp': typeof ApiPublicWaWebappRoute
 }
@@ -124,6 +131,7 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutIndexRoute
   '/api/asset/$id': typeof ApiAssetIdRoute
   '/api/public/health': typeof ApiPublicHealthRoute
+  '/api/public/wa/contacts': typeof ApiPublicWaContactsRoute
   '/api/public/wa/token': typeof ApiPublicWaTokenRoute
   '/api/public/wa/webapp': typeof ApiPublicWaWebappRoute
 }
@@ -141,6 +149,7 @@ export interface FileRoutesById {
   '/checkout/': typeof CheckoutIndexRoute
   '/api/asset/$id': typeof ApiAssetIdRoute
   '/api/public/health': typeof ApiPublicHealthRoute
+  '/api/public/wa/contacts': typeof ApiPublicWaContactsRoute
   '/api/public/wa/token': typeof ApiPublicWaTokenRoute
   '/api/public/wa/webapp': typeof ApiPublicWaWebappRoute
 }
@@ -159,6 +168,7 @@ export interface FileRouteTypes {
     | '/checkout/'
     | '/api/asset/$id'
     | '/api/public/health'
+    | '/api/public/wa/contacts'
     | '/api/public/wa/token'
     | '/api/public/wa/webapp'
   fileRoutesByTo: FileRoutesByTo
@@ -175,6 +185,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/api/asset/$id'
     | '/api/public/health'
+    | '/api/public/wa/contacts'
     | '/api/public/wa/token'
     | '/api/public/wa/webapp'
   id:
@@ -191,6 +202,7 @@ export interface FileRouteTypes {
     | '/checkout/'
     | '/api/asset/$id'
     | '/api/public/health'
+    | '/api/public/wa/contacts'
     | '/api/public/wa/token'
     | '/api/public/wa/webapp'
   fileRoutesById: FileRoutesById
@@ -208,6 +220,7 @@ export interface RootRouteChildren {
   CheckoutIndexRoute: typeof CheckoutIndexRoute
   ApiAssetIdRoute: typeof ApiAssetIdRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
+  ApiPublicWaContactsRoute: typeof ApiPublicWaContactsRoute
   ApiPublicWaTokenRoute: typeof ApiPublicWaTokenRoute
   ApiPublicWaWebappRoute: typeof ApiPublicWaWebappRoute
 }
@@ -298,6 +311,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/wa/contacts': {
+      id: '/api/public/wa/contacts'
+      path: '/api/public/wa/contacts'
+      fullPath: '/api/public/wa/contacts'
+      preLoaderRoute: typeof ApiPublicWaContactsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/wa/token': {
       id: '/api/public/wa/token'
       path: '/api/public/wa/token'
@@ -328,6 +348,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutIndexRoute: CheckoutIndexRoute,
   ApiAssetIdRoute: ApiAssetIdRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
+  ApiPublicWaContactsRoute: ApiPublicWaContactsRoute,
   ApiPublicWaTokenRoute: ApiPublicWaTokenRoute,
   ApiPublicWaWebappRoute: ApiPublicWaWebappRoute,
 }
