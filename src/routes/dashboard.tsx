@@ -116,13 +116,22 @@ function DashboardPage() {
                 Create web apps, build their pages and sub pages, and manage logo,
                 favicon and shipping settings.
               </p>
-              <Link
-                to={expired ? "/dashboard" : "/build-web-apps"}
-                search={expired ? { tab: "plan" } : undefined}
-                className="mt-4 inline-block rounded-full bg-gradient-accent px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-card transition hover:opacity-90"
-              >
-                {expired ? "Choose a plan to continue" : "Open builder"}
-              </Link>
+              {expired ? (
+                <Link
+                  to="/dashboard"
+                  search={{ tab: "plan" }}
+                  className="mt-4 inline-block rounded-full bg-gradient-accent px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-card transition hover:opacity-90"
+                >
+                  Choose a plan to continue
+                </Link>
+              ) : (
+                <Link
+                  to="/build-web-apps"
+                  className="mt-4 inline-block rounded-full bg-gradient-accent px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-card transition hover:opacity-90"
+                >
+                  Open builder
+                </Link>
+              )}
             </div>
           </>
         )}
