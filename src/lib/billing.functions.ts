@@ -24,6 +24,11 @@ export type BillingOverview = {
   payments: BillingPayment[];
 };
 
+export type PublicPlanOffer = {
+  plans: PlanSetting[];
+  trialDays: number;
+};
+
 async function requireSessionUser() {
   const { readSession } = await import("./session.server");
   const session = await readSession();
@@ -69,6 +74,25 @@ async function loadPlans(db: Db): Promise<PlanSetting[]> {
     ];
   });
 }
+
+export const getPublicPlanOffer = createServerFn({ method: "GET" }).handler(
+  async (): Promise<PublicPlanOffer> => {
+    const { dbClient, ensureBillingTables } = await import("./db.server");
+    const { getTrialDays } = await import("./plan-access.server");
+    const db = dbClient();
+    if (!db) {
+      return {
+        plans: (await import("./plans")).DEFAULT_PLANS.filter((plan) => plan.enabled),
+        trialDays: DEFAULT_TRIAL_DAYS,
+      };
+    }
+    await ensureBillingTables(db);
+    return {
+      plans: (await loadPlans(db)).filter((plan) => plan.enabled),
+      trialDays: await getTrialDays(db),
+    };
+  },
+);
 
 function billingSquare(): {
   applicationId: string | null;
