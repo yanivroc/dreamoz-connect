@@ -346,6 +346,21 @@ export const updateWebPage = createServerFn({ method: "POST" })
     if (p.parentId !== null) {
       if (p.parentId === data.id) throw new Error("A page cannot be its own parent.");
       await assertPage(ctx, p.parentId);
+      await assertParentDepth(ctx, p.parentId);
+      if (!ctx.isAdmin) {
+        const kids = await ctx.db.execute({
+          sql: "SELECT COUNT(*) AS n FROM web_pages WHERE parent_id = ?",
+          args: [data.id],
+        });
+        const n = Number(
+          (kids.rows[0] as Record<string, unknown> | undefined)?.["n"] ?? 0,
+        );
+        if (n > 0) {
+          throw new Error(
+            `This page has sub pages, so it cannot be moved under another page (maximum ${MAX_PAGE_DEPTH} levels).`,
+          );
+        }
+      }
     }
     await ctx.db.execute({
       sql: `UPDATE web_pages SET parent_id = ?, order_no = ?, title = ?, description = ?,
