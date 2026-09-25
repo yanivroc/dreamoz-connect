@@ -196,9 +196,20 @@ export function PlanPanel({ user }: { user: CurrentUser }) {
               <li key={p.id} className="flex flex-wrap justify-between gap-2 px-4 py-3">
                 <span>
                   {formatDateTime(p.createdAt)} — {p.plan}
+                  {p.invoiceNo && (
+                    <span className="ml-2 text-muted-foreground">({p.invoiceNo})</span>
+                  )}
                 </span>
                 <span>
                   {formatPlanPrice(p.amountCents, p.currency)}
+                  <button
+                    type="button"
+                    onClick={() => downloadInvoice(p.id)}
+                    disabled={invoiceBusy === p.id}
+                    className="ml-3 text-primary underline disabled:opacity-60"
+                  >
+                    {invoiceBusy === p.id ? "Preparing…" : "Invoice (PDF)"}
+                  </button>
                   {p.receiptUrl && (
                     <a href={p.receiptUrl} target="_blank" rel="noreferrer" className="ml-3 text-primary underline">
                       Receipt
