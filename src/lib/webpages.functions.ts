@@ -124,6 +124,34 @@ async function assertPage(ctx: Ctx, pageId: number) {
   return { appId, ownerId: Number(row["user_id"]) };
 }
 
+async function assertPageCapacity(ctx: Ctx, appId: number) {
+  if (ctx.isAdmin) return;
+  const res = await ctx.db.execute({
+    sql: "SELECT COUNT(*) AS n FROM web_pages WHERE app_id = ?",
+    args: [appId],
+  });
+  const n = Number((res.rows[0] as Record<string, unknown> | undefined)?.["n"] ?? 0);
+  if (n >= MAX_PAGES_PER_APP) {
+    throw new Error(
+      `This web app has reached the maximum of ${MAX_PAGES_PER_APP} pages.`,
+    );
+  }
+}
+
+async function assertParentDepth(ctx: Ctx, parentId: number) {
+  const res = await ctx.db.execute({
+    sql: "SELECT parent_id FROM web_pages WHERE id = ? LIMIT 1",
+    args: [parentId],
+  });
+  const row = res.rows[0] as Record<string, unknown> | undefined;
+  if (!row) throw new Error("Parent page not found.");
+  if (row["parent_id"] !== null && row["parent_id"] !== undefined) {
+    throw new Error(
+      `Pages can only be nested ${MAX_PAGE_DEPTH} levels deep. Choose a top-level page as the parent.`,
+    );
+  }
+}
+
 function num(v: unknown): number | null {
   if (v === null || v === undefined || v === "") return null;
   const n = Number(v);
