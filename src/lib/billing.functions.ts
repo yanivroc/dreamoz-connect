@@ -97,7 +97,7 @@ export const getBillingOverview = createServerFn({ method: "GET" }).handler(
   async (): Promise<BillingOverview> => {
     const ctx = await requireSessionUser();
     const { getTrialDays } = await import("./plan-access.server");
-    const sq = prodSquare();
+    const sq = billingSquare();
     const pay = await ctx.db.execute({
       sql: "SELECT * FROM subscription_payments WHERE user_id = ? ORDER BY id DESC LIMIT 20",
       args: [ctx.userId],
@@ -109,6 +109,7 @@ export const getBillingOverview = createServerFn({ method: "GET" }).handler(
         applicationId: sq.applicationId,
         locationId: sq.locationId,
         configured: Boolean(sq.applicationId && sq.locationId && sq.accessToken),
+        mode: sq.environment,
       },
       payments: pay.rows.map((r) => {
         const row = r as unknown as Record<string, unknown>;
@@ -134,7 +135,7 @@ export const purchasePlan = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }): Promise<{ ok: true; planExpiresAt: string } | { ok: false; error: string }> => {
     const ctx = await requireSessionUser();
-    const sq = prodSquare();
+    const sq = billingSquare();
     if (!sq.applicationId || !sq.locationId || !sq.accessToken) {
       return { ok: false, error: "Payments are not configured yet." };
     }
