@@ -15,7 +15,12 @@ export type BillingPayment = {
 export type BillingOverview = {
   plans: PlanSetting[];
   trialDays: number;
-  square: { applicationId: string | null; locationId: string | null; configured: boolean };
+  square: {
+    applicationId: string | null;
+    locationId: string | null;
+    configured: boolean;
+    mode: "production" | "sandbox";
+  };
   payments: BillingPayment[];
 };
 
@@ -65,14 +70,26 @@ async function loadPlans(db: Db): Promise<PlanSetting[]> {
   });
 }
 
-function prodSquare() {
-  const applicationId = process.env["SQUARE_PROD_APPLICATION_ID"]?.trim() || null;
-  const locationId = process.env["SQUARE_PROD_LOCATION_ID"]?.trim() || null;
-  const accessToken = process.env["SQUARE_PROD_ACCESS_TOKEN"]?.trim() || null;
+function billingSquare() {
+  const prodApp = process.env["SQUARE_PROD_APPLICATION_ID"]?.trim();
+  const prodLoc = process.env["SQUARE_PROD_LOCATION_ID"]?.trim();
+  const prodToken = process.env["SQUARE_PROD_ACCESS_TOKEN"]?.trim();
+  if (prodApp && prodLoc && prodToken) {
+    const environment =
+      (process.env["SQUARE_PROD_ENVIRONMENT"] ?? "production").trim().toLowerCase() === "sandbox"
+        ? "sandbox"
+        : "production";
+    return { applicationId: prodApp, locationId: prodLoc, accessToken: prodToken, environment };
+  }
+  // Fall back to the existing sandbox settings so the flow can be tested
+  // end-to-end before the production variables are added.
+  const applicationId = process.env["SQUARE_APPLICATION_ID"]?.trim() || null;
+  const locationId = process.env["SQUARE_LOCATION_ID"]?.trim() || null;
+  const accessToken = process.env["SQUARE_ACCESS_TOKEN"]?.trim() || null;
   const environment =
-    (process.env["SQUARE_PROD_ENVIRONMENT"] ?? "production").trim().toLowerCase() === "sandbox"
-      ? "sandbox"
-      : "production";
+    (process.env["SQUARE_ENVIRONMENT"] ?? "sandbox").trim().toLowerCase() === "production"
+      ? "production"
+      : "sandbox";
   return { applicationId, locationId, accessToken, environment };
 }
 
