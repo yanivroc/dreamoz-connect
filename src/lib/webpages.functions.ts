@@ -3,6 +3,7 @@ import { z } from "zod";
 import { sanitizeHtml } from "./sanitize-html";
 import { isSafeEmbedCode } from "./embed-code";
 import { COUNTRY_CODES, DEFAULT_COUNTRY, normalizeCountry, type CountryCode } from "./locale";
+import { MAX_PAGES_PER_APP, MAX_PAGE_DEPTH } from "./limits";
 
 export type WebPageImage = {
   id: number;
