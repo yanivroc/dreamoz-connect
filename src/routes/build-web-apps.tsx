@@ -18,6 +18,9 @@ export const Route = createFileRoute("/build-web-apps")({
     if (!user) {
       throw redirect({ to: "/login", search: { redirect: location.href } });
     }
+    if (user.access.state === "expired") {
+      throw redirect({ to: "/dashboard", search: { tab: "plan" } });
+    }
     return { user };
   },
   loader: async ({ context }) => ({ user: (context as { user: CurrentUser }).user }),

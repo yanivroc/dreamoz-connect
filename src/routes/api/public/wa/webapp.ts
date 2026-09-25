@@ -37,6 +37,11 @@ export const Route = createFileRoute("/api/public/wa/webapp")({
         await ensureWebAppsTable(db);
         await ensureWebPagesTables(db);
 
+        const { appOwnerHasAccess, PLAN_EXPIRED_BODY } = await import("@/lib/plan-access.server");
+        if (!(await appOwnerHasAccess(db, appId))) {
+          return Response.json(PLAN_EXPIRED_BODY, { status: 402, headers: cors });
+        }
+
         const { buildWebAppPayload } = await import("@/lib/webapp-payload.server");
         const payload = await buildWebAppPayload(db, appId);
         if (!payload) {

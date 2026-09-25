@@ -2,6 +2,7 @@
 // The in-app TanStack route (src/routes/api/public/wa/webapp.ts) is not served
 // on Vercel, so this function handles /api/public/wa/webapp in production.
 import { createClient } from "@libsql/client/web";
+import { appOwnerHasAccess, PLAN_EXPIRED_BODY } from "../src/lib/plan-access.server";
 import { createHmac, timingSafeEqual } from "crypto";
 
 export const config = { runtime: "nodejs" };
@@ -123,6 +124,10 @@ export default async function handler(req: any, res: any) {
     return;
   }
   const db = createClient(authToken ? { url, authToken } : { url });
+  if (!(await appOwnerHasAccess(db, appId))) {
+    send(res, 402, PLAN_EXPIRED_BODY);
+    return;
+  }
 
   try {
     const pageColumns = await db.execute("PRAGMA table_info(web_pages)");

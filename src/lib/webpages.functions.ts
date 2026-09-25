@@ -85,6 +85,10 @@ async function requireUser() {
   });
   const row = res.rows[0] as Record<string, unknown> | undefined;
   if (!row) throw new Error("Not signed in.");
+  if (String(row["role"] ?? "user") !== "admin") {
+    const { assertActiveAccess } = await import("./plan-access.server");
+    await assertActiveAccess(db, Number(row["id"]));
+  }
   return {
     db,
     userId: Number(row["id"]),

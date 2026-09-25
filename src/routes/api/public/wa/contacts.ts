@@ -32,6 +32,11 @@ export const Route = createFileRoute("/api/public/wa/contacts")({
       GET: async ({ request }) => {
         const appId = await auth(request);
         if (appId === null) return json({ error: "Missing or invalid bearer token." }, 401);
+        {
+          const pc = await db();
+          const pa = await import("@/lib/plan-access.server");
+          if (pc && !(await pa.appOwnerHasAccess(pc, appId))) return json(pa.PLAN_EXPIRED_BODY, 402);
+        }
         const c = await db();
         if (!c) return json({ error: "Service unavailable." }, 503);
         const url = new URL(request.url);
@@ -45,6 +50,11 @@ export const Route = createFileRoute("/api/public/wa/contacts")({
       POST: async ({ request }) => {
         const appId = await auth(request);
         if (appId === null) return json({ error: "Missing or invalid bearer token." }, 401);
+        {
+          const pc = await db();
+          const pa = await import("@/lib/plan-access.server");
+          if (pc && !(await pa.appOwnerHasAccess(pc, appId))) return json(pa.PLAN_EXPIRED_BODY, 402);
+        }
         let body: unknown;
         try {
           body = await request.json();

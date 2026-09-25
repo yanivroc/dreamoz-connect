@@ -45,6 +45,11 @@ export const Route = createFileRoute("/api/public/wa/token")({
           return Response.json({ error: "Invalid credentials." }, { status: 401, headers: cors });
         }
 
+        const { appOwnerHasAccess, PLAN_EXPIRED_BODY } = await import("@/lib/plan-access.server");
+        if (!(await appOwnerHasAccess(db, appId))) {
+          return Response.json(PLAN_EXPIRED_BODY, { status: 402, headers: cors });
+        }
+
         const { token, expiresIn } = await signToken(appId);
         return Response.json({ token, tokenType: "Bearer", expiresIn }, { headers: { ...cors, "Cache-Control": "no-store" } });
       },

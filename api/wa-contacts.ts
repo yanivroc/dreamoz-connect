@@ -2,6 +2,7 @@
 // Handles /api/public/wa/contacts in production (the in-app TanStack route is
 // not served on Vercel). GET lists messages, POST submits one.
 import { createClient } from "@libsql/client/web";
+import { appOwnerHasAccess, PLAN_EXPIRED_BODY } from "../src/lib/plan-access.server";
 import { createHmac, timingSafeEqual } from "crypto";
 import {
   contactInputSchema,
@@ -104,6 +105,10 @@ export default async function handler(req: any, res: any) {
     return;
   }
   const db = createClient(authToken ? { url, authToken } : { url });
+  if (!(await appOwnerHasAccess(db, appId))) {
+    send(res, 402, PLAN_EXPIRED_BODY);
+    return;
+  }
 
   try {
     if (req.method === "GET") {
