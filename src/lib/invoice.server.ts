@@ -10,7 +10,7 @@ export interface InvoiceLine {
 
 export interface InvoiceInput {
   orderNo?: string;
-  paymentId: string;
+  paymentId?: string;
   date?: Date;
   brand: string;
   ownerEmail?: string | null;
@@ -25,9 +25,11 @@ export interface InvoiceInput {
   };
   lines: InvoiceLine[];
   subtotal: number;
-  shipping: number;
+  /** Omit to hide the shipping row entirely (e.g. subscription invoices). */
+  shipping?: number;
   total: number;
   currency: string;
+  footerNote?: string;
 }
 
 const money = (n: number, cur: string) => {
