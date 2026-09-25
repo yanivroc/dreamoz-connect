@@ -3,6 +3,7 @@ import { z } from "zod";
 import { sanitizeHtml } from "./sanitize-html";
 import { isSafeEmbedCode } from "./embed-code";
 import { COUNTRY_CODES, DEFAULT_COUNTRY, normalizeCountry, type CountryCode } from "./locale";
+import { MAX_PAGES_PER_APP, MAX_PAGE_DEPTH } from "./limits";
 
 export type WebPageImage = {
   id: number;
@@ -122,6 +123,34 @@ async function assertPage(ctx: Ctx, pageId: number) {
   const appId = Number(row["app_id"]);
   await assertApp(ctx, appId);
   return { appId, ownerId: Number(row["user_id"]) };
+}
+
+async function assertPageCapacity(ctx: Ctx, appId: number) {
+  if (ctx.isAdmin) return;
+  const res = await ctx.db.execute({
+    sql: "SELECT COUNT(*) AS n FROM web_pages WHERE app_id = ?",
+    args: [appId],
+  });
+  const n = Number((res.rows[0] as Record<string, unknown> | undefined)?.["n"] ?? 0);
+  if (n >= MAX_PAGES_PER_APP) {
+    throw new Error(
+      `This web app has reached the maximum of ${MAX_PAGES_PER_APP} pages.`,
+    );
+  }
+}
+
+async function assertParentDepth(ctx: Ctx, parentId: number) {
+  const res = await ctx.db.execute({
+    sql: "SELECT parent_id FROM web_pages WHERE id = ? LIMIT 1",
+    args: [parentId],
+  });
+  const row = res.rows[0] as Record<string, unknown> | undefined;
+  if (!row) throw new Error("Parent page not found.");
+  if (row["parent_id"] !== null && row["parent_id"] !== undefined) {
+    throw new Error(
+      `Pages can only be nested ${MAX_PAGE_DEPTH} levels deep. Choose a top-level page as the parent.`,
+    );
+  }
 }
 
 function num(v: unknown): number | null {
@@ -268,8 +297,12 @@ export const createWebPage = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const ctx = await requireUser();
     const ownerId = await assertApp(ctx, data.appId);
+    await assertPageCapacity(ctx, data.appId);
     const p = normalizeProduct(data);
-    if (p.parentId !== null) await assertPage(ctx, p.parentId);
+    if (p.parentId !== null) {
+      await assertPage(ctx, p.parentId);
+      await assertParentDepth(ctx, p.parentId);
+    }
     const now = new Date().toISOString();
     const res = await ctx.db.execute({
       sql: `INSERT INTO web_pages (app_id, user_id, parent_id, order_no, title, description,
@@ -313,6 +346,21 @@ export const updateWebPage = createServerFn({ method: "POST" })
     if (p.parentId !== null) {
       if (p.parentId === data.id) throw new Error("A page cannot be its own parent.");
       await assertPage(ctx, p.parentId);
+      await assertParentDepth(ctx, p.parentId);
+      if (!ctx.isAdmin) {
+        const kids = await ctx.db.execute({
+          sql: "SELECT COUNT(*) AS n FROM web_pages WHERE parent_id = ?",
+          args: [data.id],
+        });
+        const n = Number(
+          (kids.rows[0] as Record<string, unknown> | undefined)?.["n"] ?? 0,
+        );
+        if (n > 0) {
+          throw new Error(
+            `This page has sub pages, so it cannot be moved under another page (maximum ${MAX_PAGE_DEPTH} levels).`,
+          );
+        }
+      }
     }
     await ctx.db.execute({
       sql: `UPDATE web_pages SET parent_id = ?, order_no = ?, title = ?, description = ?,

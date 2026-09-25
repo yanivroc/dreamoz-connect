@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { stripHtml } from "./sanitize-html";
+import { MAX_WEB_APPS_PER_USER } from "./limits";
 
 export type WebApp = {
   id: number;
@@ -103,7 +104,21 @@ const upsertShape = {
 export const createWebApp = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => z.object(upsertShape).parse(input))
   .handler(async ({ data }) => {
-    const { db, userId } = await requireUser();
+    const { db, userId, isAdmin } = await requireUser();
+    if (!isAdmin) {
+      const countRes = await db.execute({
+        sql: "SELECT COUNT(*) AS n FROM web_apps WHERE user_id = ?",
+        args: [userId],
+      });
+      const n = Number(
+        (countRes.rows[0] as Record<string, unknown> | undefined)?.["n"] ?? 0,
+      );
+      if (n >= MAX_WEB_APPS_PER_USER) {
+        throw new Error(
+          `You have reached the maximum of ${MAX_WEB_APPS_PER_USER} web apps for your account.`,
+        );
+      }
+    }
     const now = new Date().toISOString();
     await db.execute({
       sql: `INSERT INTO web_apps (user_id, title, description, email, link, enabled, created_at, updated_at)
