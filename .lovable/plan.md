@@ -3,7 +3,7 @@
 ## What you get
 
 - **14-day free trial** starts automatically at sign-up. Existing users get a fresh 14-day trial from launch day.
-- **Two plans**: Monthly (AUD $49) and Annual (AUD $470, about 2 months free). Prices sit in one settings file, so they're easy to change.
+- **Two plans**: Monthly (AUD $49) and Annual (AUD $470, about 2 months free) to start. Admins get a **Plan settings** screen on the Dashboard to change each plan's price, the trial length, and whether a plan is on or off. Changes apply to new payments straight away. (Technical: stored in a `plan_settings` table and edited through admin-only functions; the payment step always reads the price from this table, never from the browser.)
 - **Plan tab** on the Dashboard: shows your status (Trial – X days left / Active until date / Expired), a Monthly/Annual switch, and a card payment form.
 - **Expired lock-out**: once a trial or plan ends, you can still sign in, but Build Web Apps and other member pages send you to the Plan tab until you pay. The public website, cart and demo checkout keep working.
 - **No API request counting.** It isn't needed with flat plans, so there's no usage tracker.
