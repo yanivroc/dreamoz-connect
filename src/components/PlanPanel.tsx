@@ -49,13 +49,17 @@ export function PlanPanel({ user }: { user: CurrentUser }) {
   useEffect(() => {
     if (!sq?.configured || cardRef.current) return;
     let cancelled = false;
+    const sdkUrl =
+      sq.mode === "production"
+        ? "https://web.squarecdn.com/v1/square.js"
+        : "https://sandbox.web.squarecdn.com/v1/square.js";
     const init = async () => {
       try {
         const w = window as unknown as { Square?: unknown };
         if (!w.Square) {
           await new Promise<void>((resolve, reject) => {
             const s = document.createElement("script");
-            s.src = "https://web.squarecdn.com/v1/square.js";
+            s.src = sdkUrl;
             s.onload = () => resolve();
             s.onerror = () => reject(new Error("Could not load Square"));
             document.head.appendChild(s);
