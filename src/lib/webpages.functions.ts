@@ -297,8 +297,12 @@ export const createWebPage = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const ctx = await requireUser();
     const ownerId = await assertApp(ctx, data.appId);
+    await assertPageCapacity(ctx, data.appId);
     const p = normalizeProduct(data);
-    if (p.parentId !== null) await assertPage(ctx, p.parentId);
+    if (p.parentId !== null) {
+      await assertPage(ctx, p.parentId);
+      await assertParentDepth(ctx, p.parentId);
+    }
     const now = new Date().toISOString();
     const res = await ctx.db.execute({
       sql: `INSERT INTO web_pages (app_id, user_id, parent_id, order_no, title, description,
