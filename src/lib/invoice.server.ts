@@ -120,7 +120,7 @@ export async function buildInvoicePdf(input: InvoiceInput): Promise<string> {
   y -= 20;
 
   // Meta
-  const label = input.orderNo || input.paymentId;
+  const label = input.orderNo || input.paymentId || "";
   text("Invoice / Order number", left, 9, font, grey);
   text("Date", right - 160, 9, font, grey);
   y -= 13;
@@ -132,10 +132,14 @@ export async function buildInvoicePdf(input: InvoiceInput): Promise<string> {
     bold,
   );
   y -= 18;
-  text("Payment reference", left, 9, font, grey);
-  y -= 13;
-  text(input.paymentId, left, 10);
-  y -= 26;
+  if (input.paymentId) {
+    text("Payment reference", left, 9, font, grey);
+    y -= 13;
+    text(input.paymentId, left, 10);
+    y -= 26;
+  } else {
+    y -= 8;
+  }
 
   // Bill to
   text("Bill to", left, 9, font, grey);
