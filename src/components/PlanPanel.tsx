@@ -82,7 +82,7 @@ export function PlanPanel({ user }: { user: CurrentUser }) {
     return () => {
       cancelled = true;
     };
-  }, [sq?.configured, sq?.applicationId, sq?.locationId]);
+  }, [sq?.configured, sq?.applicationId, sq?.locationId, sq?.mode]);
 
   async function onPay() {
     if (!cardRef.current || !selected) return;
@@ -160,6 +160,12 @@ export function PlanPanel({ user }: { user: CurrentUser }) {
             <p className="text-sm text-muted-foreground">Payments not configured yet.</p>
           ) : (
             <>
+              {sq.mode === "sandbox" && (
+                <p className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs">
+                  Test mode (sandbox) — no real money is charged. Use Square's test cards. This
+                  switches to live payments automatically once the production settings are added.
+                </p>
+              )}
               <div id="plan-card" className="min-h-[90px]" />
               <button
                 type="button"
