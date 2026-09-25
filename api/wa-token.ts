@@ -2,6 +2,7 @@
 // The in-app TanStack route (src/routes/api/public/wa/token.ts) is not served
 // on Vercel, so this function handles /api/public/wa/token in production.
 import { createClient } from "@libsql/client/web";
+import { appOwnerHasAccess, PLAN_EXPIRED_BODY } from "../src/lib/plan-access.server";
 import { createHash, createHmac, timingSafeEqual } from "crypto";
 
 export const config = { runtime: "nodejs" };
@@ -132,6 +133,10 @@ export default async function handler(req: any, res: any) {
   }
 
   const appId = Number(row!["app_id"]);
+  if (!(await appOwnerHasAccess(db, appId))) {
+    send(res, 402, PLAN_EXPIRED_BODY);
+    return;
+  }
   const exp = Math.floor(Date.now() / 1000) + TOKEN_TTL_SECONDS;
   const payload = `${appId}.${exp}`;
   const token = `${b64url(payload)}.${hmacHex(`token:${payload}`)}`;
