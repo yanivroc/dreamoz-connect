@@ -38,11 +38,15 @@ export const signUp = createServerFn({ method: "POST" })
     const consentAt = new Date().toISOString();
     const { hashPassword } = await import("./auth.server");
     const passwordHash = await hashPassword(data.password);
+    const { getTrialDays } = await import("./plan-access.server");
+    const trialEndsAt = new Date(
+      Date.now() + (await getTrialDays(db)) * 24 * 60 * 60 * 1000,
+    ).toISOString();
 
     try {
       await db.execute({
-        sql: "INSERT INTO users (name, email, password_hash, created_at, marketing_consent, marketing_consent_at) VALUES (?, ?, ?, ?, ?, ?)",
-        args: [data.name, email, passwordHash, consentAt, 1, consentAt],
+        sql: "INSERT INTO users (name, email, password_hash, created_at, marketing_consent, marketing_consent_at, trial_ends_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        args: [data.name, email, passwordHash, consentAt, 1, consentAt, trialEndsAt],
       });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);

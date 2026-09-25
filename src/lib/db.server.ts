@@ -48,7 +48,71 @@ export async function ensureUsersTable(db: Client): Promise<void> {
   } catch {
     // Column already exists.
   }
+  for (const ddl of [
+    `ALTER TABLE users ADD COLUMN trial_ends_at TEXT`,
+    `ALTER TABLE users ADD COLUMN plan TEXT NOT NULL DEFAULT 'none'`,
+    `ALTER TABLE users ADD COLUMN plan_expires_at TEXT`,
+  ]) {
+    try {
+      await db.execute(ddl);
+    } catch {
+      // Column already exists.
+    }
+  }
+  // Existing accounts get a fresh 14-day trial from launch day.
+  await db.execute({
+    sql: `UPDATE users SET trial_ends_at = ? WHERE trial_ends_at IS NULL`,
+    args: [new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()],
+  });
+  await ensureBillingTables(db);
   tableReady = true;
+}
+
+let billingReady = false;
+
+export async function ensureBillingTables(db: Client): Promise<void> {
+  if (billingReady) return;
+  await db.execute(`CREATE TABLE IF NOT EXISTS plan_settings (
+    id TEXT PRIMARY KEY,
+    label TEXT NOT NULL,
+    amount_cents INTEGER NOT NULL,
+    currency TEXT NOT NULL DEFAULT 'AUD',
+    days INTEGER NOT NULL,
+    enabled INTEGER NOT NULL DEFAULT 1,
+    updated_at TEXT NOT NULL
+  )`);
+  const now = new Date().toISOString();
+  await db.execute({
+    sql: `INSERT OR IGNORE INTO plan_settings (id, label, amount_cents, currency, days, enabled, updated_at)
+          VALUES ('monthly', 'Monthly', 4900, 'AUD', 30, 1, ?), ('annual', 'Annual', 47000, 'AUD', 365, 1, ?)`,
+    args: [now, now],
+  });
+  await db.execute(`CREATE TABLE IF NOT EXISTS platform_settings (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+  )`);
+  await db.execute(
+    `INSERT OR IGNORE INTO platform_settings (key, value) VALUES ('trial_days', '14')`,
+  );
+  await db.execute(`CREATE TABLE IF NOT EXISTS subscription_payments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    plan TEXT NOT NULL,
+    amount_cents INTEGER NOT NULL,
+    currency TEXT NOT NULL,
+    square_payment_id TEXT NOT NULL,
+    receipt_url TEXT,
+    period_start TEXT NOT NULL,
+    period_end TEXT NOT NULL,
+    created_at TEXT NOT NULL
+  )`);
+  await db.execute(
+    `CREATE UNIQUE INDEX IF NOT EXISTS subscription_payments_sq ON subscription_payments (square_payment_id)`,
+  );
+  await db.execute(
+    `CREATE INDEX IF NOT EXISTS subscription_payments_user ON subscription_payments (user_id)`,
+  );
+  billingReady = true;
 }
 
 export async function ensureWebAppsTable(db: Client): Promise<void> {
