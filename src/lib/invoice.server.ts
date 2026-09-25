@@ -210,7 +210,9 @@ export async function buildInvoicePdf(input: InvoiceInput): Promise<string> {
     y -= 16;
   };
   totalRow("Subtotal", money(input.subtotal, cur));
-  totalRow("Shipping", money(input.shipping, cur));
+  if (typeof input.shipping === "number") {
+    totalRow("Shipping", money(input.shipping, cur));
+  }
   y -= 2;
   page.drawLine({
     start: { x: colPrice - 80, y: y + 12 },
@@ -222,7 +224,7 @@ export async function buildInvoicePdf(input: InvoiceInput): Promise<string> {
   totalRow(`Total (${cur})`, money(input.total, cur), true);
 
   y -= 24;
-  text("Thank you for your order.", left, 10, font, grey);
+  text(input.footerNote ?? "Thank you for your order.", left, 10, font, grey);
 
   const bytes = await pdf.save();
   let binary = "";
