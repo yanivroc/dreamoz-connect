@@ -203,7 +203,7 @@ export async function notifyContactMessage(
 <strong>Email:</strong> ${esc(input.email)}<br/>
 <strong>Phone:</strong> ${esc(input.phone)}</p>
 <p>${esc(input.message).replace(/\n/g, "<br/>")}</p>`,
-      attachment: attachment.length ? attachment : undefined,
+      ...(attachment.length ? { attachment } : {}),
     });
   } catch (e) {
     console.error("Contact email failed:", e instanceof Error ? e.message : e);

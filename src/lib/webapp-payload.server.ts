@@ -101,7 +101,6 @@ export async function buildWebAppPayload(
       id: Number(r["id"]),
       alt: String(r["alt"] ?? ""),
       hyperlink: String(r["hyperlink"] ?? ""),
-      contactEnabled: Number(r["contact_enabled"] ?? 0) === 1,
       orderNo: Number(r["order_no"] ?? 0),
       url: `data:${String(r["mime"] ?? "")};base64,${String(r["data"] ?? "")}`,
     });
@@ -119,6 +118,7 @@ export async function buildWebAppPayload(
     keywords: String(r["keywords"] ?? ""),
     enabled: Number(r["enabled"] ?? 0) === 1,
     embedCode: String(r["embed_code"] ?? ""),
+    contactEnabled: Number(r["contact_enabled"] ?? 0) === 1,
     hyperlink: String(r["hyperlink"] ?? ""),
     product: {
       enabled: Number(r["product_enabled"] ?? 0) === 1,
