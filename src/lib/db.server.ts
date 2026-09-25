@@ -106,6 +106,11 @@ export async function ensureBillingTables(db: Client): Promise<void> {
     period_end TEXT NOT NULL,
     created_at TEXT NOT NULL
   )`);
+  try {
+    await db.execute(`ALTER TABLE subscription_payments ADD COLUMN invoice_no TEXT`);
+  } catch {
+    // Column already exists.
+  }
   await db.execute(
     `CREATE UNIQUE INDEX IF NOT EXISTS subscription_payments_sq ON subscription_payments (square_payment_id)`,
   );
