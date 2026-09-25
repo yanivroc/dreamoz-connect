@@ -70,7 +70,12 @@ async function loadPlans(db: Db): Promise<PlanSetting[]> {
   });
 }
 
-function billingSquare() {
+function billingSquare(): {
+  applicationId: string | null;
+  locationId: string | null;
+  accessToken: string | null;
+  environment: "production" | "sandbox";
+} {
   const prodApp = process.env["SQUARE_PROD_APPLICATION_ID"]?.trim();
   const prodLoc = process.env["SQUARE_PROD_LOCATION_ID"]?.trim();
   const prodToken = process.env["SQUARE_PROD_ACCESS_TOKEN"]?.trim();
