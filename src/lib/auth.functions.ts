@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { computeAccess, type AccessInfo } from "./plans";
 
 const loginSchema = z.object({
   email: z.string().trim().email().max(255),
@@ -15,11 +16,34 @@ export type CurrentUser = {
   email: string;
   role: string;
   createdAt: string;
+  plan: string;
+  trialEndsAt: string | null;
+  planExpiresAt: string | null;
+  access: AccessInfo;
 };
 
 export type LoginResult =
   | { ok: true; user: CurrentUser }
   | { ok: false; reason: "invalid" | "not_configured" };
+
+const USER_COLUMNS = "id, name, email, role, created_at, plan, trial_ends_at, plan_expires_at";
+
+function toCurrentUser(row: Record<string, unknown>): CurrentUser {
+  const role = String(row["role"] ?? "user");
+  const trialEndsAt = row["trial_ends_at"] ? String(row["trial_ends_at"]) : null;
+  const planExpiresAt = row["plan_expires_at"] ? String(row["plan_expires_at"]) : null;
+  return {
+    id: Number(row["id"]),
+    name: String(row["name"]),
+    email: String(row["email"]),
+    role,
+    createdAt: String(row["created_at"] ?? ""),
+    plan: String(row["plan"] ?? "none"),
+    trialEndsAt,
+    planExpiresAt,
+    access: computeAccess({ role, trialEndsAt, planExpiresAt }),
+  };
+}
 
 export const login = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => loginSchema.parse(input))
@@ -35,7 +59,7 @@ export const login = createServerFn({ method: "POST" })
 
     const email = data.email.toLowerCase();
     const res = await db.execute({
-      sql: "SELECT id, name, email, password_hash, role, created_at FROM users WHERE email = ? AND deleted_at IS NULL LIMIT 1",
+      sql: `SELECT ${USER_COLUMNS}, password_hash FROM users WHERE email = ? AND deleted_at IS NULL LIMIT 1`,
       args: [email],
     });
     const row = res.rows[0] as Record<string, unknown> | undefined;
@@ -45,13 +69,7 @@ export const login = createServerFn({ method: "POST" })
     const valid = await verifyPassword(data.password, String(row["password_hash"]));
     if (!valid) return { ok: false, reason: "invalid" };
 
-    const user: CurrentUser = {
-      id: Number(row["id"]),
-      name: String(row["name"]),
-      email: String(row["email"]),
-      role: String(row["role"] ?? "user"),
-      createdAt: String(row["created_at"] ?? ""),
-    };
+    const user = toCurrentUser(row);
 
     const { setSession } = await import("./session.server");
     await setSession({ userId: user.id, role: user.role });
@@ -77,17 +95,10 @@ export const me = createServerFn({ method: "GET" }).handler(
     await ensureUsersTable(db);
 
     const res = await db.execute({
-      sql: "SELECT id, name, email, role, created_at FROM users WHERE id = ? AND deleted_at IS NULL LIMIT 1",
+      sql: `SELECT ${USER_COLUMNS} FROM users WHERE id = ? AND deleted_at IS NULL LIMIT 1`,
       args: [session.userId],
     });
     const row = res.rows[0] as Record<string, unknown> | undefined;
-    if (!row) return null;
-    return {
-      id: Number(row["id"]),
-      name: String(row["name"]),
-      email: String(row["email"]),
-      role: String(row["role"] ?? "user"),
-      createdAt: String(row["created_at"] ?? ""),
-    };
+    return row ? toCurrentUser(row) : null;
   },
 );

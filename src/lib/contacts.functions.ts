@@ -57,6 +57,10 @@ async function requireAppAccess(appId: number) {
   });
   const user = u.rows[0] as Record<string, unknown> | undefined;
   if (!user) throw new Error("Not signed in.");
+  if (String(user["role"]) !== "admin") {
+    const { assertActiveAccess } = await import("./plan-access.server");
+    await assertActiveAccess(db, session.userId);
+  }
   const a = await db.execute({
     sql: "SELECT user_id FROM web_apps WHERE id = ? LIMIT 1",
     args: [appId],
