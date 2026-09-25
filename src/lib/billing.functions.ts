@@ -9,6 +9,7 @@ export type BillingPayment = {
   currency: string;
   periodEnd: string;
   receiptUrl: string | null;
+  invoiceNo: string | null;
   createdAt: string;
 };
 
@@ -149,6 +150,7 @@ export const getBillingOverview = createServerFn({ method: "GET" }).handler(
           currency: String(row["currency"]),
           periodEnd: String(row["period_end"]),
           receiptUrl: row["receipt_url"] ? String(row["receipt_url"]) : null,
+          invoiceNo: row["invoice_no"] ? String(row["invoice_no"]) : null,
           createdAt: String(row["created_at"]),
         };
       }),
@@ -206,6 +208,7 @@ export const purchasePlan = createServerFn({ method: "POST" })
     const start = Number.isFinite(current) && current > now ? current : now;
     const periodStart = new Date(start).toISOString();
     const periodEnd = new Date(start + plan.days * 24 * 60 * 60 * 1000).toISOString();
+    const invoiceNo = makeInvoiceNo(new Date(now));
 
     try {
       await ctx.db.execute({
@@ -214,8 +217,8 @@ export const purchasePlan = createServerFn({ method: "POST" })
       });
       await ctx.db.execute({
         sql: `INSERT INTO subscription_payments
-                (user_id, plan, amount_cents, currency, square_payment_id, receipt_url, period_start, period_end, created_at)
-              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                (user_id, plan, amount_cents, currency, square_payment_id, receipt_url, period_start, period_end, created_at, invoice_no)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         args: [
           ctx.userId,
           plan.id,
@@ -226,13 +229,188 @@ export const purchasePlan = createServerFn({ method: "POST" })
           periodStart,
           periodEnd,
           new Date(now).toISOString(),
+          invoiceNo,
         ],
       });
     } catch (err) {
       console.error("Plan payment captured but saving failed", body.payment.id, err);
     }
+
+    // Invoice PDF + confirmation email (never blocks a successful payment).
+    try {
+      await sendPlanInvoiceEmails({
+        invoiceNo,
+        plan,
+        buyer: { name: ctx.name, email: ctx.email },
+        date: new Date(now),
+        periodEnd,
+      });
+    } catch (err) {
+      console.error("Plan invoice email failed", invoiceNo, err);
+    }
+
     return { ok: true, planExpiresAt: periodEnd };
   });
+
+function makeInvoiceNo(date: Date): string {
+  const d = date.toISOString().slice(0, 10).replace(/-/g, "");
+  const rand = Math.floor(Math.random() * 1_000_000)
+    .toString()
+    .padStart(6, "0");
+  return `INV-P-${d}-${rand}`;
+}
+
+function planInvoiceDescription(plan: PlanSetting): string {
+  return `DreamozTech ${plan.label} plan - ${plan.days} days access`;
+}
+
+async function buildPlanInvoicePdf(args: {
+  invoiceNo: string;
+  plan: PlanSetting;
+  buyer: { name: string; email: string };
+  date: Date;
+}): Promise<string> {
+  const { buildInvoicePdf } = await import("./invoice.server");
+  const { getMailConfig } = await import("./mailer.server");
+  const amount = args.plan.amountCents / 100;
+  return buildInvoicePdf({
+    orderNo: args.invoiceNo,
+    date: args.date,
+    brand: getMailConfig().fromName,
+    ownerEmail: getMailConfig().emailFrom,
+    buyer: args.buyer,
+    lines: [
+      { title: planInvoiceDescription(args.plan), qty: 1, price: amount, lineTotal: amount },
+    ],
+    subtotal: amount,
+    total: amount,
+    currency: args.plan.currency,
+    footerNote: "Thank you for subscribing.",
+  });
+}
+
+async function sendPlanInvoiceEmails(args: {
+  invoiceNo: string;
+  plan: PlanSetting;
+  buyer: { name: string; email: string };
+  date: Date;
+  periodEnd: string;
+}) {
+  const { sendMail, getMailConfig } = await import("./mailer.server");
+  const cfg = getMailConfig();
+  const from = { email: cfg.emailFrom, name: cfg.fromName };
+  const { formatPlanPrice } = await import("./plans");
+  const price = formatPlanPrice(args.plan.amountCents, args.plan.currency);
+  const until = new Date(args.periodEnd).toLocaleDateString("en-AU", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+
+  let attachment: { name: string; content: string }[] | undefined;
+  try {
+    const content = await buildPlanInvoicePdf(args);
+    attachment = [{ name: `Invoice-${args.invoiceNo}.pdf`, content }];
+  } catch (err) {
+    console.error("plan invoice pdf generation failed", err);
+  }
+
+  const details = `
+<p style="font-family:Arial,sans-serif;font-size:14px;line-height:1.6;">
+  Invoice number: <strong>${args.invoiceNo}</strong><br/>
+  Plan: <strong>${args.plan.label}</strong><br/>
+  Amount paid: <strong>${price}</strong><br/>
+  Access until: <strong>${until}</strong>
+</p>`;
+
+  await sendMail({
+    from,
+    to: [{ email: args.buyer.email, name: args.buyer.name }],
+    subject: `Your ${cfg.fromName} subscription (${args.invoiceNo})`,
+    htmlContent: `
+<div style="font-family:Arial,sans-serif;color:#111;">
+  <h2>Thanks for subscribing, ${args.buyer.name}!</h2>
+  <p style="font-size:14px;">Your payment was successful and your plan is now active.</p>
+  ${details}
+  <p style="font-size:13px;color:#666;">Your invoice is attached, and is also available in your dashboard under Plan.</p>
+</div>`,
+    ...(attachment ? { attachment } : {}),
+  });
+
+  try {
+    await sendMail({
+      from,
+      to: [{ email: cfg.emailFrom, name: cfg.fromName }],
+      subject: `New subscription — ${args.buyer.name} (${price})`,
+      htmlContent: `
+<div style="font-family:Arial,sans-serif;color:#111;">
+  <h2>New plan payment</h2>
+  <p style="font-size:14px;">${args.buyer.name} &lt;${args.buyer.email}&gt;</p>
+  ${details}
+</div>`,
+      replyTo: { email: args.buyer.email, name: args.buyer.name },
+      ...(attachment ? { attachment } : {}),
+    });
+  } catch (err) {
+    console.error("plan invoice owner email failed", err);
+  }
+}
+
+/** Rebuilds the PDF invoice for a recorded plan payment (owner or admin only). */
+export const downloadPlanInvoice = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => z.object({ id: z.coerce.number().int() }).parse(input))
+  .handler(
+    async ({ data }): Promise<{ ok: true; name: string; content: string } | { ok: false; error: string }> => {
+      const ctx = await requireSessionUser();
+      const res = await ctx.db.execute({
+        sql: "SELECT * FROM subscription_payments WHERE id = ? LIMIT 1",
+        args: [data.id],
+      });
+      const row = res.rows[0] as unknown as Record<string, unknown> | undefined;
+      if (!row) return { ok: false, error: "Invoice not found." };
+      if (Number(row["user_id"]) !== ctx.userId && !ctx.isAdmin) {
+        return { ok: false, error: "You do not have permission to view this invoice." };
+      }
+
+      let buyer = { name: ctx.name, email: ctx.email };
+      if (Number(row["user_id"]) !== ctx.userId) {
+        const u = await ctx.db.execute({
+          sql: "SELECT name, email FROM users WHERE id = ? LIMIT 1",
+          args: [Number(row["user_id"])],
+        });
+        const ur = u.rows[0] as unknown as Record<string, unknown> | undefined;
+        if (ur) buyer = { name: String(ur["name"]), email: String(ur["email"]) };
+      }
+
+      const planId = String(row["plan"]) as PlanId;
+      const settings = await loadPlans(ctx.db);
+      const known = settings.find((p) => p.id === planId);
+      const plan: PlanSetting = {
+        id: planId,
+        label: known?.label ?? planId,
+        amountCents: Number(row["amount_cents"]),
+        currency: String(row["currency"] ?? "AUD"),
+        days: Math.max(
+          1,
+          Math.round(
+            (Date.parse(String(row["period_end"])) - Date.parse(String(row["period_start"]))) /
+              (24 * 60 * 60 * 1000),
+          ),
+        ),
+        enabled: true,
+      };
+      const invoiceNo = row["invoice_no"]
+        ? String(row["invoice_no"])
+        : makeInvoiceNo(new Date(String(row["created_at"])));
+      const content = await buildPlanInvoicePdf({
+        invoiceNo,
+        plan,
+        buyer,
+        date: new Date(String(row["created_at"])),
+      });
+      return { ok: true, name: `Invoice-${invoiceNo}.pdf`, content };
+    },
+  );
 
 async function requireAdminCtx() {
   const ctx = await requireSessionUser();

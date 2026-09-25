@@ -10,7 +10,7 @@ export interface InvoiceLine {
 
 export interface InvoiceInput {
   orderNo?: string;
-  paymentId: string;
+  paymentId?: string;
   date?: Date;
   brand: string;
   ownerEmail?: string | null;
@@ -25,9 +25,11 @@ export interface InvoiceInput {
   };
   lines: InvoiceLine[];
   subtotal: number;
-  shipping: number;
+  /** Omit to hide the shipping row entirely (e.g. subscription invoices). */
+  shipping?: number;
   total: number;
   currency: string;
+  footerNote?: string;
 }
 
 const money = (n: number, cur: string) => {
@@ -118,7 +120,7 @@ export async function buildInvoicePdf(input: InvoiceInput): Promise<string> {
   y -= 20;
 
   // Meta
-  const label = input.orderNo || input.paymentId;
+  const label = input.orderNo || input.paymentId || "";
   text("Invoice / Order number", left, 9, font, grey);
   text("Date", right - 160, 9, font, grey);
   y -= 13;
@@ -130,10 +132,14 @@ export async function buildInvoicePdf(input: InvoiceInput): Promise<string> {
     bold,
   );
   y -= 18;
-  text("Payment reference", left, 9, font, grey);
-  y -= 13;
-  text(input.paymentId, left, 10);
-  y -= 26;
+  if (input.paymentId) {
+    text("Payment reference", left, 9, font, grey);
+    y -= 13;
+    text(input.paymentId, left, 10);
+    y -= 26;
+  } else {
+    y -= 8;
+  }
 
   // Bill to
   text("Bill to", left, 9, font, grey);
@@ -204,7 +210,9 @@ export async function buildInvoicePdf(input: InvoiceInput): Promise<string> {
     y -= 16;
   };
   totalRow("Subtotal", money(input.subtotal, cur));
-  totalRow("Shipping", money(input.shipping, cur));
+  if (typeof input.shipping === "number") {
+    totalRow("Shipping", money(input.shipping, cur));
+  }
   y -= 2;
   page.drawLine({
     start: { x: colPrice - 80, y: y + 12 },
@@ -216,7 +224,7 @@ export async function buildInvoicePdf(input: InvoiceInput): Promise<string> {
   totalRow(`Total (${cur})`, money(input.total, cur), true);
 
   y -= 24;
-  text("Thank you for your order.", left, 10, font, grey);
+  text(input.footerNote ?? "Thank you for your order.", left, 10, font, grey);
 
   const bytes = await pdf.save();
   let binary = "";

@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { getBillingOverview, purchasePlan } from "@/lib/billing.functions";
+import { downloadPlanInvoice, getBillingOverview, purchasePlan } from "@/lib/billing.functions";
 import type { CurrentUser } from "@/lib/auth.functions";
 import { formatPlanPrice, type PlanId } from "@/lib/plans";
 import { formatDateTime } from "@/lib/format";
@@ -40,7 +40,31 @@ export function PlanPanel({ user }: { user: CurrentUser }) {
   const [choice, setChoice] = useState<PlanId>("monthly");
   const [ready, setReady] = useState(false);
   const [paying, setPaying] = useState(false);
+  const [invoiceBusy, setInvoiceBusy] = useState<number | null>(null);
   const cardRef = useRef<SquareCard | null>(null);
+  const getInvoice = useServerFn(downloadPlanInvoice);
+
+  const downloadInvoice = async (id: number) => {
+    setInvoiceBusy(id);
+    try {
+      const res = await getInvoice({ data: { id } });
+      if (!res.ok) {
+        toast.error(res.error);
+        return;
+      }
+      const bytes = Uint8Array.from(atob(res.content), (c) => c.charCodeAt(0));
+      const url = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = res.name;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error("Could not prepare the invoice. Please try again.");
+    } finally {
+      setInvoiceBusy(null);
+    }
+  };
 
   const plans = (data?.plans ?? []).filter((p) => p.enabled);
   const selected = plans.find((p) => p.id === choice) ?? plans[0];
@@ -196,9 +220,20 @@ export function PlanPanel({ user }: { user: CurrentUser }) {
               <li key={p.id} className="flex flex-wrap justify-between gap-2 px-4 py-3">
                 <span>
                   {formatDateTime(p.createdAt)} — {p.plan}
+                  {p.invoiceNo && (
+                    <span className="ml-2 text-muted-foreground">({p.invoiceNo})</span>
+                  )}
                 </span>
                 <span>
                   {formatPlanPrice(p.amountCents, p.currency)}
+                  <button
+                    type="button"
+                    onClick={() => downloadInvoice(p.id)}
+                    disabled={invoiceBusy === p.id}
+                    className="ml-3 text-primary underline disabled:opacity-60"
+                  >
+                    {invoiceBusy === p.id ? "Preparing…" : "Invoice (PDF)"}
+                  </button>
                   {p.receiptUrl && (
                     <a href={p.receiptUrl} target="_blank" rel="noreferrer" className="ml-3 text-primary underline">
                       Receipt
