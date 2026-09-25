@@ -150,6 +150,7 @@ export const getBillingOverview = createServerFn({ method: "GET" }).handler(
           currency: String(row["currency"]),
           periodEnd: String(row["period_end"]),
           receiptUrl: row["receipt_url"] ? String(row["receipt_url"]) : null,
+          invoiceNo: row["invoice_no"] ? String(row["invoice_no"]) : null,
           createdAt: String(row["created_at"]),
         };
       }),
