@@ -15,7 +15,12 @@ export type BillingPayment = {
 export type BillingOverview = {
   plans: PlanSetting[];
   trialDays: number;
-  square: { applicationId: string | null; locationId: string | null; configured: boolean };
+  square: {
+    applicationId: string | null;
+    locationId: string | null;
+    configured: boolean;
+    mode: "production" | "sandbox";
+  };
   payments: BillingPayment[];
 };
 
@@ -65,14 +70,31 @@ async function loadPlans(db: Db): Promise<PlanSetting[]> {
   });
 }
 
-function prodSquare() {
-  const applicationId = process.env["SQUARE_PROD_APPLICATION_ID"]?.trim() || null;
-  const locationId = process.env["SQUARE_PROD_LOCATION_ID"]?.trim() || null;
-  const accessToken = process.env["SQUARE_PROD_ACCESS_TOKEN"]?.trim() || null;
+function billingSquare(): {
+  applicationId: string | null;
+  locationId: string | null;
+  accessToken: string | null;
+  environment: "production" | "sandbox";
+} {
+  const prodApp = process.env["SQUARE_PROD_APPLICATION_ID"]?.trim();
+  const prodLoc = process.env["SQUARE_PROD_LOCATION_ID"]?.trim();
+  const prodToken = process.env["SQUARE_PROD_ACCESS_TOKEN"]?.trim();
+  if (prodApp && prodLoc && prodToken) {
+    const environment =
+      (process.env["SQUARE_PROD_ENVIRONMENT"] ?? "production").trim().toLowerCase() === "sandbox"
+        ? "sandbox"
+        : "production";
+    return { applicationId: prodApp, locationId: prodLoc, accessToken: prodToken, environment };
+  }
+  // Fall back to the existing sandbox settings so the flow can be tested
+  // end-to-end before the production variables are added.
+  const applicationId = process.env["SQUARE_APPLICATION_ID"]?.trim() || null;
+  const locationId = process.env["SQUARE_LOCATION_ID"]?.trim() || null;
+  const accessToken = process.env["SQUARE_ACCESS_TOKEN"]?.trim() || null;
   const environment =
-    (process.env["SQUARE_PROD_ENVIRONMENT"] ?? "production").trim().toLowerCase() === "sandbox"
-      ? "sandbox"
-      : "production";
+    (process.env["SQUARE_ENVIRONMENT"] ?? "sandbox").trim().toLowerCase() === "production"
+      ? "production"
+      : "sandbox";
   return { applicationId, locationId, accessToken, environment };
 }
 
@@ -80,7 +102,7 @@ export const getBillingOverview = createServerFn({ method: "GET" }).handler(
   async (): Promise<BillingOverview> => {
     const ctx = await requireSessionUser();
     const { getTrialDays } = await import("./plan-access.server");
-    const sq = prodSquare();
+    const sq = billingSquare();
     const pay = await ctx.db.execute({
       sql: "SELECT * FROM subscription_payments WHERE user_id = ? ORDER BY id DESC LIMIT 20",
       args: [ctx.userId],
@@ -92,6 +114,7 @@ export const getBillingOverview = createServerFn({ method: "GET" }).handler(
         applicationId: sq.applicationId,
         locationId: sq.locationId,
         configured: Boolean(sq.applicationId && sq.locationId && sq.accessToken),
+        mode: sq.environment,
       },
       payments: pay.rows.map((r) => {
         const row = r as unknown as Record<string, unknown>;
@@ -117,7 +140,7 @@ export const purchasePlan = createServerFn({ method: "POST" })
   )
   .handler(async ({ data }): Promise<{ ok: true; planExpiresAt: string } | { ok: false; error: string }> => {
     const ctx = await requireSessionUser();
-    const sq = prodSquare();
+    const sq = billingSquare();
     if (!sq.applicationId || !sq.locationId || !sq.accessToken) {
       return { ok: false, error: "Payments are not configured yet." };
     }

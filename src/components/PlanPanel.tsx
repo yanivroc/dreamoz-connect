@@ -49,13 +49,17 @@ export function PlanPanel({ user }: { user: CurrentUser }) {
   useEffect(() => {
     if (!sq?.configured || cardRef.current) return;
     let cancelled = false;
+    const sdkUrl =
+      sq.mode === "production"
+        ? "https://web.squarecdn.com/v1/square.js"
+        : "https://sandbox.web.squarecdn.com/v1/square.js";
     const init = async () => {
       try {
         const w = window as unknown as { Square?: unknown };
         if (!w.Square) {
           await new Promise<void>((resolve, reject) => {
             const s = document.createElement("script");
-            s.src = "https://web.squarecdn.com/v1/square.js";
+            s.src = sdkUrl;
             s.onload = () => resolve();
             s.onerror = () => reject(new Error("Could not load Square"));
             document.head.appendChild(s);
@@ -78,7 +82,7 @@ export function PlanPanel({ user }: { user: CurrentUser }) {
     return () => {
       cancelled = true;
     };
-  }, [sq?.configured, sq?.applicationId, sq?.locationId]);
+  }, [sq?.configured, sq?.applicationId, sq?.locationId, sq?.mode]);
 
   async function onPay() {
     if (!cardRef.current || !selected) return;
@@ -156,6 +160,12 @@ export function PlanPanel({ user }: { user: CurrentUser }) {
             <p className="text-sm text-muted-foreground">Payments not configured yet.</p>
           ) : (
             <>
+              {sq.mode === "sandbox" && (
+                <p className="rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs">
+                  Test mode (sandbox) — no real money is charged. Use Square's test cards. This
+                  switches to live payments automatically once the production settings are added.
+                </p>
+              )}
               <div id="plan-card" className="min-h-[90px]" />
               <button
                 type="button"
