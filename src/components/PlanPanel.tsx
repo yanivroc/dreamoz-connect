@@ -110,7 +110,7 @@ export function PlanPanel({ user }: { user: CurrentUser }) {
     return () => {
       cancelled = true;
     };
-  }, [sq?.configured, sq?.applicationId, sq?.locationId, sq?.mode]);
+  }, [isAdmin, sq?.configured, sq?.applicationId, sq?.locationId, sq?.mode]);
 
   async function onPay() {
     if (!cardRef.current || !selected) return;
