@@ -565,6 +565,10 @@ export function WebPagesPanel({ appId }: { appId: number }) {
               />
               <span>This page sells a product</span>
             </label>
+            <p className="-mt-3 pl-6 text-xs text-muted-foreground">
+              Accepts payment for this product, with a minimum and maximum order
+              quantity and a shipping rate.
+            </p>
 
             {form.productEnabled && (
               <div className="grid gap-4 md:grid-cols-2">
