@@ -12,7 +12,7 @@ import {
   sortPages,
 } from "@/lib/content-types";
 import { RichText } from "@/components/site/RichText";
-import { PageMedia } from "@/components/site/PageMedia";
+import { PageMedia, PageEmbed } from "@/components/site/PageMedia";
 import { PageCardGrid } from "@/components/site/PageCardGrid";
 import { AddToCartPanel } from "@/components/site/AddToCartPanel";
 import { PageContactForm } from "@/components/site/PageContactForm";
@@ -65,8 +65,7 @@ function PageDetail() {
   }
 
   const parent = findParent(content.pages, page);
-  const canFloatMedia =
-    (page.images?.length ?? 0) >= 1 && !page.embedCode;
+  const canFloatMedia = (page.images?.length ?? 0) >= 1;
   const children = sortPages(page.children ?? []);
   const currency = siteCurrency(content);
   const weightLabel =
@@ -100,7 +99,7 @@ function PageDetail() {
 
       {canFloatMedia ? (
         <div className="mt-6 after:block after:clear-both after:content-['']">
-          <PageMedia page={page} float />
+          <PageMedia page={page} float embed={false} />
           {isProductPage(page) ? (
             <p className="text-2xl font-bold text-primary">
               {formatMoney(page.product.price ?? 0, currency)}
@@ -110,6 +109,7 @@ function PageDetail() {
             html={page.description}
             className={isProductPage(page) ? "home-copy mt-4" : "home-copy"}
           />
+          <PageEmbed page={page} className="mt-6" />
           {weightLabel ? (
             <p className="mt-3 text-sm text-muted-foreground">Weight: {weightLabel}</p>
           ) : null}
@@ -123,7 +123,8 @@ function PageDetail() {
             </p>
           ) : null}
           <RichText html={page.description} className="home-copy mt-6 max-w-3xl" />
-          <PageMedia page={page} />
+          <PageEmbed page={page} className="mt-6" />
+          <PageMedia page={page} embed={false} />
           {weightLabel ? (
             <p className="mt-3 text-sm text-muted-foreground">Weight: {weightLabel}</p>
           ) : null}
