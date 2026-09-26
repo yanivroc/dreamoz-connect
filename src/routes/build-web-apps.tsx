@@ -48,7 +48,7 @@ type Tab = "apps" | "pages" | "settings" | "shipping" | "orders" | "contacts" | 
 
 const tabs: { id: Tab; label: string }[] = [
   { id: "apps", label: "Web apps" },
-  { id: "pages", label: "Build web pages" },
+  { id: "pages", label: "Web pages" },
   { id: "settings", label: "General settings" },
   { id: "shipping", label: "Shipping rates" },
   { id: "orders", label: "Orders" },
