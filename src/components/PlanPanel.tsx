@@ -70,8 +70,12 @@ export function PlanPanel({ user }: { user: CurrentUser }) {
   const selected = plans.find((p) => p.id === choice) ?? plans[0];
   const sq = data?.square;
 
+  const isAdmin = user.access.state === "admin";
+
   useEffect(() => {
+    if (isAdmin) return;
     if (!sq?.configured || cardRef.current) return;
+    if (!document.getElementById("plan-card")) return;
     let cancelled = false;
     const sdkUrl =
       sq.mode === "production"
