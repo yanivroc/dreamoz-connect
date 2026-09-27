@@ -18,6 +18,8 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as CheckoutIndexRouteImport } from './routes/checkout.index'
 import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
+import { Route as CommunityIndexRouteImport } from './routes/community.index'
+import { Route as CommunityIdRouteImport } from './routes/community.$id'
 import { Route as PageSlugRouteImport } from './routes/page.$slug'
 import { Route as ApiAssetIdRouteImport } from './routes/api/asset.$id'
 import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
@@ -70,6 +72,16 @@ const CheckoutSuccessRoute = CheckoutSuccessRouteImport.update({
   path: '/checkout/success',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CommunityIndexRoute = CommunityIndexRouteImport.update({
+  id: '/community/',
+  path: '/community/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CommunityIdRoute = CommunityIdRouteImport.update({
+  id: '/community/$id',
+  path: '/community/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PageSlugRoute = PageSlugRouteImport.update({
   id: '/page/$slug',
   path: '/page/$slug',
@@ -110,8 +122,10 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/checkout/success': typeof CheckoutSuccessRoute
+  '/community/$id': typeof CommunityIdRoute
   '/page/$slug': typeof PageSlugRoute
   '/checkout/': typeof CheckoutIndexRoute
+  '/community/': typeof CommunityIndexRoute
   '/api/asset/$id': typeof ApiAssetIdRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/wa/contacts': typeof ApiPublicWaContactsRoute
@@ -127,8 +141,10 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/checkout/success': typeof CheckoutSuccessRoute
+  '/community/$id': typeof CommunityIdRoute
   '/page/$slug': typeof PageSlugRoute
   '/checkout': typeof CheckoutIndexRoute
+  '/community': typeof CommunityIndexRoute
   '/api/asset/$id': typeof ApiAssetIdRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/wa/contacts': typeof ApiPublicWaContactsRoute
@@ -145,8 +161,10 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/signup': typeof SignupRoute
   '/checkout/success': typeof CheckoutSuccessRoute
+  '/community/$id': typeof CommunityIdRoute
   '/page/$slug': typeof PageSlugRoute
   '/checkout/': typeof CheckoutIndexRoute
+  '/community/': typeof CommunityIndexRoute
   '/api/asset/$id': typeof ApiAssetIdRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/wa/contacts': typeof ApiPublicWaContactsRoute
@@ -164,8 +182,10 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/checkout/success'
+    | '/community/$id'
     | '/page/$slug'
     | '/checkout/'
+    | '/community/'
     | '/api/asset/$id'
     | '/api/public/health'
     | '/api/public/wa/contacts'
@@ -181,8 +201,10 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/checkout/success'
+    | '/community/$id'
     | '/page/$slug'
     | '/checkout'
+    | '/community'
     | '/api/asset/$id'
     | '/api/public/health'
     | '/api/public/wa/contacts'
@@ -198,8 +220,10 @@ export interface FileRouteTypes {
     | '/login'
     | '/signup'
     | '/checkout/success'
+    | '/community/$id'
     | '/page/$slug'
     | '/checkout/'
+    | '/community/'
     | '/api/asset/$id'
     | '/api/public/health'
     | '/api/public/wa/contacts'
@@ -216,8 +240,10 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   SignupRoute: typeof SignupRoute
   CheckoutSuccessRoute: typeof CheckoutSuccessRoute
+  CommunityIdRoute: typeof CommunityIdRoute
   PageSlugRoute: typeof PageSlugRoute
   CheckoutIndexRoute: typeof CheckoutIndexRoute
+  CommunityIndexRoute: typeof CommunityIndexRoute
   ApiAssetIdRoute: typeof ApiAssetIdRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicWaContactsRoute: typeof ApiPublicWaContactsRoute
@@ -290,6 +316,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutSuccessRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/community/': {
+      id: '/community/'
+      path: '/community'
+      fullPath: '/community/'
+      preLoaderRoute: typeof CommunityIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/community/$id': {
+      id: '/community/$id'
+      path: '/community/$id'
+      fullPath: '/community/$id'
+      preLoaderRoute: typeof CommunityIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/page/$slug': {
       id: '/page/$slug'
       path: '/page/$slug'
@@ -344,8 +384,10 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   SignupRoute: SignupRoute,
   CheckoutSuccessRoute: CheckoutSuccessRoute,
+  CommunityIdRoute: CommunityIdRoute,
   PageSlugRoute: PageSlugRoute,
   CheckoutIndexRoute: CheckoutIndexRoute,
+  CommunityIndexRoute: CommunityIndexRoute,
   ApiAssetIdRoute: ApiAssetIdRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicWaContactsRoute: ApiPublicWaContactsRoute,
