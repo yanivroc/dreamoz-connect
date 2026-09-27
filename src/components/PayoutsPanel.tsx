@@ -140,7 +140,9 @@ export function PayoutsPanel() {
                 ))}
               </tbody>
             </table>
-          </div>
+      </div>
+      )}
+
         )}
       </div>
     </div>
