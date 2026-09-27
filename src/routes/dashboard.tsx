@@ -148,6 +148,8 @@ function DashboardPage() {
         )}
 
         {tab === "plan" && <PlanPanel user={user} />}
+        {tab === "payouts" && <PayoutsPanel />}
+        {tab === "seller-payouts" && isAdmin && <AdminPayoutsPanel />}
         {tab === "plan-settings" && isAdmin && <PlanSettingsPanel />}
         {tab === "users" && isAdmin && (
           <div className="space-y-4">
