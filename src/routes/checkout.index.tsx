@@ -120,6 +120,13 @@ function CheckoutPage() {
       toast.error("Please enter your full name, email, phone, address, city, postcode, and country.");
       return;
     }
+    const phoneE164 = normalizeAuPhone(form.phone);
+    if (!phoneE164) {
+      toast.error(`Please enter a valid ${AU_PHONE_HINT}.`);
+      return;
+    }
+    if (phoneE164 !== form.phone) setForm((f) => ({ ...f, phone: phoneE164 }));
+    form = { ...form, phone: phoneE164, country: "Australia" };
     if (!cardRef.current) {
       toast.error("Card form is not ready yet.");
       return;
