@@ -106,11 +106,13 @@ export const signUp = createServerFn({ method: "POST" })
           to: [{ email: adminEmail }],
           replyTo: { email, name: data.name },
           subject: `New sign up: ${data.name}`,
-          textContent: `A new sign up has been created.\n\nName: ${data.name}\nEmail: ${email}\nMarketing consent: Yes — given ${consentAt} UTC\nDate: ${consentAt}`,
+          textContent: `A new sign up has been created.\n\nName: ${data.name}\nEmail: ${email}\nPhone: ${data.phone}\nAddress: ${data.address}\nMarketing consent: Yes — given ${consentAt} UTC\nDate: ${consentAt}`,
           htmlContent: `<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6;color:#111">
 <h2 style="margin:0 0 12px">New sign up has been created</h2>
 <p><strong>Name:</strong> ${safeName}<br/>
 <strong>Email:</strong> ${email}<br/>
+<strong>Phone:</strong> ${safeText(data.phone)}<br/>
+<strong>Address:</strong> ${safeText(data.address)}<br/>
 <strong>Marketing consent:</strong> Yes — given ${consentAt} UTC<br/>
 <strong>Date:</strong> ${consentAt}</p>
 </div>`,
