@@ -2,11 +2,15 @@ import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { signUp } from "@/lib/signup.functions";
+import { AddressAutocomplete } from "@/components/site/AddressAutocomplete";
+import { AU_PHONE_HINT, normalizeAuPhone } from "@/lib/phone";
 
 export function SignUpForm() {
   const submit = useServerFn(signUp);
   const [pending, setPending] = useState(false);
   const [seed, setSeed] = useState(0);
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
   const captcha = useMemo(
     () => ({ a: 4 + ((seed * 3) % 6), b: 2 + ((seed * 5) % 7) }),
     [seed],
@@ -25,6 +29,16 @@ export function SignUpForm() {
       toast.error("Please tick the consent box to continue.");
       return;
     }
+    const phoneE164 = normalizeAuPhone(phone);
+    if (!phoneE164) {
+      toast.error(`Please enter a valid ${AU_PHONE_HINT}.`);
+      return;
+    }
+    setPhone(phoneE164);
+    if (!address.trim()) {
+      toast.error("Please enter your Australian address.");
+      return;
+    }
     setPending(true);
     try {
       const res = await submit({
@@ -32,6 +46,8 @@ export function SignUpForm() {
           name: String(fd.get("name") ?? ""),
           email: String(fd.get("email") ?? ""),
           password,
+          phone: phoneE164,
+          address: address.trim(),
           captchaAnswer: Number(fd.get("captchaAnswer") ?? NaN),
           captchaA: captcha.a,
           captchaB: captcha.b,
@@ -41,6 +57,8 @@ export function SignUpForm() {
       if (res.ok) {
         toast.success("Account created! Check your inbox for a welcome email.");
         form.reset();
+        setPhone("");
+        setAddress("");
       } else if (res.reason === "exists") {
         toast.error("An account with this email already exists.");
       } else {
@@ -92,6 +110,45 @@ export function SignUpForm() {
             className={field}
           />
         </label>
+      </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <label className="block text-sm">
+          <span className="text-muted-foreground">Australian mobile number</span>
+          <input
+            name="phone"
+            type="tel"
+            required
+            maxLength={20}
+            placeholder="+61 412 345 678"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            onBlur={(e) => {
+              const e164 = normalizeAuPhone(e.target.value);
+              if (e164) setPhone(e164);
+            }}
+            className={field}
+          />
+          <span className="mt-1 block text-xs text-muted-foreground/80">{AU_PHONE_HINT}</span>
+        </label>
+        <div className="block text-sm">
+          <span className="text-muted-foreground">Australian address</span>
+          <AddressAutocomplete
+            id="signup-address"
+            value={address}
+            required
+            className="mt-1"
+            placeholder="Start typing your address"
+            onChange={setAddress}
+            onSelect={(p) =>
+              setAddress(
+                [p.address, p.city, p.postcode].filter(Boolean).join(", ") || p.address,
+              )
+            }
+          />
+          <span className="mt-1 block text-xs text-muted-foreground/80">
+            Accounts are available to Australian residents only.
+          </span>
+        </div>
       </div>
       <label className="block text-sm">
         <span className="text-muted-foreground">

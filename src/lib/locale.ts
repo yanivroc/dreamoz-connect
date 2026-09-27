@@ -1,5 +1,5 @@
 /** Supported selling countries, with the currency and weight unit shown to shoppers. */
-export type CountryCode = "AU" | "US" | "GB";
+export type CountryCode = "AU";
 
 export type CountryInfo = {
   label: string;
@@ -7,10 +7,9 @@ export type CountryInfo = {
   weightUnit: string;
 };
 
+// Australia only: Square settles in AUD and payouts are domestic AUD transfers.
 export const COUNTRIES: Record<CountryCode, CountryInfo> = {
   AU: { label: "Australia", currency: "AUD", weightUnit: "kg" },
-  US: { label: "United States", currency: "USD", weightUnit: "lb" },
-  GB: { label: "United Kingdom", currency: "GBP", weightUnit: "lb" },
 };
 
 export const COUNTRY_CODES = Object.keys(COUNTRIES) as CountryCode[];

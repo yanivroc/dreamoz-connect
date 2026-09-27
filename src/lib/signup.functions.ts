@@ -1,10 +1,21 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { normalizeAuPhone } from "./phone";
 
 const schema = z.object({
   name: z.string().trim().min(1).max(100),
   email: z.string().trim().email().max(255),
   password: z.string().min(8).max(200),
+  // Stored in E.164 (+61...) so SMS/OTP providers need no conversion later.
+  phone: z
+    .string()
+    .trim()
+    .max(20)
+    .transform((v) => normalizeAuPhone(v))
+    .refine((v): v is string => v !== null, {
+      message: "Enter a valid Australian phone number in +61 format.",
+    }),
+  address: z.string().trim().min(3).max(255),
   captchaAnswer: z.coerce.number().int(),
   captchaA: z.coerce.number().int().min(0).max(99),
   captchaB: z.coerce.number().int().min(0).max(99),
@@ -45,8 +56,19 @@ export const signUp = createServerFn({ method: "POST" })
 
     try {
       await db.execute({
-        sql: "INSERT INTO users (name, email, password_hash, created_at, marketing_consent, marketing_consent_at, trial_ends_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        args: [data.name, email, passwordHash, consentAt, 1, consentAt, trialEndsAt],
+        sql: "INSERT INTO users (name, email, password_hash, created_at, marketing_consent, marketing_consent_at, trial_ends_at, phone, address, country) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        args: [
+          data.name,
+          email,
+          passwordHash,
+          consentAt,
+          1,
+          consentAt,
+          trialEndsAt,
+          data.phone,
+          data.address,
+          "AU",
+        ],
       });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -58,11 +80,13 @@ export const signUp = createServerFn({ method: "POST" })
     try {
       const { getMailConfig, sendMail } = await import("./mailer.server");
       const config = getMailConfig();
-      const safeName = data.name.replace(
-        /[&<>"']/g,
-        (c) =>
-          ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
-      );
+      const safeText = (v: string) =>
+        v.replace(
+          /[&<>"']/g,
+          (c) =>
+            ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
+        );
+      const safeName = safeText(data.name);
       await sendMail({
         from: { email: config.emailFrom, name: config.fromName },
         to: [{ email, name: data.name }],
@@ -84,11 +108,13 @@ export const signUp = createServerFn({ method: "POST" })
           to: [{ email: adminEmail }],
           replyTo: { email, name: data.name },
           subject: `New sign up: ${data.name}`,
-          textContent: `A new sign up has been created.\n\nName: ${data.name}\nEmail: ${email}\nMarketing consent: Yes — given ${consentAt} UTC\nDate: ${consentAt}`,
+          textContent: `A new sign up has been created.\n\nName: ${data.name}\nEmail: ${email}\nPhone: ${data.phone}\nAddress: ${data.address}\nMarketing consent: Yes — given ${consentAt} UTC\nDate: ${consentAt}`,
           htmlContent: `<div style="font-family:Arial,sans-serif;font-size:15px;line-height:1.6;color:#111">
 <h2 style="margin:0 0 12px">New sign up has been created</h2>
 <p><strong>Name:</strong> ${safeName}<br/>
 <strong>Email:</strong> ${email}<br/>
+<strong>Phone:</strong> ${safeText(data.phone)}<br/>
+<strong>Address:</strong> ${safeText(data.address)}<br/>
 <strong>Marketing consent:</strong> Yes — given ${consentAt} UTC<br/>
 <strong>Date:</strong> ${consentAt}</p>
 </div>`,

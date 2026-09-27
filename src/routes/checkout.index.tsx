@@ -9,6 +9,7 @@ import { EMPTY_CONTENT, formatMoney } from "@/lib/content-types";
 import { createSquarePayment, getSquareConfig } from "@/lib/square.functions";
 import { sendOrderEmails } from "@/lib/order-email.functions";
 import { AddressAutocomplete } from "@/components/site/AddressAutocomplete";
+import { AU_PHONE_HINT, normalizeAuPhone } from "@/lib/phone";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -120,6 +121,13 @@ function CheckoutPage() {
       toast.error("Please enter your full name, email, phone, address, city, postcode, and country.");
       return;
     }
+    const phoneE164 = normalizeAuPhone(form.phone);
+    if (!phoneE164) {
+      toast.error(`Please enter a valid ${AU_PHONE_HINT}.`);
+      return;
+    }
+    if (phoneE164 !== form.phone) setForm((f) => ({ ...f, phone: phoneE164 }));
+    const customer = { ...form, phone: phoneE164, country: "Australia" };
     if (!cardRef.current) {
       toast.error("Card form is not ready yet.");
       return;
@@ -135,7 +143,7 @@ function CheckoutPage() {
         data: {
           sourceId: result.token,
           currency: totals.currency,
-          customer: form,
+          customer,
           items: items.map((i) => ({ id: i.id, title: i.title, qty: i.qty })),
         },
       });
@@ -151,7 +159,7 @@ function CheckoutPage() {
             paymentId: payment.paymentId ?? "",
             orderNo: payment.orderNo ?? "",
             receiptUrl: payment.receiptUrl ?? null,
-            buyer: form,
+            buyer: customer,
             items: items.map((i) => ({ id: i.id, title: i.title, qty: i.qty })),
           },
         });
@@ -220,10 +228,29 @@ function CheckoutPage() {
                       address: p.address || f.address,
                       city: p.city || f.city,
                       postcode: p.postcode || f.postcode,
-                      country: p.country || f.country,
+                      country: "Australia",
                     }))
                   }
                 />
+              ) : key === "country" ? (
+                <Input id={key} value="Australia" readOnly className="mt-1.5" />
+              ) : key === "phone" ? (
+                <>
+                  <Input
+                    id={key}
+                    value={form.phone}
+                    type="tel"
+                    required
+                    placeholder="+61 412 345 678"
+                    onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
+                    onBlur={(e) => {
+                      const e164 = normalizeAuPhone(e.target.value);
+                      if (e164) setForm((f) => ({ ...f, phone: e164 }));
+                    }}
+                    className="mt-1.5"
+                  />
+                  <p className="mt-1 text-xs text-muted-foreground">{AU_PHONE_HINT}</p>
+                </>
               ) : (
                 <Input
                   id={key}
