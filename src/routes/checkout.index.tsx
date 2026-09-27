@@ -126,7 +126,7 @@ function CheckoutPage() {
       return;
     }
     if (phoneE164 !== form.phone) setForm((f) => ({ ...f, phone: phoneE164 }));
-    form = { ...form, phone: phoneE164, country: "Australia" };
+    const customer = { ...form, phone: phoneE164, country: "Australia" };
     if (!cardRef.current) {
       toast.error("Card form is not ready yet.");
       return;
@@ -142,7 +142,7 @@ function CheckoutPage() {
         data: {
           sourceId: result.token,
           currency: totals.currency,
-          customer: form,
+          customer,
           items: items.map((i) => ({ id: i.id, title: i.title, qty: i.qty })),
         },
       });
@@ -158,7 +158,7 @@ function CheckoutPage() {
             paymentId: payment.paymentId ?? "",
             orderNo: payment.orderNo ?? "",
             receiptUrl: payment.receiptUrl ?? null,
-            buyer: form,
+            buyer: customer,
             items: items.map((i) => ({ id: i.id, title: i.title, qty: i.qty })),
           },
         });
