@@ -9,6 +9,8 @@ export function SignUpForm() {
   const submit = useServerFn(signUp);
   const [pending, setPending] = useState(false);
   const [seed, setSeed] = useState(0);
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
   const captcha = useMemo(
     () => ({ a: 4 + ((seed * 3) % 6), b: 2 + ((seed * 5) % 7) }),
     [seed],
