@@ -112,8 +112,10 @@ export function PayoutsPanel() {
       )}
 
 
+      {!isAdmin && (
       <div className="space-y-3">
         <h2 className="text-xl font-semibold">Payout history</h2>
+
         {(data?.payouts ?? []).length === 0 ? (
           <p className="text-sm text-muted-foreground">No payouts yet.</p>
         ) : (
