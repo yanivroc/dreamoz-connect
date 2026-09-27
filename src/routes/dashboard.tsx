@@ -4,8 +4,17 @@ import { me, type CurrentUser } from "@/lib/auth.functions";
 import { AdminUsersPanel } from "@/components/AdminUsersPanel";
 import { PlanPanel } from "@/components/PlanPanel";
 import { PlanSettingsPanel } from "@/components/PlanSettingsPanel";
+import { PayoutsPanel } from "@/components/PayoutsPanel";
+import { AdminPayoutsPanel } from "@/components/AdminPayoutsPanel";
 
-const tabIds = ["overview", "plan", "plan-settings", "users"] as const;
+const tabIds = [
+  "overview",
+  "plan",
+  "payouts",
+  "seller-payouts",
+  "plan-settings",
+  "users",
+] as const;
 type Tab = (typeof tabIds)[number];
 
 export const Route = createFileRoute("/dashboard")({
