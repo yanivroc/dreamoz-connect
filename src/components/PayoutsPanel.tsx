@@ -18,7 +18,6 @@ export function PayoutsPanel() {
   const [accountName, setAccountName] = useState("");
   const [bsb, setBsb] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
-  const [bankName, setBankName] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -26,14 +25,14 @@ export function PayoutsPanel() {
       setAccountName(data.bank.accountName);
       setBsb(data.bank.bsb);
       setAccountNumber(data.bank.accountNumber);
-      setBankName(data.bank.bankName);
     }
   }, [data]);
 
   async function onSave() {
     setSaving(true);
     try {
-      await save({ data: { accountName, bsb, accountNumber, bankName } });
+      await save({ data: { accountName, bsb, accountNumber, bankName: "" } });
+
       toast.success("Bank details saved.");
       await qc.invalidateQueries({ queryKey: ["payout-profile"] });
     } catch (err) {
@@ -70,8 +69,15 @@ export function PayoutsPanel() {
           ? "Direct revenue — these sales are deposited straight into your own bank account by Square, so no payout transfer is needed. No platform commission applies to your sales."
           : `Earnings become available once an order is marked complete. Paid so far: ${formatMoney(e?.paidOut ?? 0, cur)}.`}
       </p>
+      {isAdmin ? (
+        <p className="text-sm text-muted-foreground">
+          Member payouts are managed under the <span className="font-medium text-foreground">Seller payouts</span> tab.
+        </p>
+      ) : null}
 
 
+
+      {!isAdmin && (
       <div className="max-w-2xl space-y-4 rounded-2xl border border-border/60 bg-surface/40 p-6 shadow-card">
         <div>
           <h2 className="text-xl font-semibold">Bank account for payouts</h2>
@@ -84,10 +90,7 @@ export function PayoutsPanel() {
             <span className="text-muted-foreground">Account holder name</span>
             <input className={input} maxLength={80} value={accountName} onChange={(ev) => setAccountName(ev.target.value)} />
           </label>
-          <label className="space-y-1.5 text-sm">
-            <span className="text-muted-foreground">Bank name (optional)</span>
-            <input className={input} maxLength={60} value={bankName} onChange={(ev) => setBankName(ev.target.value)} />
-          </label>
+          <span className="hidden sm:block" />
           <label className="space-y-1.5 text-sm">
             <span className="text-muted-foreground">BSB (6 digits)</span>
             <input className={input} inputMode="numeric" maxLength={7} value={bsb} onChange={(ev) => setBsb(ev.target.value)} />
@@ -111,9 +114,13 @@ export function PayoutsPanel() {
           </p>
         ) : null}
       </div>
+      )}
 
+
+      {!isAdmin && (
       <div className="space-y-3">
         <h2 className="text-xl font-semibold">Payout history</h2>
+
         {(data?.payouts ?? []).length === 0 ? (
           <p className="text-sm text-muted-foreground">No payouts yet.</p>
         ) : (
@@ -141,6 +148,8 @@ export function PayoutsPanel() {
           </div>
         )}
       </div>
+      )}
+
     </div>
   );
 }

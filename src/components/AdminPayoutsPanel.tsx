@@ -112,7 +112,6 @@ function SellerCard({ s }: { s: SellerBalance }) {
           <button type="button" onClick={() => void copy(s.bank!.accountNumber, "Account number")} className="rounded-md border border-border/70 px-2 py-1 hover:bg-surface/60">
             Acct {s.bank.accountNumber}
           </button>
-          {s.bank.bankName ? <span className="text-muted-foreground">{s.bank.bankName}</span> : null}
         </div>
       ) : (
         <p className="text-sm text-destructive">No bank details saved by this member yet.</p>
