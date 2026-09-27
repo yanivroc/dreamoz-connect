@@ -80,11 +80,13 @@ export const signUp = createServerFn({ method: "POST" })
     try {
       const { getMailConfig, sendMail } = await import("./mailer.server");
       const config = getMailConfig();
-      const safeName = data.name.replace(
-        /[&<>"']/g,
-        (c) =>
-          ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
-      );
+      const safeText = (v: string) =>
+        v.replace(
+          /[&<>"']/g,
+          (c) =>
+            ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
+        );
+      const safeName = safeText(data.name);
       await sendMail({
         from: { email: config.emailFrom, name: config.fromName },
         to: [{ email, name: data.name }],
