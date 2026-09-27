@@ -2,6 +2,8 @@ import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { signUp } from "@/lib/signup.functions";
+import { AddressAutocomplete } from "@/components/site/AddressAutocomplete";
+import { AU_PHONE_HINT, normalizeAuPhone } from "@/lib/phone";
 
 export function SignUpForm() {
   const submit = useServerFn(signUp);
