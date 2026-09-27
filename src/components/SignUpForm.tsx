@@ -111,6 +111,45 @@ export function SignUpForm() {
           />
         </label>
       </div>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <label className="block text-sm">
+          <span className="text-muted-foreground">Australian mobile number</span>
+          <input
+            name="phone"
+            type="tel"
+            required
+            maxLength={20}
+            placeholder="+61 412 345 678"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            onBlur={(e) => {
+              const e164 = normalizeAuPhone(e.target.value);
+              if (e164) setPhone(e164);
+            }}
+            className={field}
+          />
+          <span className="mt-1 block text-xs text-muted-foreground/80">{AU_PHONE_HINT}</span>
+        </label>
+        <div className="block text-sm">
+          <span className="text-muted-foreground">Australian address</span>
+          <AddressAutocomplete
+            id="signup-address"
+            value={address}
+            required
+            className="mt-1"
+            placeholder="Start typing your address"
+            onChange={setAddress}
+            onSelect={(p) =>
+              setAddress(
+                [p.address, p.city, p.postcode].filter(Boolean).join(", ") || p.address,
+              )
+            }
+          />
+          <span className="mt-1 block text-xs text-muted-foreground/80">
+            Accounts are available to Australian residents only.
+          </span>
+        </div>
+      </div>
       <label className="block text-sm">
         <span className="text-muted-foreground">
           Spam check: what is {captcha.a} + {captcha.b}?
