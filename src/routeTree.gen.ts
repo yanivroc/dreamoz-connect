@@ -18,6 +18,7 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as CheckoutIndexRouteImport } from './routes/checkout.index'
 import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
+import { Route as CommunityIndexRouteImport } from './routes/community.index'
 import { Route as PageSlugRouteImport } from './routes/page.$slug'
 import { Route as ApiAssetIdRouteImport } from './routes/api/asset.$id'
 import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
@@ -70,6 +71,11 @@ const CheckoutSuccessRoute = CheckoutSuccessRouteImport.update({
   path: '/checkout/success',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CommunityIndexRoute = CommunityIndexRouteImport.update({
+  id: '/community/',
+  path: '/community/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PageSlugRoute = PageSlugRouteImport.update({
   id: '/page/$slug',
   path: '/page/$slug',
@@ -112,6 +118,7 @@ export interface FileRoutesByFullPath {
   '/checkout/success': typeof CheckoutSuccessRoute
   '/page/$slug': typeof PageSlugRoute
   '/checkout/': typeof CheckoutIndexRoute
+  '/community/': typeof CommunityIndexRoute
   '/api/asset/$id': typeof ApiAssetIdRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/wa/contacts': typeof ApiPublicWaContactsRoute
@@ -129,6 +136,7 @@ export interface FileRoutesByTo {
   '/checkout/success': typeof CheckoutSuccessRoute
   '/page/$slug': typeof PageSlugRoute
   '/checkout': typeof CheckoutIndexRoute
+  '/community': typeof CommunityIndexRoute
   '/api/asset/$id': typeof ApiAssetIdRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/wa/contacts': typeof ApiPublicWaContactsRoute
@@ -147,6 +155,7 @@ export interface FileRoutesById {
   '/checkout/success': typeof CheckoutSuccessRoute
   '/page/$slug': typeof PageSlugRoute
   '/checkout/': typeof CheckoutIndexRoute
+  '/community/': typeof CommunityIndexRoute
   '/api/asset/$id': typeof ApiAssetIdRoute
   '/api/public/health': typeof ApiPublicHealthRoute
   '/api/public/wa/contacts': typeof ApiPublicWaContactsRoute
@@ -166,6 +175,7 @@ export interface FileRouteTypes {
     | '/checkout/success'
     | '/page/$slug'
     | '/checkout/'
+    | '/community/'
     | '/api/asset/$id'
     | '/api/public/health'
     | '/api/public/wa/contacts'
@@ -183,6 +193,7 @@ export interface FileRouteTypes {
     | '/checkout/success'
     | '/page/$slug'
     | '/checkout'
+    | '/community'
     | '/api/asset/$id'
     | '/api/public/health'
     | '/api/public/wa/contacts'
@@ -200,6 +211,7 @@ export interface FileRouteTypes {
     | '/checkout/success'
     | '/page/$slug'
     | '/checkout/'
+    | '/community/'
     | '/api/asset/$id'
     | '/api/public/health'
     | '/api/public/wa/contacts'
@@ -218,6 +230,7 @@ export interface RootRouteChildren {
   CheckoutSuccessRoute: typeof CheckoutSuccessRoute
   PageSlugRoute: typeof PageSlugRoute
   CheckoutIndexRoute: typeof CheckoutIndexRoute
+  CommunityIndexRoute: typeof CommunityIndexRoute
   ApiAssetIdRoute: typeof ApiAssetIdRoute
   ApiPublicHealthRoute: typeof ApiPublicHealthRoute
   ApiPublicWaContactsRoute: typeof ApiPublicWaContactsRoute
@@ -290,6 +303,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CheckoutSuccessRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/community/': {
+      id: '/community/'
+      path: '/community'
+      fullPath: '/community/'
+      preLoaderRoute: typeof CommunityIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/page/$slug': {
       id: '/page/$slug'
       path: '/page/$slug'
@@ -346,6 +366,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutSuccessRoute: CheckoutSuccessRoute,
   PageSlugRoute: PageSlugRoute,
   CheckoutIndexRoute: CheckoutIndexRoute,
+  CommunityIndexRoute: CommunityIndexRoute,
   ApiAssetIdRoute: ApiAssetIdRoute,
   ApiPublicHealthRoute: ApiPublicHealthRoute,
   ApiPublicWaContactsRoute: ApiPublicWaContactsRoute,
