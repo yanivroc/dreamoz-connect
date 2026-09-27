@@ -4,8 +4,17 @@ import { me, type CurrentUser } from "@/lib/auth.functions";
 import { AdminUsersPanel } from "@/components/AdminUsersPanel";
 import { PlanPanel } from "@/components/PlanPanel";
 import { PlanSettingsPanel } from "@/components/PlanSettingsPanel";
+import { PayoutsPanel } from "@/components/PayoutsPanel";
+import { AdminPayoutsPanel } from "@/components/AdminPayoutsPanel";
 
-const tabIds = ["overview", "plan", "plan-settings", "users"] as const;
+const tabIds = [
+  "overview",
+  "plan",
+  "payouts",
+  "seller-payouts",
+  "plan-settings",
+  "users",
+] as const;
 type Tab = (typeof tabIds)[number];
 
 export const Route = createFileRoute("/dashboard")({
@@ -45,8 +54,10 @@ function DashboardPage() {
   const tabs: { id: Tab; label: string }[] = [
     { id: "overview", label: "Overview" },
     { id: "plan", label: "Plan" },
+    { id: "payouts", label: "Payouts" },
     ...(isAdmin
       ? ([
+          { id: "seller-payouts", label: "Seller payouts" },
           { id: "plan-settings", label: "Plan settings" },
           { id: "users", label: "Users" },
         ] as { id: Tab; label: string }[])
@@ -137,6 +148,8 @@ function DashboardPage() {
         )}
 
         {tab === "plan" && <PlanPanel user={user} />}
+        {tab === "payouts" && <PayoutsPanel />}
+        {tab === "seller-payouts" && isAdmin && <AdminPayoutsPanel />}
         {tab === "plan-settings" && isAdmin && <PlanSettingsPanel />}
         {tab === "users" && isAdmin && (
           <div className="space-y-4">
