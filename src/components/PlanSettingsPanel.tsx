@@ -61,6 +61,7 @@ export function PlanSettingsPanel() {
 
   return (
     <div className="space-y-10">
+      <CommissionCard />
       <div className="max-w-2xl space-y-5 rounded-2xl border border-border/60 bg-surface/40 p-6 shadow-card">
         <h2 className="text-xl font-semibold">Plan settings</h2>
         <label className="block max-w-xs space-y-1.5 text-sm">
