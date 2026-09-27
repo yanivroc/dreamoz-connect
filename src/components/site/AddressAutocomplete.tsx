@@ -30,7 +30,11 @@ interface GoogleNamespace {
     places?: {
       AutocompleteService?: new () => {
         getPlacePredictions: (
-          req: { input: string; types?: string[] },
+          req: {
+            input: string;
+            types?: string[];
+            componentRestrictions?: { country: string | string[] };
+          },
           cb: (res: PlacePrediction[] | null, status: string) => void,
         ) => void;
       };
@@ -142,10 +146,14 @@ export function AddressAutocomplete({
       return;
     }
     const service = new places.AutocompleteService();
-    service.getPlacePredictions({ input, types: ["address"] }, (res) => {
-      setPredictions(res ?? []);
-      setOpen((res ?? []).length > 0);
-    });
+    service.getPlacePredictions(
+      // Australia only: the platform sells and ships within Australia.
+      { input, types: ["address"], componentRestrictions: { country: "au" } },
+      (res) => {
+        setPredictions(res ?? []);
+        setOpen((res ?? []).length > 0);
+      },
+    );
   };
 
   const choose = (prediction: PlacePrediction) => {
