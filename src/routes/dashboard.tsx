@@ -54,8 +54,10 @@ function DashboardPage() {
   const tabs: { id: Tab; label: string }[] = [
     { id: "overview", label: "Overview" },
     { id: "plan", label: "Plan" },
+    { id: "payouts", label: "Payouts" },
     ...(isAdmin
       ? ([
+          { id: "seller-payouts", label: "Seller payouts" },
           { id: "plan-settings", label: "Plan settings" },
           { id: "users", label: "Users" },
         ] as { id: Tab; label: string }[])
