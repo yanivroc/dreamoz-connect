@@ -178,7 +178,8 @@ export const getCommunityPage = createServerFn({ method: "GET" })
     });
     const kidsRes = await db.execute({
       sql: `SELECT id, title, description, seo_description, price FROM web_pages
-             WHERE parent_id = ? AND enabled = 1 ORDER BY order_no ASC, id ASC`,
+             WHERE parent_id = ? AND enabled = 1 AND feed_enabled = 1
+             ORDER BY order_no ASC, id ASC`,
       args: [data.id],
     });
 

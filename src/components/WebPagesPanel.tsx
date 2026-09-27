@@ -48,6 +48,7 @@ type FormState = {
   hyperlink: string;
   productEnabled: boolean;
   contactEnabled: boolean;
+  feedEnabled: boolean;
   price: string;
   minQty: string;
   maxQty: string;
@@ -67,6 +68,7 @@ const emptyForm: FormState = {
   hyperlink: "",
   productEnabled: false,
   contactEnabled: false,
+  feedEnabled: false,
   price: "",
   minQty: "",
   maxQty: "",
@@ -168,6 +170,7 @@ export function WebPagesPanel({ appId }: { appId: number }) {
       hyperlink: page.hyperlink,
       productEnabled: page.productEnabled,
       contactEnabled: page.contactEnabled,
+      feedEnabled: page.feedEnabled,
       price: page.price?.toString() ?? "",
       minQty: page.minQty?.toString() ?? "",
       maxQty: page.maxQty?.toString() ?? "",
@@ -200,6 +203,7 @@ export function WebPagesPanel({ appId }: { appId: number }) {
       hyperlink: form.hyperlink,
       productEnabled: form.parentId !== null && form.productEnabled,
       contactEnabled: form.contactEnabled,
+      feedEnabled: form.feedEnabled,
       price: numOrNull(form.price),
       minQty: numOrNull(form.minQty),
       maxQty: numOrNull(form.maxQty),
@@ -551,6 +555,21 @@ export function WebPagesPanel({ appId }: { appId: number }) {
           <p className="mt-1 pl-6 text-xs text-muted-foreground">
             Shows a contact form (name, email, phone, message and two attachments) at the
             bottom of this page. Messages appear in the Contacts tab.
+          </p>
+        </div>
+
+        <div className="rounded-xl border border-border/60 p-4">
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={form.feedEnabled}
+              onChange={(e) => setForm({ ...form, feedEnabled: e.target.checked })}
+            />
+            <span>Show in Community feed</span>
+          </label>
+          <p className="mt-1 pl-6 text-xs text-muted-foreground">
+            Lists this page as a card on the public Community page, next to pages shared by
+            other members. Works for top-level pages and sub pages.
           </p>
         </div>
 
