@@ -1,10 +1,21 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { normalizeAuPhone } from "./phone";
 
 const schema = z.object({
   name: z.string().trim().min(1).max(100),
   email: z.string().trim().email().max(255),
   password: z.string().min(8).max(200),
+  // Stored in E.164 (+61...) so SMS/OTP providers need no conversion later.
+  phone: z
+    .string()
+    .trim()
+    .max(20)
+    .transform((v) => normalizeAuPhone(v))
+    .refine((v): v is string => v !== null, {
+      message: "Enter a valid Australian phone number in +61 format.",
+    }),
+  address: z.string().trim().min(3).max(255),
   captchaAnswer: z.coerce.number().int(),
   captchaA: z.coerce.number().int().min(0).max(99),
   captchaB: z.coerce.number().int().min(0).max(99),
