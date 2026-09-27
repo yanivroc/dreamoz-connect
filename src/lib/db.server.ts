@@ -364,3 +364,34 @@ export async function ensureOrdersTables(db: Client): Promise<void> {
   await db.execute(`CREATE INDEX IF NOT EXISTS order_items_order ON order_items (order_id)`);
   ordersReady = true;
 }
+
+let payoutsReady = false;
+
+export async function ensurePayoutTables(db: Client): Promise<void> {
+  if (payoutsReady) return;
+  await db.execute(`CREATE TABLE IF NOT EXISTS seller_bank_accounts (
+    user_id INTEGER PRIMARY KEY,
+    account_name TEXT NOT NULL,
+    bsb TEXT NOT NULL,
+    account_number TEXT NOT NULL,
+    bank_name TEXT NOT NULL DEFAULT '',
+    updated_at TEXT NOT NULL
+  )`);
+  await db.execute(`CREATE TABLE IF NOT EXISTS seller_payouts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    amount REAL NOT NULL,
+    currency TEXT NOT NULL DEFAULT 'AUD',
+    reference TEXT NOT NULL DEFAULT '',
+    notes TEXT NOT NULL DEFAULT '',
+    account_name TEXT NOT NULL DEFAULT '',
+    bsb TEXT NOT NULL DEFAULT '',
+    account_number TEXT NOT NULL DEFAULT '',
+    paid_by INTEGER,
+    created_at TEXT NOT NULL
+  )`);
+  await db.execute(
+    `CREATE INDEX IF NOT EXISTS seller_payouts_user ON seller_payouts (user_id)`,
+  );
+  payoutsReady = true;
+}
