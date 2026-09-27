@@ -310,8 +310,8 @@ export const createWebPage = createServerFn({ method: "POST" })
     const res = await ctx.db.execute({
       sql: `INSERT INTO web_pages (app_id, user_id, parent_id, order_no, title, description,
               seo_description, keywords, enabled, embed_code, hyperlink,
-              product_enabled, price, min_qty, max_qty, shipping_price, weight, contact_enabled, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+              product_enabled, price, min_qty, max_qty, shipping_price, weight, contact_enabled, feed_enabled, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         data.appId,
         ownerId,
