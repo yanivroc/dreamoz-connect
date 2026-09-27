@@ -72,6 +72,7 @@ export function PayoutsPanel() {
       </p>
 
 
+      {!isAdmin && (
       <div className="max-w-2xl space-y-4 rounded-2xl border border-border/60 bg-surface/40 p-6 shadow-card">
         <div>
           <h2 className="text-xl font-semibold">Bank account for payouts</h2>
@@ -84,10 +85,7 @@ export function PayoutsPanel() {
             <span className="text-muted-foreground">Account holder name</span>
             <input className={input} maxLength={80} value={accountName} onChange={(ev) => setAccountName(ev.target.value)} />
           </label>
-          <label className="space-y-1.5 text-sm">
-            <span className="text-muted-foreground">Bank name (optional)</span>
-            <input className={input} maxLength={60} value={bankName} onChange={(ev) => setBankName(ev.target.value)} />
-          </label>
+          <span className="hidden sm:block" />
           <label className="space-y-1.5 text-sm">
             <span className="text-muted-foreground">BSB (6 digits)</span>
             <input className={input} inputMode="numeric" maxLength={7} value={bsb} onChange={(ev) => setBsb(ev.target.value)} />
@@ -111,6 +109,8 @@ export function PayoutsPanel() {
           </p>
         ) : null}
       </div>
+      )}
+
 
       <div className="space-y-3">
         <h2 className="text-xl font-semibold">Payout history</h2>
