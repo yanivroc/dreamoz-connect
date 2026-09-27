@@ -45,6 +45,7 @@ export function PayoutsPanel() {
 
   const e = data?.earnings;
   const cur = e?.currency ?? "AUD";
+  const isAdmin = data?.isAdmin ?? false;
 
   return (
     <div className="space-y-8">
@@ -53,7 +54,7 @@ export function PayoutsPanel() {
           { label: "Gross sales", value: e?.grossSales ?? 0 },
           { label: `Platform commission (${e?.commissionPercent ?? 0}%)`, value: e?.commission ?? 0 },
           { label: "Awaiting completion", value: e?.pending ?? 0 },
-          { label: "Available for payout", value: e?.available ?? 0 },
+          { label: isAdmin ? "Direct revenue" : "Available for payout", value: isAdmin ? (e?.netEarned ?? 0) : (e?.available ?? 0) },
         ].map((card) => (
           <div
             key={card.label}
@@ -65,9 +66,11 @@ export function PayoutsPanel() {
         ))}
       </div>
       <p className="text-sm text-muted-foreground">
-        Earnings become available once an order is marked complete. Paid so far:{" "}
-        {formatMoney(e?.paidOut ?? 0, cur)}.
+        {isAdmin
+          ? "Direct revenue — these sales are deposited straight into your own bank account by Square, so no payout transfer is needed. No platform commission applies to your sales."
+          : `Earnings become available once an order is marked complete. Paid so far: ${formatMoney(e?.paidOut ?? 0, cur)}.`}
       </p>
+
 
       <div className="max-w-2xl space-y-4 rounded-2xl border border-border/60 bg-surface/40 p-6 shadow-card">
         <div>
