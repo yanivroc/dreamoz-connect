@@ -52,6 +52,11 @@ export async function ensureUsersTable(db: Client): Promise<void> {
     `ALTER TABLE users ADD COLUMN trial_ends_at TEXT`,
     `ALTER TABLE users ADD COLUMN plan TEXT NOT NULL DEFAULT 'none'`,
     `ALTER TABLE users ADD COLUMN plan_expires_at TEXT`,
+    // Phone kept in E.164 (+61...) for future SMS/OTP verification.
+    `ALTER TABLE users ADD COLUMN phone TEXT`,
+    `ALTER TABLE users ADD COLUMN phone_verified_at TEXT`,
+    `ALTER TABLE users ADD COLUMN address TEXT`,
+    `ALTER TABLE users ADD COLUMN country TEXT NOT NULL DEFAULT 'AU'`,
   ]) {
     try {
       await db.execute(ddl);

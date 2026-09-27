@@ -56,8 +56,19 @@ export const signUp = createServerFn({ method: "POST" })
 
     try {
       await db.execute({
-        sql: "INSERT INTO users (name, email, password_hash, created_at, marketing_consent, marketing_consent_at, trial_ends_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        args: [data.name, email, passwordHash, consentAt, 1, consentAt, trialEndsAt],
+        sql: "INSERT INTO users (name, email, password_hash, created_at, marketing_consent, marketing_consent_at, trial_ends_at, phone, address, country) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        args: [
+          data.name,
+          email,
+          passwordHash,
+          consentAt,
+          1,
+          consentAt,
+          trialEndsAt,
+          data.phone,
+          data.address,
+          "AU",
+        ],
       });
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
