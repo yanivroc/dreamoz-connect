@@ -24,7 +24,7 @@ const schema = z.object({
 
 export type SignUpResult =
   | { ok: true }
-  | { ok: false; reason: "exists" | "not_configured" };
+  | { ok: false; reason: "exists" | "phone_exists" | "not_configured" };
 
 export const signUp = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => schema.parse(input))
@@ -45,6 +45,13 @@ export const signUp = createServerFn({ method: "POST" })
       args: [email],
     });
     if (existing.rows.length > 0) return { ok: false, reason: "exists" };
+
+    // One account per Australian mobile number, ready for SMS/OTP verification.
+    const existingPhone = await db.execute({
+      sql: "SELECT id FROM users WHERE phone = ? AND deleted_at IS NULL LIMIT 1",
+      args: [data.phone],
+    });
+    if (existingPhone.rows.length > 0) return { ok: false, reason: "phone_exists" };
 
     const consentAt = new Date().toISOString();
     const { hashPassword } = await import("./auth.server");
