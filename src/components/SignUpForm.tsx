@@ -29,6 +29,16 @@ export function SignUpForm() {
       toast.error("Please tick the consent box to continue.");
       return;
     }
+    const phoneE164 = normalizeAuPhone(phone);
+    if (!phoneE164) {
+      toast.error(`Please enter a valid ${AU_PHONE_HINT}.`);
+      return;
+    }
+    setPhone(phoneE164);
+    if (!address.trim()) {
+      toast.error("Please enter your Australian address.");
+      return;
+    }
     setPending(true);
     try {
       const res = await submit({
@@ -36,6 +46,8 @@ export function SignUpForm() {
           name: String(fd.get("name") ?? ""),
           email: String(fd.get("email") ?? ""),
           password,
+          phone: phoneE164,
+          address: address.trim(),
           captchaAnswer: Number(fd.get("captchaAnswer") ?? NaN),
           captchaA: captcha.a,
           captchaB: captcha.b,
@@ -45,6 +57,8 @@ export function SignUpForm() {
       if (res.ok) {
         toast.success("Account created! Check your inbox for a welcome email.");
         form.reset();
+        setPhone("");
+        setAddress("");
       } else if (res.reason === "exists") {
         toast.error("An account with this email already exists.");
       } else {
