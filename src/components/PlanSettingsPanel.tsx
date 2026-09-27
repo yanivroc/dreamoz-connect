@@ -10,11 +10,68 @@ import {
   updatePlanSettings,
   type UserAccessRow,
 } from "@/lib/billing.functions";
+import { getCommissionSetting, saveCommissionSetting } from "@/lib/community.functions";
 import { computeAccess, type PlanSetting } from "@/lib/plans";
 import { formatDate } from "@/lib/format";
 
 const input =
   "w-full rounded-lg border border-border/70 bg-background px-3 py-2 text-sm outline-none transition focus:border-primary";
+
+function CommissionCard() {
+  const load = useServerFn(getCommissionSetting);
+  const saveCommission = useServerFn(saveCommissionSetting);
+  const qc = useQueryClient();
+  const { data } = useQuery({ queryKey: ["commission"], queryFn: () => load() });
+  const [percent, setPercent] = useState("0");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (data) setPercent(String(data.percent));
+  }, [data]);
+
+  async function onSave() {
+    setSaving(true);
+    try {
+      await saveCommission({ data: { percent: Number(percent) } });
+      toast.success("Commission saved.");
+      await qc.invalidateQueries({ queryKey: ["commission"] });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not save.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="max-w-2xl space-y-4 rounded-2xl border border-border/60 bg-surface/40 p-6 shadow-card">
+      <h2 className="text-xl font-semibold">Platform commission</h2>
+      <p className="text-sm text-muted-foreground">
+        Percentage kept by the platform on every member sale. The rest is the seller's payout.
+      </p>
+      <label className="block max-w-xs space-y-1.5 text-sm">
+        <span className="text-muted-foreground">Commission (%)</span>
+        <input
+          type="number"
+          min={0}
+          max={100}
+          step="0.1"
+          className={input}
+          value={percent}
+          onChange={(e) => setPercent(e.target.value)}
+        />
+      </label>
+      <button
+        type="button"
+        onClick={() => void onSave()}
+        disabled={saving}
+        className="rounded-full bg-gradient-accent px-5 py-2 text-sm font-semibold text-primary-foreground shadow-card transition hover:opacity-90 disabled:opacity-60"
+      >
+        {saving ? "Saving…" : "Save commission"}
+      </button>
+    </div>
+  );
+}
+
 
 export function PlanSettingsPanel() {
   const fetchOverview = useServerFn(getBillingOverview);
