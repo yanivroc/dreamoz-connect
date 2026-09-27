@@ -36,6 +36,11 @@ export function SiteFooter() {
                 </Link>
               </li>
             ))}
+            <li>
+              <Link to="/community" className="text-sm text-muted-foreground hover:text-primary">
+                Community
+              </Link>
+            </li>
           </ul>
         </div>
 

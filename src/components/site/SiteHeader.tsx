@@ -67,6 +67,9 @@ export function SiteHeader() {
             <Link to="/" className={linkClass}>
               Home
             </Link>
+            <Link to="/community" className={linkClass}>
+              Community
+            </Link>
             <Link to="/contact" className={linkClass}>
               Contact
             </Link>
@@ -124,6 +127,13 @@ export function SiteHeader() {
               </Link>
             ))}
             <div className="my-1 border-t border-border" />
+            <Link
+              to="/community"
+              onClick={() => setMenuOpen(false)}
+              className="rounded-md px-2 py-2 text-sm text-muted-foreground transition-colors hover:bg-card hover:text-primary"
+            >
+              Community
+            </Link>
             <Link
               to="/contact"
               onClick={() => setMenuOpen(false)}
