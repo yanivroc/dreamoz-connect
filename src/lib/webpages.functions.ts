@@ -28,6 +28,7 @@ export type WebPage = {
   hyperlink: string;
   productEnabled: boolean;
   contactEnabled: boolean;
+  feedEnabled: boolean;
   price: number | null;
   minQty: number | null;
   maxQty: number | null;
@@ -176,6 +177,7 @@ function mapPage(r: unknown): WebPage {
     hyperlink: String(row["hyperlink"] ?? ""),
     productEnabled: Number(row["product_enabled"] ?? 0) === 1,
     contactEnabled: Number(row["contact_enabled"] ?? 0) === 1,
+    feedEnabled: Number(row["feed_enabled"] ?? 0) === 1,
     price: num(row["price"]),
     minQty: num(row["min_qty"]),
     maxQty: num(row["max_qty"]),
@@ -213,6 +215,7 @@ const pageShape = {
     }),
   productEnabled: z.boolean(),
   contactEnabled: z.boolean().optional().default(false),
+  feedEnabled: z.boolean().optional().default(false),
   price: z.coerce.number().min(0).max(1_000_000).nullable().optional(),
   minQty: z.coerce.number().int().min(0).max(1_000_000).nullable().optional(),
   maxQty: z.coerce.number().int().min(0).max(1_000_000).nullable().optional(),
