@@ -69,6 +69,12 @@ export function PayoutsPanel() {
           ? "Direct revenue — these sales are deposited straight into your own bank account by Square, so no payout transfer is needed. No platform commission applies to your sales."
           : `Earnings become available once an order is marked complete. Paid so far: ${formatMoney(e?.paidOut ?? 0, cur)}.`}
       </p>
+      {isAdmin ? (
+        <p className="text-sm text-muted-foreground">
+          Member payouts are managed under the <span className="font-medium text-foreground">Seller payouts</span> tab.
+        </p>
+      ) : null}
+
 
 
       {!isAdmin && (
