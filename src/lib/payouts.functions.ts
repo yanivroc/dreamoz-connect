@@ -144,9 +144,14 @@ function mapBank(row: Row | undefined): BankDetails | null {
 
 /** Seller view: bank details, earnings summary and payout history. */
 export const getMyPayoutProfile = createServerFn({ method: "GET" }).handler(
-  async (): Promise<{ bank: BankDetails | null; earnings: Earnings; payouts: PayoutRecord[] }> => {
-    const { db, userId } = await requireUser();
-    const percent = await commissionPercent(db);
+  async (): Promise<{
+    bank: BankDetails | null;
+    earnings: Earnings;
+    payouts: PayoutRecord[];
+    isAdmin: boolean;
+  }> => {
+    const { db, userId, isAdmin } = await requireUser();
+    const percent = isAdmin ? 0 : await commissionPercent(db);
     const bankRes = await db.execute({
       sql: "SELECT * FROM seller_bank_accounts WHERE user_id = ? LIMIT 1",
       args: [userId],
@@ -156,6 +161,7 @@ export const getMyPayoutProfile = createServerFn({ method: "GET" }).handler(
       args: [userId],
     });
     return {
+      isAdmin,
       bank: mapBank(bankRes.rows[0] as Row | undefined),
       earnings: await earningsFor(db, userId, percent),
       payouts: (payRes.rows as unknown as Row[]).map((r) => ({
@@ -169,6 +175,7 @@ export const getMyPayoutProfile = createServerFn({ method: "GET" }).handler(
     };
   },
 );
+
 
 const bankSchema = z.object({
   accountName: z.string().trim().min(2).max(80),
@@ -213,7 +220,7 @@ export const listSellerBalances = createServerFn({ method: "GET" }).handler(
     const users = await db.execute(
       `SELECT DISTINCT u.id, u.name, u.email FROM users u
        JOIN web_apps a ON a.user_id = u.id
-       WHERE u.deleted_at IS NULL ORDER BY u.name ASC`,
+       WHERE u.deleted_at IS NULL AND COALESCE(u.role, 'user') <> 'admin' ORDER BY u.name ASC`,
     );
     const out: SellerBalance[] = [];
     for (const r of users.rows as unknown as Row[]) {
