@@ -61,6 +61,8 @@ export function SignUpForm() {
         setAddress("");
       } else if (res.reason === "exists") {
         toast.error("An account with this email already exists.");
+      } else if (res.reason === "phone_exists") {
+        toast.error("An account with this phone number already exists.");
       } else {
         toast.error("Sign up is not configured yet. Please try again later.");
       }
