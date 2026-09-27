@@ -331,6 +331,7 @@ export const createWebPage = createServerFn({ method: "POST" })
         p.shippingPrice,
         p.weight,
         data.contactEnabled ? 1 : 0,
+        data.feedEnabled ? 1 : 0,
         now,
         now,
       ],
@@ -369,7 +370,7 @@ export const updateWebPage = createServerFn({ method: "POST" })
       sql: `UPDATE web_pages SET parent_id = ?, order_no = ?, title = ?, description = ?,
               seo_description = ?, keywords = ?, enabled = ?, embed_code = ?,
               hyperlink = ?, product_enabled = ?, price = ?, min_qty = ?, max_qty = ?, shipping_price = ?,
-              weight = ?, contact_enabled = ?, updated_at = ?
+              weight = ?, contact_enabled = ?, feed_enabled = ?, updated_at = ?
             WHERE id = ?`,
       args: [
         p.parentId,
@@ -388,6 +389,7 @@ export const updateWebPage = createServerFn({ method: "POST" })
         p.shippingPrice,
         p.weight,
         data.contactEnabled ? 1 : 0,
+        data.feedEnabled ? 1 : 0,
         new Date().toISOString(),
         data.id,
       ],
