@@ -18,7 +18,6 @@ export function PayoutsPanel() {
   const [accountName, setAccountName] = useState("");
   const [bsb, setBsb] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
-  const [bankName, setBankName] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -26,14 +25,14 @@ export function PayoutsPanel() {
       setAccountName(data.bank.accountName);
       setBsb(data.bank.bsb);
       setAccountNumber(data.bank.accountNumber);
-      setBankName(data.bank.bankName);
     }
   }, [data]);
 
   async function onSave() {
     setSaving(true);
     try {
-      await save({ data: { accountName, bsb, accountNumber, bankName } });
+      await save({ data: { accountName, bsb, accountNumber, bankName: "" } });
+
       toast.success("Bank details saved.");
       await qc.invalidateQueries({ queryKey: ["payout-profile"] });
     } catch (err) {
