@@ -17,6 +17,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Link } from "@tanstack/react-router";
+import type { CurrentUser } from "@/lib/auth.functions";
+import { hasApiAccess } from "@/lib/plans";
+
 
 function Copy({ value }: { value: string }) {
   return (
@@ -43,8 +47,10 @@ function Code({ children }: { children: string }) {
   );
 }
 
-export function ApiPanel({ appId }: { appId: number }) {
+export function ApiPanel({ appId, user }: { appId: number; user: CurrentUser }) {
+  const apiAllowed = hasApiAccess(user.access, user.plan);
   const fetchCreds = useServerFn(getApiCredentials);
+
   const rotate = useServerFn(rotateApiSecret);
   const [secret, setSecret] = useState<string | null>(null);
   const [origin, setOrigin] = useState("");
