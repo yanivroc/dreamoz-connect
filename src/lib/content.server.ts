@@ -75,3 +75,35 @@ export async function fetchSiteContent(): Promise<SiteContent> {
 export function invalidateSiteContent(): void {
   cache = null;
 }
+
+const appCache = new Map<number, { content: SiteContent; expires: number }>();
+
+/**
+ * Content for any member's web app (seller storefront), used to price and
+ * fulfil orders placed from the Community feed.
+ */
+export async function fetchAppContent(appId: number): Promise<SiteContent> {
+  const hit = appCache.get(appId);
+  if (hit && hit.expires > Date.now()) return hit.content;
+  const { dbClient, ensureWebAppsTable, ensureWebPagesTables } = await import("./db.server");
+  const db = dbClient();
+  if (!db) throw new Error("Database is not configured.");
+  await ensureWebAppsTable(db);
+  await ensureWebPagesTables(db);
+  const { buildWebAppPayload } = await import("./webapp-payload.server");
+  const payload = await buildWebAppPayload(db, appId);
+  if (!payload) throw new Error("Web app not found.");
+  const content = payload as unknown as SiteContent;
+  appCache.set(appId, { content, expires: Date.now() + CONTENT_TTL_MS });
+  return content;
+}
+
+/** Content for the storefront that owns a given web app id. */
+export async function fetchContentForApp(appId: number): Promise<SiteContent> {
+  try {
+    if (appId === (await resolveSiteAppId())) return await fetchSiteContent();
+  } catch {
+    /* fall through to the direct load */
+  }
+  return fetchAppContent(appId);
+}
