@@ -2,6 +2,16 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import type { ReactNode } from "react";
 import { siteCurrency } from "./content-types";
 import type { SiteContent, WaPage } from "./content-types";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export interface CartItem {
   id: number;
@@ -13,6 +23,10 @@ export interface CartItem {
   shippingPrice: number;
   minQty: number | null;
   maxQty: number | null;
+  /** Web app (seller storefront) this product belongs to. */
+  appId: number;
+  /** Display name of the seller, used in the cart and checkout. */
+  sellerName: string;
 }
 
 interface CartValue {
@@ -25,19 +39,31 @@ interface CartValue {
   subtotal: number;
   open: boolean;
   setOpen: (open: boolean) => void;
+  /** The seller the current cart belongs to, or null when the cart is empty. */
+  sellerAppId: number | null;
+  sellerName: string;
 }
 
-const STORAGE_KEY = "dreamoz-cart-v1";
+const STORAGE_KEY = "dreamoz-cart-v2";
 const CartContext = createContext<CartValue | null>(null);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [open, setOpen] = useState(false);
+  const [pending, setPending] = useState<{ item: Omit<CartItem, "qty">; qty: number } | null>(
+    null,
+  );
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setItems(JSON.parse(raw) as CartItem[]);
+      if (raw) {
+        const parsed = JSON.parse(raw) as CartItem[];
+        // Ignore legacy carts saved before products carried a seller.
+        if (Array.isArray(parsed) && parsed.every((i) => typeof i.appId === "number")) {
+          setItems(parsed);
+        }
+      }
     } catch {
       /* ignore */
     }
@@ -51,7 +77,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [items]);
 
-  const add = useCallback((item: Omit<CartItem, "qty">, qty: number) => {
+  const put = useCallback((item: Omit<CartItem, "qty">, qty: number) => {
     setItems((prev) => {
       const existing = prev.find((i) => i.id === item.id);
       if (existing) {
@@ -66,6 +92,32 @@ export function CartProvider({ children }: { children: ReactNode }) {
       ];
     });
   }, []);
+
+  // One order belongs to exactly one seller, so adding a product from another
+  // store asks to start a fresh cart instead of mixing sellers.
+  const add = useCallback(
+    (item: Omit<CartItem, "qty">, qty: number) => {
+      setItems((prev) => {
+        const current = prev[0];
+        if (current && current.appId !== item.appId) {
+          setPending({ item, qty });
+          return prev;
+        }
+        const existing = prev.find((i) => i.id === item.id);
+        if (existing) {
+          const next = Math.max(existing.qty + qty, item.minQty ?? 1);
+          return prev.map((i) =>
+            i.id === item.id ? { ...i, qty: item.maxQty ? Math.min(next, item.maxQty) : next } : i,
+          );
+        }
+        return [
+          ...prev,
+          { ...item, qty: Math.min(Math.max(qty, item.minQty ?? 1), item.maxQty ?? 99) },
+        ];
+      });
+    },
+    [],
+  );
 
   const setQty = useCallback((id: number, qty: number) => {
     setItems((prev) =>
@@ -88,10 +140,57 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const value = useMemo<CartValue>(() => {
     const count = items.reduce((n, i) => n + i.qty, 0);
     const subtotal = items.reduce((n, i) => n + i.price * i.qty, 0);
-    return { items, add, setQty, remove, clear, count, subtotal, open, setOpen };
+    return {
+      items,
+      add,
+      setQty,
+      remove,
+      clear,
+      count,
+      subtotal,
+      open,
+      setOpen,
+      sellerAppId: items[0]?.appId ?? null,
+      sellerName: items[0]?.sellerName ?? "",
+    };
   }, [items, add, setQty, remove, clear, open]);
 
-  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+  const currentSeller = items[0]?.sellerName || "another seller";
+
+  return (
+    <CartContext.Provider value={value}>
+      {children}
+      <AlertDialog open={pending !== null} onOpenChange={(o) => !o && setPending(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Start a new cart?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your cart has items from {currentSeller}. Each order is placed with one seller, so
+              adding {pending?.item.title ?? "this item"} from{" "}
+              {pending?.item.sellerName || "another seller"} will clear your current cart.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPending(null)}>Keep my cart</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (!pending) return;
+                const { item, qty } = pending;
+                setItems([]);
+                setPending(null);
+                setTimeout(() => {
+                  put(item, qty);
+                  setOpen(true);
+                }, 0);
+              }}
+            >
+              Clear and add item
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </CartContext.Provider>
+  );
 }
 
 export function useCart(): CartValue {
@@ -100,7 +199,10 @@ export function useCart(): CartValue {
   return ctx;
 }
 
-export function cartItemFromPage(page: WaPage): Omit<CartItem, "qty"> {
+export function cartItemFromPage(
+  page: WaPage,
+  seller: { appId: number; sellerName: string },
+): Omit<CartItem, "qty"> {
   const image = [...(page.images ?? [])].sort((a, b) => a.orderNo - b.orderNo)[0]?.url;
   return {
     id: page.id,
@@ -111,6 +213,8 @@ export function cartItemFromPage(page: WaPage): Omit<CartItem, "qty"> {
     shippingPrice: page.product.shippingPrice ?? 0,
     minQty: page.product.minQty ?? null,
     maxQty: page.product.maxQty ?? null,
+    appId: seller.appId,
+    sellerName: seller.sellerName,
   };
 }
 
@@ -122,7 +226,10 @@ export interface Totals {
 }
 
 /** Shipping = per-item shipping price + the best matching configured rate. */
-export function calcTotals(items: CartItem[], content: SiteContent): Totals {
+export function calcTotals(
+  items: CartItem[],
+  content: Pick<SiteContent, "settings" | "shippingRates">,
+): Totals {
   const subtotal = items.reduce((n, i) => n + i.price * i.qty, 0);
   const qty = items.reduce((n, i) => n + i.qty, 0);
   const perItemShipping = items.reduce((n, i) => n + i.shippingPrice * i.qty, 0);
