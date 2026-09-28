@@ -6,7 +6,15 @@ import { cartItemFromPage, useCart } from "@/lib/cart";
 import { Button } from "@/components/ui/button";
 import { QuantityInput } from "./QuantityInput";
 
-export function ProductCard({ page, currency }: { page: WaPage; currency: string }) {
+export function ProductCard({
+  page,
+  currency,
+  seller,
+}: {
+  page: WaPage;
+  currency: string;
+  seller: { appId: number; sellerName: string };
+}) {
   const { add, setOpen } = useCart();
   const min = page.product.minQty ?? 1;
   const max = page.product.maxQty ?? 99;
@@ -56,7 +64,7 @@ export function ProductCard({ page, currency }: { page: WaPage; currency: string
           <Button
             className="flex-1"
             onClick={() => {
-              add(cartItemFromPage(page), qty);
+              add(cartItemFromPage(page, seller), qty);
               toast.success(`${page.title} added to cart`);
               setOpen(true);
             }}

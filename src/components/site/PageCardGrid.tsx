@@ -30,7 +30,15 @@ function InfoCard({ page }: { page: WaPage }) {
   );
 }
 
-export function PageCardGrid({ pages, currency }: { pages: WaPage[]; currency: string }) {
+export function PageCardGrid({
+  pages,
+  currency,
+  seller,
+}: {
+  pages: WaPage[];
+  currency: string;
+  seller: { appId: number; sellerName: string };
+}) {
   const visible = sortPages(pages);
   if (visible.length === 0) return null;
 
@@ -38,7 +46,7 @@ export function PageCardGrid({ pages, currency }: { pages: WaPage[]; currency: s
     <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {visible.map((child) =>
         isProductPage(child) ? (
-          <ProductCard key={child.id} page={child} currency={currency} />
+          <ProductCard key={child.id} page={child} currency={currency} seller={seller} />
         ) : (
           <InfoCard key={child.id} page={child} />
         ),

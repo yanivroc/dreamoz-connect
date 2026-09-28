@@ -1,25 +1,28 @@
 import { Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
-import { siteContentQuery } from "@/lib/content-query";
 import { calcTotals, useCart } from "@/lib/cart";
-import { EMPTY_CONTENT, formatMoney } from "@/lib/content-types";
+import { FALLBACK_STOREFRONT, storefrontQuery } from "@/lib/storefront-query";
+import { formatMoney } from "@/lib/content-types";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { QuantityInput } from "./QuantityInput";
 
 export function CartSheet() {
-  const { items, setQty, remove, open, setOpen } = useCart();
-  const { data } = useQuery(siteContentQuery);
-  const content = data?.content ?? EMPTY_CONTENT;
-  const totals = calcTotals(items, content);
+  const { items, setQty, remove, open, setOpen, sellerAppId, sellerName } = useCart();
+  const { data: storefront } = useQuery(storefrontQuery(sellerAppId));
+  const totals = calcTotals(items, storefront ?? FALLBACK_STOREFRONT);
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetContent className="flex w-full flex-col gap-0 sm:max-w-md">
         <SheetHeader>
           <SheetTitle>Your cart</SheetTitle>
+          {items.length > 0 && sellerName ? (
+            <p className="text-sm text-muted-foreground">Ordering from {sellerName}</p>
+          ) : null}
         </SheetHeader>
+
 
         <div className="flex-1 overflow-y-auto px-4">
           {items.length === 0 ? (

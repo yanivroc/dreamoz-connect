@@ -28,6 +28,9 @@ export const getSquareConfig = createServerFn({ method: "GET" }).handler(
 const checkoutSchema = z.object({
   sourceId: z.string().min(1).max(2000),
   currency: z.string().min(3).max(3),
+  /** The single seller storefront this cart belongs to. */
+  appId: z.coerce.number().int().positive(),
+
   customer: z.object({
     name: z.string().min(1).max(120),
     email: z.string().email().max(160),
@@ -79,14 +82,15 @@ export const createSquarePayment = createServerFn({ method: "POST" })
       return { ok: false, error: "Payments are not configured yet." };
     }
 
-    // Price the order server-side from the CMS — never trust client amounts.
-    const { fetchSiteContent } = await import("./content.server");
+    // Price the order server-side from the seller's own catalogue — never
+    // trust client amounts, and never let one order span two sellers.
+    const { fetchContentForApp } = await import("./content.server");
     const { flattenPages } = await import("./content-types");
     const { priceOrder } = await import("./pricing");
 
     let priced;
     try {
-      const content = await fetchSiteContent();
+      const content = await fetchContentForApp(data.appId);
       const pages = flattenPages(content.pages);
       priced = priceOrder(data.items, pages, content);
     } catch (err) {
@@ -94,6 +98,7 @@ export const createSquarePayment = createServerFn({ method: "POST" })
       return { ok: false, error: "Could not price this order. Please try again." };
     }
     if (priced.error) return { ok: false, error: priced.error };
+
 
     const amountCents = Math.round(priced.total * 100);
     if (amountCents <= 0) return { ok: false, error: "Order total is invalid." };
@@ -135,16 +140,16 @@ export const createSquarePayment = createServerFn({ method: "POST" })
     // failures are logged and checkout still succeeds.
     let orderNo: string | undefined;
     try {
-      const { resolveSiteAppId } = await import("./content.server");
       const { dbClient, ensureOrdersTables } = await import("./db.server");
       const db = dbClient();
       if (!db) throw new Error("Database is not configured.");
       await ensureOrdersTables(db);
-      const appId = await resolveSiteAppId();
+      const appId = data.appId;
       const ownerRes = await db.execute({
         sql: "SELECT user_id FROM web_apps WHERE id = ? LIMIT 1",
         args: [appId],
       });
+
       const ownerId = Number((ownerRes.rows[0] as Record<string, unknown> | undefined)?.["user_id"] ?? 0);
       const now = new Date().toISOString();
       const candidate = makeOrderNo();

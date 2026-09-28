@@ -13,8 +13,12 @@ export type CommunityItem = {
   currency: string;
   parentTitle: string | null;
   childCount: number;
+  appId: number;
   appTitle: string;
   ownerName: string;
+  minQty: number | null;
+  maxQty: number | null;
+  shippingPrice: number | null;
   internalSlug: string | null;
   updatedAt: string;
 };
@@ -30,12 +34,17 @@ export type CommunityPage = {
   price: number | null;
   currency: string;
   parentTitle: string | null;
+  appId: number;
   appTitle: string;
   ownerName: string;
-  internalSlug: string | null;
+  minQty: number | null;
+  maxQty: number | null;
+  shippingPrice: number | null;
   images: { id: number; url: string; alt: string; hyperlink: string }[];
   children: { id: number; title: string; excerpt: string; price: number | null }[];
+  internalSlug: string | null;
 };
+
 
 type Row = Record<string, unknown>;
 
@@ -105,7 +114,9 @@ export const listCommunityFeed = createServerFn({ method: "GET" }).handler(
       res = await db.execute({
         sql: `
         SELECT p.id, p.title, p.description, p.seo_description, p.product_enabled,
-               p.contact_enabled, p.price, p.app_id, p.updated_at,
+               p.contact_enabled, p.price, p.min_qty, p.max_qty, p.shipping_price,
+               p.app_id, p.updated_at,
+
                parent.title AS parent_title,
                a.title AS app_title,
                u.name AS owner_name,
@@ -156,8 +167,13 @@ export const listCommunityFeed = createServerFn({ method: "GET" }).handler(
         currency: currencyFor(normalizeCountry(r["country"])),
         parentTitle: r["parent_title"] ? String(r["parent_title"]) : null,
         childCount: Number(r["child_count"] ?? 0),
+        appId,
         appTitle: String(r["app_title"] ?? ""),
         ownerName: String(r["owner_name"] ?? ""),
+        minQty: num(r["min_qty"]),
+        maxQty: num(r["max_qty"]),
+        shippingPrice: num(r["shipping_price"]),
+
         internalSlug: homeAppId !== null && appId === homeAppId ? slugify(title) : null,
         updatedAt: String(r["updated_at"] ?? ""),
       };
@@ -211,8 +227,13 @@ export const getCommunityPage = createServerFn({ method: "GET" })
       price: num(r["price"]),
       currency: currencyFor(normalizeCountry(r["country"])),
       parentTitle: r["parent_title"] ? String(r["parent_title"]) : null,
+      appId: Number(r["app_id"]),
       appTitle: String(r["app_title"] ?? ""),
       ownerName: String(r["owner_name"] ?? ""),
+      minQty: num(r["min_qty"]),
+      maxQty: num(r["max_qty"]),
+      shippingPrice: num(r["shipping_price"]),
+
       internalSlug:
         homeAppId !== null && Number(r["app_id"]) === homeAppId ? slugify(title) : null,
       images: (imgRes.rows as unknown as Row[]).map((i) => ({

@@ -36,6 +36,11 @@ function Index() {
   const pages = sortPages(content.pages);
   const [hero, ...rest] = pages;
   const currency = siteCurrency(content);
+  const seller = {
+    appId: content.webApp.id,
+    sellerName: content.webApp.title || "DreamozTech",
+  };
+
 
   if (!hero) {
     return (
@@ -52,7 +57,7 @@ function Index() {
 
       {sortPages(hero.children ?? []).length > 0 ? (
         <section className="mx-auto max-w-6xl px-6 py-16">
-          <PageCardGrid pages={hero.children} currency={currency} />
+          <PageCardGrid pages={hero.children} currency={currency} seller={seller} />
         </section>
       ) : null}
 
@@ -105,7 +110,7 @@ function Index() {
                 </div>
               </div>
               {children.length > 0 ? (
-                <PageCardGrid pages={children} currency={currency} />
+                <PageCardGrid pages={children} currency={currency} seller={seller} />
               ) : null}
             </div>
           </section>

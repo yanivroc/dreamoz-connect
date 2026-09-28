@@ -1,18 +1,27 @@
 import { useState } from "react";
 import { toast } from "sonner";
-import type { WaPage } from "@/lib/content-types";
-import { cartItemFromPage, useCart } from "@/lib/cart";
+import type { CartItem } from "@/lib/cart";
+import { useCart } from "@/lib/cart";
 import { Button } from "@/components/ui/button";
 import { QuantityInput } from "./QuantityInput";
 
-export function AddToCartPanel({ page }: { page: WaPage }) {
+/** Quantity picker + add-to-cart for any seller's product. */
+export function AddToCartPanel({
+  item,
+  className,
+}: {
+  item: Omit<CartItem, "qty">;
+  className?: string;
+}) {
   const { add, setOpen } = useCart();
-  const min = page.product.minQty ?? 1;
-  const max = page.product.maxQty ?? 99;
+  const min = item.minQty ?? 1;
+  const max = item.maxQty ?? 99;
   const [qty, setQty] = useState(min);
 
   return (
-    <div className="mt-8 flex max-w-md items-center gap-3 rounded-xl border border-border bg-card p-4">
+    <div
+      className={`flex max-w-md items-center gap-3 rounded-xl border border-border bg-card p-4 ${className ?? "mt-8"}`}
+    >
       <QuantityInput
         value={qty}
         onChange={setQty}
@@ -25,16 +34,14 @@ export function AddToCartPanel({ page }: { page: WaPage }) {
         size="lg"
         className="flex-1"
         onClick={() => {
-          add(cartItemFromPage(page), qty);
-          toast.success(`${page.title} added to cart`);
+          add(item, qty);
+          toast.success(`${item.title} added to cart`);
           setOpen(true);
         }}
       >
         Add to cart
       </Button>
-      {page.product.maxQty ? (
-        <span className="text-xs text-muted-foreground">Max {max}</span>
-      ) : null}
+      {item.maxQty ? <span className="text-xs text-muted-foreground">Max {max}</span> : null}
     </div>
   );
 }

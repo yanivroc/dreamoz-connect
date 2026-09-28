@@ -3,9 +3,10 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { siteContentQuery } from "@/lib/content-query";
 import { calcTotals, useCart } from "@/lib/cart";
-import { EMPTY_CONTENT, formatMoney } from "@/lib/content-types";
+import { FALLBACK_STOREFRONT, storefrontQuery } from "@/lib/storefront-query";
+import { formatMoney } from "@/lib/content-types";
+
 import { createSquarePayment, getSquareConfig } from "@/lib/square.functions";
 import { sendOrderEmails } from "@/lib/order-email.functions";
 import { AddressAutocomplete } from "@/components/site/AddressAutocomplete";
@@ -39,8 +40,8 @@ interface SquareCard {
 
 function CheckoutPage() {
   const navigate = useNavigate();
-  const { items, clear } = useCart();
-  const { data: contentData } = useQuery(siteContentQuery);
+  const { items, clear, sellerAppId, sellerName } = useCart();
+  const { data: storefront } = useQuery(storefrontQuery(sellerAppId));
   const { data: squareConfig } = useQuery({
     queryKey: ["square-config"],
     queryFn: () => getSquareConfig(),
@@ -48,7 +49,8 @@ function CheckoutPage() {
   const pay = useServerFn(createSquarePayment);
   const sendEmails = useServerFn(sendOrderEmails);
 
-  const totals = calcTotals(items, contentData?.content ?? EMPTY_CONTENT);
+  const totals = calcTotals(items, storefront ?? FALLBACK_STOREFRONT);
+
   const cardRef = useRef<SquareCard | null>(null);
   const [cardReady, setCardReady] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -132,6 +134,10 @@ function CheckoutPage() {
       toast.error("Card form is not ready yet.");
       return;
     }
+    if (!sellerAppId) {
+      toast.error("Your cart is empty.");
+      return;
+    }
     setSubmitting(true);
     try {
       const result = await cardRef.current.tokenize();
@@ -143,10 +149,12 @@ function CheckoutPage() {
         data: {
           sourceId: result.token,
           currency: totals.currency,
+          appId: sellerAppId,
           customer,
           items: items.map((i) => ({ id: i.id, title: i.title, qty: i.qty })),
         },
       });
+
       if (!payment.ok) {
         toast.error(payment.error ?? "Payment failed.");
         return;
@@ -157,8 +165,10 @@ function CheckoutPage() {
         const mailed = await sendEmails({
           data: {
             paymentId: payment.paymentId ?? "",
+            appId: sellerAppId,
             orderNo: payment.orderNo ?? "",
             receiptUrl: payment.receiptUrl ?? null,
+
             buyer: customer,
             items: items.map((i) => ({ id: i.id, title: i.title, qty: i.qty })),
           },
