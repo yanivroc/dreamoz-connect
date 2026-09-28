@@ -48,23 +48,15 @@ function SignUpPage() {
         <div className="mx-auto w-full max-w-7xl px-5 py-14">
           <h1 className="text-4xl font-bold md:text-5xl">Create your account</h1>
           <p className="mt-4 max-w-2xl text-muted-foreground">
-            Start your {offer.trialDays}-day free trial. No card is required to create
-            your account.
+            Start your {offer.trialDays}-day free trial with full access to every feature
+            and the API. No credit card required — choose a plan only when your trial ends.
           </p>
-          <p className="mt-6 text-sm font-semibold text-primary">
-            {offer.trialDays}-day free trial
-          </p>
-          <h2 className="mt-1 text-2xl font-semibold md:text-3xl">
-            Everything included, free for {offer.trialDays} days
-          </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Your trial includes every feature, API access as well. Pick a plan only when it ends.
-          </p>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+          <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground">
             {offer.commissionPercent > 0
               ? `Selling products? A ${offer.commissionPercent}% platform commission applies to each sale, and your net earnings are paid out to your Australian bank account.`
               : "Selling products? No platform commission applies at the moment — your full sale earnings are paid out to your Australian bank account."}
           </p>
+
         </div>
       </section>
 
