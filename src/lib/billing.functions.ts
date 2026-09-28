@@ -161,9 +161,13 @@ export const getBillingOverview = createServerFn({ method: "GET" }).handler(
 export const purchasePlan = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
     z
-      .object({ plan: z.enum(["monthly", "annual"]), sourceId: z.string().min(1).max(2000) })
+      .object({
+        plan: z.enum(["base_monthly", "base_annual", "pro_monthly", "pro_annual"]),
+        sourceId: z.string().min(1).max(2000),
+      })
       .parse(input),
   )
+
   .handler(async ({ data }): Promise<{ ok: true; planExpiresAt: string } | { ok: false; error: string }> => {
     const ctx = await requireSessionUser();
     const sq = billingSquare();
@@ -419,7 +423,7 @@ async function requireAdminCtx() {
 }
 
 const planSettingSchema = z.object({
-  id: z.enum(["monthly", "annual"]),
+  id: z.enum(["base_monthly", "base_annual", "pro_monthly", "pro_annual"]),
   label: z.string().trim().min(1).max(40),
   amountCents: z.coerce.number().int().min(0).max(100_000_000),
   days: z.coerce.number().int().min(1).max(3660),
@@ -430,11 +434,12 @@ export const updatePlanSettings = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
     z
       .object({
-        plans: z.array(planSettingSchema).min(1).max(2),
+        plans: z.array(planSettingSchema).min(1).max(4),
         trialDays: z.coerce.number().int().min(1).max(365),
       })
       .parse(input),
   )
+
   .handler(async ({ data }) => {
     const ctx = await requireAdminCtx();
     const now = new Date().toISOString();
@@ -507,9 +512,10 @@ export const setPlanUntil = createServerFn({ method: "POST" })
     z
       .object({
         id: z.coerce.number().int(),
-        plan: z.enum(["none", "monthly", "annual"]),
+        plan: z.enum(["none", "base_monthly", "base_annual", "pro_monthly", "pro_annual"]),
         until: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
       })
+
       .parse(input),
   )
   .handler(async ({ data }) => {
