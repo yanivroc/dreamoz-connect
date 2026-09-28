@@ -52,13 +52,15 @@ function SignUpPage() {
         <aside className="space-y-5 lg:sticky lg:top-24">
           <div>
             <p className="text-sm font-semibold text-primary">{offer.trialDays}-day free trial</p>
-            <h2 className="mt-1 text-2xl font-semibold">Choose after your trial</h2>
+            <h2 className="mt-1 text-2xl font-semibold">Everything included, free for {offer.trialDays} days</h2>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Create your account now. Pick a plan only when your free trial ends.
+              Your trial includes every feature, API access as well. Pick a plan only when it ends.
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-            {offer.plans.map((plan) => <PlanSummary key={plan.id} plan={plan} />)}
+            {(["base", "pro"] as const).map((tier) => (
+              <TierCard key={tier} tier={tier} plans={offer.plans} />
+            ))}
           </div>
         </aside>
       </section>
@@ -66,18 +68,40 @@ function SignUpPage() {
   );
 }
 
-function PlanSummary({ plan }: { plan: PlanSetting }) {
-  const period = plan.days >= 365 ? "per year" : plan.days >= 28 && plan.days <= 31 ? "per month" : `for ${plan.days} days`;
+function TierCard({ tier, plans }: { tier: PlanTier; plans: PlanSetting[] }) {
+  const monthly = plans.find((p) => planTier(p.id) === tier && planInterval(p.id) === "monthly");
+  const annual = plans.find((p) => planTier(p.id) === tier && planInterval(p.id) === "annual");
+  if (!monthly && !annual) return null;
   return (
     <div className="rounded-xl border border-border/60 bg-surface/40 p-5 shadow-card">
-      <div className="flex items-start justify-between gap-4">
-        <h3 className="font-semibold">{plan.label}</h3>
-        <span className="rounded-full border border-border/70 px-2.5 py-1 text-xs text-muted-foreground">
-          {plan.days} days
-        </span>
+      <div className="flex items-center justify-between gap-3">
+        <h3 className="font-semibold">{TIER_LABEL[tier]}</h3>
+        {tier === "pro" && (
+          <span className="rounded-full bg-primary/15 px-2.5 py-1 text-[11px] font-semibold text-primary">
+            API included
+          </span>
+        )}
       </div>
-      <p className="mt-4 text-2xl font-bold">{formatPlanPrice(plan.amountCents, plan.currency)}</p>
-      <p className="mt-1 text-sm text-muted-foreground">{period}</p>
+      {monthly && (
+        <p className="mt-3 text-2xl font-bold">
+          {formatPlanPrice(monthly.amountCents, monthly.currency)}
+          <span className="ml-1 text-sm font-normal text-muted-foreground">per month</span>
+        </p>
+      )}
+      {annual && (
+        <p className="mt-1 text-sm text-muted-foreground">
+          or {formatPlanPrice(annual.amountCents, annual.currency)} per year — 2 months free
+        </p>
+      )}
+      <ul className="mt-4 space-y-1 text-sm text-muted-foreground">
+        {TIER_FEATURES[tier].map((f) => (
+          <li key={f}>• {f}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
     </div>
   );
 }
