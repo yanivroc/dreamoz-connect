@@ -51,6 +51,20 @@ function SignUpPage() {
             Start your {offer.trialDays}-day free trial. No card is required to create
             your account.
           </p>
+          <p className="mt-6 text-sm font-semibold text-primary">
+            {offer.trialDays}-day free trial
+          </p>
+          <h2 className="mt-1 text-2xl font-semibold md:text-3xl">
+            Everything included, free for {offer.trialDays} days
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+            Your trial includes every feature, API access as well. Pick a plan only when it ends.
+          </p>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+            {offer.commissionPercent > 0
+              ? `Selling products? A ${offer.commissionPercent}% platform commission applies to each sale, and your net earnings are paid out to your Australian bank account.`
+              : "Selling products? No platform commission applies at the moment — your full sale earnings are paid out to your Australian bank account."}
+          </p>
         </div>
       </section>
 
@@ -58,14 +72,7 @@ function SignUpPage() {
         <div className="rounded-2xl border border-border/60 bg-surface/40 p-6 shadow-card md:p-8">
           <SignUpForm />
         </div>
-        <aside className="space-y-5 lg:sticky lg:top-24">
-          <div>
-            <p className="text-sm font-semibold text-primary">{offer.trialDays}-day free trial</p>
-            <h2 className="mt-1 text-2xl font-semibold">Everything included, free for {offer.trialDays} days</h2>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Your trial includes every feature, API access as well. Pick a plan only when it ends.
-            </p>
-          </div>
+        <aside className="lg:sticky lg:top-24">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
             {(["base", "pro"] as const).map((tier) => (
               <TierCard key={tier} tier={tier} plans={offer.plans} />

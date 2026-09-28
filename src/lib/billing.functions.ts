@@ -28,6 +28,7 @@ export type BillingOverview = {
 export type PublicPlanOffer = {
   plans: PlanSetting[];
   trialDays: number;
+  commissionPercent: number;
 };
 
 async function requireSessionUser() {
@@ -85,12 +86,24 @@ export const getPublicPlanOffer = createServerFn({ method: "GET" }).handler(
       return {
         plans: (await import("./plans")).DEFAULT_PLANS.filter((plan) => plan.enabled),
         trialDays: DEFAULT_TRIAL_DAYS,
+        commissionPercent: 0,
       };
     }
     await ensureBillingTables(db);
+    let commissionPercent = 0;
+    try {
+      const res = await db.execute(
+        "SELECT value FROM platform_settings WHERE key = 'commission_percent' LIMIT 1",
+      );
+      const v = Number((res.rows[0] as unknown as Record<string, unknown> | undefined)?.["value"]);
+      if (Number.isFinite(v)) commissionPercent = v;
+    } catch {
+      commissionPercent = 0;
+    }
     return {
       plans: (await loadPlans(db)).filter((plan) => plan.enabled),
       trialDays: await getTrialDays(db),
+      commissionPercent,
     };
   },
 );
