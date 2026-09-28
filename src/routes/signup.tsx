@@ -2,7 +2,16 @@ import { createFileRoute } from "@tanstack/react-router";
 import { siteContentQuery } from "@/lib/content-query";
 import { SignUpForm } from "@/components/SignUpForm";
 import { getPublicPlanOffer } from "@/lib/billing.functions";
-import { formatPlanPrice, type PlanSetting } from "@/lib/plans";
+import {
+  formatPlanPrice,
+  planInterval,
+  planTier,
+  TIER_FEATURES,
+  TIER_LABEL,
+  type PlanSetting,
+  type PlanTier,
+} from "@/lib/plans";
+
 
 export const Route = createFileRoute("/signup")({
   loader: async ({ context }) => {
@@ -98,10 +107,6 @@ function TierCard({ tier, plans }: { tier: PlanTier; plans: PlanSetting[] }) {
           <li key={f}>• {f}</li>
         ))}
       </ul>
-    </div>
-  );
-}
-
     </div>
   );
 }
