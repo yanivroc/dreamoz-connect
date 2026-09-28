@@ -170,6 +170,7 @@ export const getCommunityPage = createServerFn({ method: "GET" })
   .handler(async ({ data }): Promise<CommunityPage | null> => {
     const db = await openDb();
     const homeAppId = await siteAppId();
+    const nowIso = new Date().toISOString();
     const res = await db.execute({
       sql: `SELECT p.*, parent.title AS parent_title, a.title AS app_title,
                    u.name AS owner_name, s.country AS country
@@ -179,8 +180,9 @@ export const getCommunityPage = createServerFn({ method: "GET" })
               LEFT JOIN web_pages parent ON parent.id = p.parent_id
               LEFT JOIN web_app_settings s ON s.app_id = a.id
              WHERE p.id = ? AND p.enabled = 1 AND p.feed_enabled = 1 AND u.deleted_at IS NULL
+               AND ${OWNER_ACTIVE_SQL}
              LIMIT 1`,
-      args: [data.id],
+      args: [data.id, nowIso, nowIso],
     });
     const r = res.rows[0] as unknown as Row | undefined;
     if (!r) return null;
