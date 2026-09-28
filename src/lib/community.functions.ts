@@ -114,7 +114,9 @@ export const listCommunityFeed = createServerFn({ method: "GET" }).handler(
       res = await db.execute({
         sql: `
         SELECT p.id, p.title, p.description, p.seo_description, p.product_enabled,
-               p.contact_enabled, p.price, p.app_id, p.updated_at,
+               p.contact_enabled, p.price, p.min_qty, p.max_qty, p.shipping_price,
+               p.app_id, p.updated_at,
+
                parent.title AS parent_title,
                a.title AS app_title,
                u.name AS owner_name,
