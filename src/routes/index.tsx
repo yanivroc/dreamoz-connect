@@ -36,6 +36,11 @@ function Index() {
   const pages = sortPages(content.pages);
   const [hero, ...rest] = pages;
   const currency = siteCurrency(content);
+  const seller = {
+    appId: content.webApp.id,
+    sellerName: content.webApp.title || "DreamozTech",
+  };
+
 
   if (!hero) {
     return (
