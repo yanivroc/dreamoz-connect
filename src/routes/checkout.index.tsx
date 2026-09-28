@@ -40,8 +40,8 @@ interface SquareCard {
 
 function CheckoutPage() {
   const navigate = useNavigate();
-  const { items, clear } = useCart();
-  const { data: contentData } = useQuery(siteContentQuery);
+  const { items, clear, sellerAppId, sellerName } = useCart();
+  const { data: storefront } = useQuery(storefrontQuery(sellerAppId));
   const { data: squareConfig } = useQuery({
     queryKey: ["square-config"],
     queryFn: () => getSquareConfig(),
@@ -49,7 +49,8 @@ function CheckoutPage() {
   const pay = useServerFn(createSquarePayment);
   const sendEmails = useServerFn(sendOrderEmails);
 
-  const totals = calcTotals(items, contentData?.content ?? EMPTY_CONTENT);
+  const totals = calcTotals(items, storefront ?? FALLBACK_STOREFRONT);
+
   const cardRef = useRef<SquareCard | null>(null);
   const [cardReady, setCardReady] = useState(false);
   const [submitting, setSubmitting] = useState(false);
