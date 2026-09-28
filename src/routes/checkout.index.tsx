@@ -165,7 +165,8 @@ function CheckoutPage() {
         const mailed = await sendEmails({
           data: {
             paymentId: payment.paymentId ?? "",
-            orderNo: payment.orderNo ?? "",
+            appId: sellerAppId,
+
             receiptUrl: payment.receiptUrl ?? null,
             buyer: customer,
             items: items.map((i) => ({ id: i.id, title: i.title, qty: i.qty })),
