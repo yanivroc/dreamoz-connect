@@ -134,6 +134,10 @@ function CheckoutPage() {
       toast.error("Card form is not ready yet.");
       return;
     }
+    if (!sellerAppId) {
+      toast.error("Your cart is empty.");
+      return;
+    }
     setSubmitting(true);
     try {
       const result = await cardRef.current.tokenize();
@@ -145,10 +149,12 @@ function CheckoutPage() {
         data: {
           sourceId: result.token,
           currency: totals.currency,
+          appId: sellerAppId,
           customer,
           items: items.map((i) => ({ id: i.id, title: i.title, qty: i.qty })),
         },
       });
+
       if (!payment.ok) {
         toast.error(payment.error ?? "Payment failed.");
         return;
