@@ -99,9 +99,11 @@ export const listCommunityFeed = createServerFn({ method: "GET" }).handler(
       return [];
     }
     const homeAppId = await siteAppId();
+    const nowIso = new Date().toISOString();
     let res;
     try {
-      res = await db.execute(`
+      res = await db.execute({
+        sql: `
         SELECT p.id, p.title, p.description, p.seo_description, p.product_enabled,
                p.contact_enabled, p.price, p.app_id, p.updated_at,
                parent.title AS parent_title,
@@ -115,8 +117,11 @@ export const listCommunityFeed = createServerFn({ method: "GET" }).handler(
           LEFT JOIN web_pages parent ON parent.id = p.parent_id
           LEFT JOIN web_app_settings s ON s.app_id = a.id
          WHERE p.enabled = 1 AND p.feed_enabled = 1 AND u.deleted_at IS NULL
+           AND ${OWNER_ACTIVE_SQL}
          ORDER BY p.updated_at DESC
-         LIMIT 60`);
+         LIMIT 60`,
+        args: [nowIso, nowIso],
+      });
     } catch {
       return [];
     }
