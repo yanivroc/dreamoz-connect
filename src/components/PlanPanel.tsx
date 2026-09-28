@@ -47,7 +47,9 @@ export function PlanPanel({ user }: { user: CurrentUser }) {
   const fetchOverview = useServerFn(getBillingOverview);
   const buy = useServerFn(purchasePlan);
   const { data, refetch } = useQuery({ queryKey: ["billing"], queryFn: () => fetchOverview() });
-  const [choice, setChoice] = useState<PlanId>("monthly");
+  const [interval, setIntervalChoice] = useState<"monthly" | "annual">("monthly");
+  const [tier, setTier] = useState<PlanTier>("pro");
+
   const [ready, setReady] = useState(false);
   const [paying, setPaying] = useState(false);
   const [invoiceBusy, setInvoiceBusy] = useState<number | null>(null);
@@ -77,7 +79,10 @@ export function PlanPanel({ user }: { user: CurrentUser }) {
   };
 
   const plans = (data?.plans ?? []).filter((p) => p.enabled);
-  const selected = plans.find((p) => p.id === choice) ?? plans[0];
+  const findPlan = (t: PlanTier, iv: "monthly" | "annual") =>
+    plans.find((p) => planTier(p.id) === t && planInterval(p.id as PlanId) === iv);
+  const selected = findPlan(tier, interval) ?? plans[0];
+
   const sq = data?.square;
 
   const isAdmin = user.access.state === "admin";
