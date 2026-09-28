@@ -165,8 +165,13 @@ export const listCommunityFeed = createServerFn({ method: "GET" }).handler(
         currency: currencyFor(normalizeCountry(r["country"])),
         parentTitle: r["parent_title"] ? String(r["parent_title"]) : null,
         childCount: Number(r["child_count"] ?? 0),
+        appId,
         appTitle: String(r["app_title"] ?? ""),
         ownerName: String(r["owner_name"] ?? ""),
+        minQty: num(r["min_qty"]),
+        maxQty: num(r["max_qty"]),
+        shippingPrice: num(r["shipping_price"]),
+
         internalSlug: homeAppId !== null && appId === homeAppId ? slugify(title) : null,
         updatedAt: String(r["updated_at"] ?? ""),
       };
