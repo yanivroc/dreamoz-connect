@@ -4,6 +4,8 @@ import { getCommunityPage } from "@/lib/community.functions";
 import { formatMoney } from "@/lib/content-types";
 import { parseEmbedCode } from "@/lib/embed-code";
 import { RichText } from "@/components/site/RichText";
+import { AddToCartPanel } from "@/components/site/AddToCartPanel";
+
 
 const pageQuery = (id: string) =>
   queryOptions({
@@ -93,10 +95,28 @@ function CommunityDetail() {
         ) : null}
 
         {page.isProduct && page.price != null ? (
-          <p className="text-2xl font-bold text-primary">
-            {formatMoney(page.price, page.currency)}
-          </p>
+          <>
+            <p className="text-2xl font-bold text-primary">
+              {formatMoney(page.price, page.currency)}
+            </p>
+            <AddToCartPanel
+              className="mt-4"
+              item={{
+                id: page.id,
+                title: page.title,
+                slug: page.title,
+                price: page.price,
+                ...(cover ? { image: cover.url } : {}),
+                shippingPrice: page.shippingPrice ?? 0,
+                minQty: page.minQty,
+                maxQty: page.maxQty,
+                appId: page.appId,
+                sellerName: page.ownerName || page.appTitle,
+              }}
+            />
+          </>
         ) : null}
+
 
         <RichText html={page.description} className="home-copy mt-4" />
 
