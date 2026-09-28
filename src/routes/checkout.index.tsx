@@ -3,9 +3,10 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { siteContentQuery } from "@/lib/content-query";
 import { calcTotals, useCart } from "@/lib/cart";
-import { EMPTY_CONTENT, formatMoney } from "@/lib/content-types";
+import { FALLBACK_STOREFRONT, storefrontQuery } from "@/lib/storefront-query";
+import { formatMoney } from "@/lib/content-types";
+
 import { createSquarePayment, getSquareConfig } from "@/lib/square.functions";
 import { sendOrderEmails } from "@/lib/order-email.functions";
 import { AddressAutocomplete } from "@/components/site/AddressAutocomplete";
