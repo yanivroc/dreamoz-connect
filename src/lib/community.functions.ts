@@ -81,6 +81,15 @@ async function siteAppId(): Promise<number | null> {
   }
 }
 
+/**
+ * SQL fragment: the page owner is an admin, on a paid plan, or still in trial.
+ * Expired members drop out of the Community directory automatically.
+ */
+const OWNER_ACTIVE_SQL = `(u.role = 'admin'
+   OR (u.plan_expires_at IS NOT NULL AND u.plan_expires_at > ?)
+   OR u.trial_ends_at IS NULL
+   OR u.trial_ends_at > ?)`;
+
 export const listCommunityFeed = createServerFn({ method: "GET" }).handler(
   async (): Promise<CommunityItem[]> => {
     let db;
