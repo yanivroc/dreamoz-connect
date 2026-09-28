@@ -31,7 +31,7 @@ function StatusBadge({ user }: { user: CurrentUser }) {
     a.state === "admin"
       ? "Admin — full access"
       : a.state === "active"
-        ? `Active (${user.plan}) until ${when}`
+        ? `${planTier(user.plan) ? TIER_LABEL[planTier(user.plan)!] : "Active"} plan until ${when}`
         : a.state === "trial"
           ? `Free trial — ${a.daysLeft} day${a.daysLeft === 1 ? "" : "s"} left`
           : "Expired — choose a plan to continue";
