@@ -167,9 +167,8 @@ function CheckoutPage() {
             paymentId: payment.paymentId ?? "",
             appId: sellerAppId,
             orderNo: payment.orderNo ?? "",
-
-
             receiptUrl: payment.receiptUrl ?? null,
+
             buyer: customer,
             items: items.map((i) => ({ id: i.id, title: i.title, qty: i.qty })),
           },
