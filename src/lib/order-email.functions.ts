@@ -54,14 +54,14 @@ export const sendOrderEmails = createServerFn({ method: "POST" })
     const { sendMail, getMailConfig } = await import("./mailer.server");
     const mailCfg = getMailConfig();
     const from = { email: mailCfg.emailFrom, name: mailCfg.fromName };
-    const { fetchSiteContent } = await import("./content.server");
+    const { fetchContentForApp } = await import("./content.server");
     const { flattenPages } = await import("./content-types");
     const { priceOrder } = await import("./pricing");
 
     let content;
     let priced;
     try {
-      content = await fetchSiteContent();
+      content = await fetchContentForApp(data.appId);
       priced = priceOrder(data.items, flattenPages(content.pages), content);
     } catch (err) {
       console.error("order email pricing failed", err);
@@ -71,7 +71,25 @@ export const sendOrderEmails = createServerFn({ method: "POST" })
 
     const cur = priced.currency.toUpperCase();
     const brand = content.webApp.title || "DreamozTech";
-    const ownerEmail = content.webApp.email;
+    let ownerEmail = content.webApp.email;
+    if (!ownerEmail) {
+      // Member storefronts may not set a contact email — fall back to the
+      // account that owns the web app so the seller still hears about sales.
+      try {
+        const { dbClient } = await import("./db.server");
+        const db = dbClient();
+        const res = await db?.execute({
+          sql: `SELECT u.email AS email FROM web_apps a JOIN users u ON u.id = a.user_id
+                 WHERE a.id = ? LIMIT 1`,
+          args: [data.appId],
+        });
+        const row = res?.rows[0] as Record<string, unknown> | undefined;
+        ownerEmail = row?.["email"] ? String(row["email"]) : "";
+      } catch (err) {
+        console.error("seller email lookup failed", err);
+      }
+    }
+
 
     const rows = priced.lines
       .map(
