@@ -11,7 +11,7 @@ import {
   type UserAccessRow,
 } from "@/lib/billing.functions";
 import { getCommissionSetting, saveCommissionSetting } from "@/lib/community.functions";
-import { computeAccess, type PlanSetting } from "@/lib/plans";
+import { computeAccess, normalisePlanId, type PlanSetting } from "@/lib/plans";
 import { formatDate } from "@/lib/format";
 
 const input =
@@ -223,6 +223,8 @@ function UserAccessTable() {
   );
 }
 
+type AdminPlanChoice = "none" | "base_monthly" | "base_annual" | "pro_monthly" | "pro_annual";
+
 function UserRow({
   u,
   onExtend,
@@ -230,12 +232,14 @@ function UserRow({
 }: {
   u: UserAccessRow;
   onExtend: (days: number) => void;
-  onSetPlan: (plan: "none" | "monthly" | "annual", until: string | null) => void;
+  onSetPlan: (plan: AdminPlanChoice, until: string | null) => void;
 }) {
   const [days, setDays] = useState(7);
-  const [plan, setPlan] = useState<"none" | "monthly" | "annual">(
-    u.plan === "monthly" || u.plan === "annual" ? u.plan : "monthly",
-  );
+  const [plan, setPlan] = useState<AdminPlanChoice>(() => {
+    const id = normalisePlanId(u.plan);
+    return id === "none" ? "base_monthly" : id;
+  });
+
   const [until, setUntil] = useState(u.planExpiresAt ? u.planExpiresAt.slice(0, 10) : "");
   const access = computeAccess(u);
   if (u.role === "admin") {
@@ -262,9 +266,12 @@ function UserRow({
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <select value={plan} onChange={(e) => setPlan(e.target.value as typeof plan)} className="rounded-md border border-border/70 bg-background px-2 py-1">
-            <option value="monthly">monthly</option>
-            <option value="annual">annual</option>
+            <option value="base_monthly">Base monthly</option>
+            <option value="base_annual">Base annual</option>
+            <option value="pro_monthly">Pro monthly</option>
+            <option value="pro_annual">Pro annual</option>
             <option value="none">none (remove)</option>
+
           </select>
           <input type="date" value={until} onChange={(e) => setUntil(e.target.value)} disabled={plan === "none"} className="rounded-md border border-border/70 bg-background px-2 py-1" />
           <button

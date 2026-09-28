@@ -35,7 +35,11 @@ export const Route = createFileRoute("/api/public/wa/contacts")({
         {
           const pc = await db();
           const pa = await import("@/lib/plan-access.server");
-          if (pc && !(await pa.appOwnerHasAccess(pc, appId))) return json(pa.PLAN_EXPIRED_BODY, 402);
+          if (pc) {
+            const denied = await pa.appOwnerApiCheck(pc, appId);
+            if (denied) return json(denied.body, denied.status);
+          }
+
         }
         const c = await db();
         if (!c) return json({ error: "Service unavailable." }, 503);
@@ -53,7 +57,11 @@ export const Route = createFileRoute("/api/public/wa/contacts")({
         {
           const pc = await db();
           const pa = await import("@/lib/plan-access.server");
-          if (pc && !(await pa.appOwnerHasAccess(pc, appId))) return json(pa.PLAN_EXPIRED_BODY, 402);
+          if (pc) {
+            const denied = await pa.appOwnerApiCheck(pc, appId);
+            if (denied) return json(denied.body, denied.status);
+          }
+
         }
         let body: unknown;
         try {

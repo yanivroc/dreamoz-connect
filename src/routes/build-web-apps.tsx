@@ -136,7 +136,7 @@ function BuildWebAppsPage() {
         )}
         {tab === "orders" && selected !== null && <OrdersPanel appId={selected} />}
         {tab === "contacts" && selected !== null && <ContactsPanel appId={selected} />}
-        {tab === "api" && selected !== null && <ApiPanel appId={selected} />}
+        {tab === "api" && selected !== null && <ApiPanel appId={selected} user={user} />}
       </section>
     </>
   );

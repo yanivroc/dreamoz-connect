@@ -1,6 +1,12 @@
 // Server-only plan checks. Imported by server functions, TanStack API routes
 // and the Vercel api/* handlers, so it must stay free of path aliases.
-import { computeAccess, hasAccess, DEFAULT_TRIAL_DAYS, type AccessInfo } from "./plans";
+import {
+  computeAccess,
+  hasAccess,
+  hasApiAccess,
+  DEFAULT_TRIAL_DAYS,
+  type AccessInfo,
+} from "./plans";
 
 type Db = { execute: (q: any) => Promise<{ rows: any[] }> };
 
@@ -8,6 +14,11 @@ export const PLAN_EXPIRED_MESSAGE =
   "Your trial or plan has ended. Choose a plan on the Dashboard to continue.";
 
 export const PLAN_EXPIRED_BODY = { error: "plan_expired", message: PLAN_EXPIRED_MESSAGE };
+
+export const API_UPGRADE_MESSAGE =
+  "API access requires the Pro plan. Upgrade on your Dashboard under Plan.";
+
+export const API_UPGRADE_BODY = { error: "api_upgrade_required", message: API_UPGRADE_MESSAGE };
 
 function rowAccess(row: Record<string, unknown>): AccessInfo {
   return computeAccess({
@@ -34,22 +45,38 @@ export async function assertActiveAccess(db: Db, userId: number): Promise<void> 
 
 /** True when the web app's owner may use the API (admins always can). */
 export async function appOwnerHasAccess(db: Db, appId: number): Promise<boolean> {
+  return (await appOwnerApiCheck(db, appId)) === null;
+}
+
+/**
+ * Null when the owner may call the API, otherwise the HTTP status and JSON body
+ * to return: 402 when the trial/plan has ended, 403 when the plan has no API.
+ */
+export async function appOwnerApiCheck(
+  db: Db,
+  appId: number,
+): Promise<{ status: number; body: { error: string; message: string } } | null> {
   try {
     const res = await db.execute({
-      sql: `SELECT u.role, u.trial_ends_at, u.plan_expires_at
+      sql: `SELECT u.role, u.plan, u.trial_ends_at, u.plan_expires_at
               FROM web_apps a JOIN users u ON u.id = a.user_id
              WHERE a.id = ? AND u.deleted_at IS NULL LIMIT 1`,
       args: [appId],
     });
     const row = res.rows[0] as Record<string, unknown> | undefined;
-    if (!row) return false;
-    return hasAccess(rowAccess(row));
+    if (!row) return { status: 402, body: PLAN_EXPIRED_BODY };
+    const info = rowAccess(row);
+    if (!hasAccess(info)) return { status: 402, body: PLAN_EXPIRED_BODY };
+    const plan = row["plan"] ? String(row["plan"]) : null;
+    if (!hasApiAccess(info, plan)) return { status: 403, body: API_UPGRADE_BODY };
+    return null;
   } catch (err) {
     // Plan columns not migrated yet — don't take published sites down.
     console.error("plan check failed", err);
-    return true;
+    return null;
   }
 }
+
 
 export async function getTrialDays(db: Db): Promise<number> {
   try {

@@ -17,6 +17,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Link } from "@tanstack/react-router";
+import type { CurrentUser } from "@/lib/auth.functions";
+import { hasApiAccess } from "@/lib/plans";
+
 
 function Copy({ value }: { value: string }) {
   return (
@@ -43,8 +47,10 @@ function Code({ children }: { children: string }) {
   );
 }
 
-export function ApiPanel({ appId }: { appId: number }) {
+export function ApiPanel({ appId, user }: { appId: number; user: CurrentUser }) {
+  const apiAllowed = hasApiAccess(user.access, user.plan);
   const fetchCreds = useServerFn(getApiCredentials);
+
   const rotate = useServerFn(rotateApiSecret);
   const [secret, setSecret] = useState<string | null>(null);
   const [origin, setOrigin] = useState("");
@@ -83,7 +89,32 @@ export function ApiPanel({ appId }: { appId: number }) {
   const webappUrl = `${base}/api/public/wa/webapp`;
   const contactsUrl = `${base}/api/public/wa/contacts`;
 
+  if (!apiAllowed) {
+    return (
+      <div className="max-w-2xl space-y-4 rounded-2xl border border-border/60 bg-surface/40 p-6 shadow-card">
+        <h2 className="text-lg font-semibold">API access is part of the Pro plan</h2>
+        <p className="text-sm text-muted-foreground">
+          With Pro you get a token endpoint, your full web app content and your contact messages
+          over the API, so you can build any front end you like on top of your pages and products.
+        </p>
+        <ul className="space-y-1 text-sm text-muted-foreground">
+          <li>• Token exchange with your API key and secret</li>
+          <li>• Web app, pages, products and settings in one call</li>
+          <li>• Read and create contact messages</li>
+        </ul>
+        <Link
+          to="/dashboard"
+          search={{ tab: "plan" }}
+          className="inline-block rounded-full bg-gradient-accent px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-card transition hover:opacity-90"
+        >
+          Upgrade to Pro
+        </Link>
+      </div>
+    );
+  }
+
   if (isLoading) return <p className="text-sm text-muted-foreground">Loading API keys…</p>;
+
   if (error) {
     return (
       <p className="text-sm text-destructive">
