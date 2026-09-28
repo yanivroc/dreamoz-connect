@@ -15,6 +15,8 @@ import { RichText } from "@/components/site/RichText";
 import { PageMedia, PageEmbed } from "@/components/site/PageMedia";
 import { PageCardGrid } from "@/components/site/PageCardGrid";
 import { AddToCartPanel } from "@/components/site/AddToCartPanel";
+import { cartItemFromPage } from "@/lib/cart";
+
 import { PageContactForm } from "@/components/site/PageContactForm";
 
 export const Route = createFileRoute("/page/$slug")({
@@ -68,6 +70,11 @@ function PageDetail() {
   const canFloatMedia = (page.images?.length ?? 0) >= 1;
   const children = sortPages(page.children ?? []);
   const currency = siteCurrency(content);
+  const seller = {
+    appId: content.webApp.id,
+    sellerName: content.webApp.title || "DreamozTech",
+  };
+
   const weightLabel =
     isProductPage(page) && page.product.weight != null
       ? `${page.product.weight} ${siteWeightUnit(content)}`
@@ -113,7 +120,10 @@ function PageDetail() {
           {weightLabel ? (
             <p className="mt-3 text-sm text-muted-foreground">Weight: {weightLabel}</p>
           ) : null}
-          {isProductPage(page) ? <AddToCartPanel page={page} /> : null}
+          {isProductPage(page) ? (
+            <AddToCartPanel item={cartItemFromPage(page, seller)} />
+          ) : null}
+
         </div>
       ) : (
         <>
@@ -128,7 +138,10 @@ function PageDetail() {
           {weightLabel ? (
             <p className="mt-3 text-sm text-muted-foreground">Weight: {weightLabel}</p>
           ) : null}
-          {isProductPage(page) ? <AddToCartPanel page={page} /> : null}
+          {isProductPage(page) ? (
+            <AddToCartPanel item={cartItemFromPage(page, seller)} />
+          ) : null}
+
         </>
       )}
 
