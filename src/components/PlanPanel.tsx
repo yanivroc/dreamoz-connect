@@ -175,29 +175,69 @@ export function PlanPanel({ user }: { user: CurrentUser }) {
       )}
 
       {user.access.state !== "admin" && (
-        <div className="max-w-xl space-y-5 rounded-2xl border border-border/60 bg-surface/40 p-6 shadow-card">
+        <div className="max-w-3xl space-y-5 rounded-2xl border border-border/60 bg-surface/40 p-6 shadow-card">
+          {user.access.state === "trial" && (
+            <p className="rounded-lg border border-primary/40 bg-primary/10 px-3 py-2 text-sm">
+              During your free trial you have everything, including full API access. Choose a plan
+              before it ends to keep going.
+            </p>
+          )}
           {plans.length === 0 ? (
             <p className="text-sm text-muted-foreground">No plans are available right now.</p>
           ) : (
-            <div className="grid gap-3 sm:grid-cols-2">
-              {plans.map((p) => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => setChoice(p.id)}
-                  className={`rounded-xl border p-4 text-left transition ${
-                    selected?.id === p.id
-                      ? "border-primary bg-primary/10"
-                      : "border-border/70 hover:bg-surface/60"
-                  }`}
-                >
-                  <div className="font-semibold">{p.label}</div>
-                  <div className="mt-1 text-lg">{formatPlanPrice(p.amountCents, p.currency)}</div>
-                  <div className="text-xs text-muted-foreground">{p.days} days of access</div>
-                </button>
-              ))}
-            </div>
+            <>
+              <div className="inline-flex rounded-full border border-border/70 p-1 text-sm">
+                {(["monthly", "annual"] as const).map((iv) => (
+                  <button
+                    key={iv}
+                    type="button"
+                    onClick={() => setIntervalChoice(iv)}
+                    className={`rounded-full px-4 py-1.5 transition ${
+                      interval === iv ? "bg-primary/15 font-semibold text-primary" : "text-muted-foreground"
+                    }`}
+                  >
+                    {iv === "monthly" ? "Monthly" : "Annual — 2 months free"}
+                  </button>
+                ))}
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {(["base", "pro"] as const).map((t) => {
+                  const p = findPlan(t, interval);
+                  if (!p) return null;
+                  const active = selected?.id === p.id;
+                  return (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setTier(t)}
+                      className={`rounded-xl border p-4 text-left transition ${
+                        active ? "border-primary bg-primary/10" : "border-border/70 hover:bg-surface/60"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-semibold">{TIER_LABEL[t]}</span>
+                        {t === "pro" && (
+                          <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[11px] font-semibold text-primary">
+                            API included
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-1 text-lg">{formatPlanPrice(p.amountCents, p.currency)}</div>
+                      <div className="text-xs text-muted-foreground">
+                        {p.label} · {p.days} days of access
+                      </div>
+                      <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
+                        {TIER_FEATURES[t].map((f) => (
+                          <li key={f}>• {f}</li>
+                        ))}
+                      </ul>
+                    </button>
+                  );
+                })}
+              </div>
+            </>
           )}
+
 
           {!sq?.configured ? (
             <p className="text-sm text-muted-foreground">Payments not configured yet.</p>
