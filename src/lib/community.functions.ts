@@ -81,6 +81,15 @@ async function siteAppId(): Promise<number | null> {
   }
 }
 
+/**
+ * SQL fragment: the page owner is an admin, on a paid plan, or still in trial.
+ * Expired members drop out of the Community directory automatically.
+ */
+const OWNER_ACTIVE_SQL = `(u.role = 'admin'
+   OR (u.plan_expires_at IS NOT NULL AND u.plan_expires_at > ?)
+   OR u.trial_ends_at IS NULL
+   OR u.trial_ends_at > ?)`;
+
 export const listCommunityFeed = createServerFn({ method: "GET" }).handler(
   async (): Promise<CommunityItem[]> => {
     let db;
@@ -90,9 +99,11 @@ export const listCommunityFeed = createServerFn({ method: "GET" }).handler(
       return [];
     }
     const homeAppId = await siteAppId();
+    const nowIso = new Date().toISOString();
     let res;
     try {
-      res = await db.execute(`
+      res = await db.execute({
+        sql: `
         SELECT p.id, p.title, p.description, p.seo_description, p.product_enabled,
                p.contact_enabled, p.price, p.app_id, p.updated_at,
                parent.title AS parent_title,
@@ -106,8 +117,11 @@ export const listCommunityFeed = createServerFn({ method: "GET" }).handler(
           LEFT JOIN web_pages parent ON parent.id = p.parent_id
           LEFT JOIN web_app_settings s ON s.app_id = a.id
          WHERE p.enabled = 1 AND p.feed_enabled = 1 AND u.deleted_at IS NULL
+           AND ${OWNER_ACTIVE_SQL}
          ORDER BY p.updated_at DESC
-         LIMIT 60`);
+         LIMIT 60`,
+        args: [nowIso, nowIso],
+      });
     } catch {
       return [];
     }
@@ -156,6 +170,7 @@ export const getCommunityPage = createServerFn({ method: "GET" })
   .handler(async ({ data }): Promise<CommunityPage | null> => {
     const db = await openDb();
     const homeAppId = await siteAppId();
+    const nowIso = new Date().toISOString();
     const res = await db.execute({
       sql: `SELECT p.*, parent.title AS parent_title, a.title AS app_title,
                    u.name AS owner_name, s.country AS country
@@ -165,8 +180,9 @@ export const getCommunityPage = createServerFn({ method: "GET" })
               LEFT JOIN web_pages parent ON parent.id = p.parent_id
               LEFT JOIN web_app_settings s ON s.app_id = a.id
              WHERE p.id = ? AND p.enabled = 1 AND p.feed_enabled = 1 AND u.deleted_at IS NULL
+               AND ${OWNER_ACTIVE_SQL}
              LIMIT 1`,
-      args: [data.id],
+      args: [data.id, nowIso, nowIso],
     });
     const r = res.rows[0] as unknown as Row | undefined;
     if (!r) return null;
