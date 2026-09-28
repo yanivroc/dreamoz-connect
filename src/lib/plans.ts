@@ -1,8 +1,10 @@
 // Client-safe plan helpers (no server imports).
 
-export type PlanId = "monthly" | "annual";
-export const PLAN_IDS: PlanId[] = ["monthly", "annual"];
+export type PlanId = "base_monthly" | "base_annual" | "pro_monthly" | "pro_annual";
+export const PLAN_IDS: PlanId[] = ["base_monthly", "base_annual", "pro_monthly", "pro_annual"];
 export const DEFAULT_TRIAL_DAYS = 14;
+
+export type PlanTier = "base" | "pro";
 
 export type PlanSetting = {
   id: PlanId;
@@ -14,9 +16,55 @@ export type PlanSetting = {
 };
 
 export const DEFAULT_PLANS: PlanSetting[] = [
-  { id: "monthly", label: "Monthly", amountCents: 4900, currency: "AUD", days: 30, enabled: true },
-  { id: "annual", label: "Annual", amountCents: 47000, currency: "AUD", days: 365, enabled: true },
+  { id: "base_monthly", label: "Base Monthly", amountCents: 1000, currency: "AUD", days: 30, enabled: true },
+  { id: "base_annual", label: "Base Annual", amountCents: 10000, currency: "AUD", days: 365, enabled: true },
+  { id: "pro_monthly", label: "Pro Monthly", amountCents: 2000, currency: "AUD", days: 30, enabled: true },
+  { id: "pro_annual", label: "Pro Annual", amountCents: 20000, currency: "AUD", days: 365, enabled: true },
 ];
+
+/** Legacy single-tier ids map onto the Pro tier (they had API access). */
+export function normalisePlanId(value: string | null | undefined): PlanId | "none" {
+  switch (value) {
+    case "monthly":
+      return "pro_monthly";
+    case "annual":
+      return "pro_annual";
+    case "base_monthly":
+    case "base_annual":
+    case "pro_monthly":
+    case "pro_annual":
+      return value;
+    default:
+      return "none";
+  }
+}
+
+export function planTier(value: string | null | undefined): PlanTier | null {
+  const id = normalisePlanId(value);
+  if (id === "none") return null;
+  return id.startsWith("pro_") ? "pro" : "base";
+}
+
+export function planInterval(id: PlanId): "monthly" | "annual" {
+  return id.endsWith("_annual") ? "annual" : "monthly";
+}
+
+export const TIER_LABEL: Record<PlanTier, string> = { base: "Base", pro: "Pro" };
+
+export const TIER_FEATURES: Record<PlanTier, string[]> = {
+  base: [
+    "Unlimited web pages and child pages",
+    "Sell products with Square checkout",
+    "Contact forms and enquiry inbox",
+    "Share your pages on the Community feed",
+    "Orders, shipping rates and payouts",
+  ],
+  pro: [
+    "Everything in Base",
+    "Full REST API access (token, web app, contacts)",
+    "Build your own front end on any platform",
+  ],
+};
 
 export type AccessState = "admin" | "trial" | "active" | "expired";
 
@@ -48,6 +96,15 @@ export function computeAccess(
 
 export function hasAccess(info: AccessInfo): boolean {
   return info.state !== "expired";
+}
+
+/**
+ * API access: admins and trial users get everything, paid access needs the Pro tier.
+ */
+export function hasApiAccess(info: AccessInfo, plan: string | null | undefined): boolean {
+  if (info.state === "admin" || info.state === "trial") return true;
+  if (info.state !== "active") return false;
+  return planTier(plan) === "pro";
 }
 
 export function formatPlanPrice(cents: number, currency: string): string {
