@@ -28,6 +28,9 @@ export const getSquareConfig = createServerFn({ method: "GET" }).handler(
 const checkoutSchema = z.object({
   sourceId: z.string().min(1).max(2000),
   currency: z.string().min(3).max(3),
+  /** The single seller storefront this cart belongs to. */
+  appId: z.coerce.number().int().positive(),
+
   customer: z.object({
     name: z.string().min(1).max(120),
     email: z.string().email().max(160),
