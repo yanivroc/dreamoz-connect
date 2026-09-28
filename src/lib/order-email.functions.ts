@@ -3,8 +3,10 @@ import { z } from "zod";
 
 const schema = z.object({
   paymentId: z.string().min(1).max(200),
+  appId: z.coerce.number().int().positive(),
   orderNo: z.string().max(40).optional().default(""),
   receiptUrl: z.string().url().max(1000).optional().nullable(),
+
   buyer: z.object({
     name: z.string().min(1).max(120),
     email: z.string().email().max(160),
