@@ -13,8 +13,12 @@ export type CommunityItem = {
   currency: string;
   parentTitle: string | null;
   childCount: number;
+  appId: number;
   appTitle: string;
   ownerName: string;
+  minQty: number | null;
+  maxQty: number | null;
+  shippingPrice: number | null;
   internalSlug: string | null;
   updatedAt: string;
 };
@@ -30,12 +34,17 @@ export type CommunityPage = {
   price: number | null;
   currency: string;
   parentTitle: string | null;
+  appId: number;
   appTitle: string;
   ownerName: string;
-  internalSlug: string | null;
+  minQty: number | null;
+  maxQty: number | null;
+  shippingPrice: number | null;
   images: { id: number; url: string; alt: string; hyperlink: string }[];
   children: { id: number; title: string; excerpt: string; price: number | null }[];
+  internalSlug: string | null;
 };
+
 
 type Row = Record<string, unknown>;
 
