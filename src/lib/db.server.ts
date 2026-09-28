@@ -89,9 +89,21 @@ export async function ensureBillingTables(db: Client): Promise<void> {
   const now = new Date().toISOString();
   await db.execute({
     sql: `INSERT OR IGNORE INTO plan_settings (id, label, amount_cents, currency, days, enabled, updated_at)
-          VALUES ('monthly', 'Monthly', 4900, 'AUD', 30, 1, ?), ('annual', 'Annual', 47000, 'AUD', 365, 1, ?)`,
-    args: [now, now],
+          VALUES ('base_monthly', 'Base Monthly', 1000, 'AUD', 30, 1, ?),
+                 ('base_annual', 'Base Annual - 2 months free', 10000, 'AUD', 365, 1, ?),
+                 ('pro_monthly', 'Pro Monthly', 2000, 'AUD', 30, 1, ?),
+                 ('pro_annual', 'Pro Annual - 2 months free', 20000, 'AUD', 365, 1, ?)`,
+    args: [now, now, now, now],
   });
+  // Legacy single-tier rows and subscriptions map onto the Pro tier.
+  await db.execute(`DELETE FROM plan_settings WHERE id IN ('monthly', 'annual')`);
+  try {
+    await db.execute(`UPDATE users SET plan = 'pro_monthly' WHERE plan = 'monthly'`);
+    await db.execute(`UPDATE users SET plan = 'pro_annual' WHERE plan = 'annual'`);
+  } catch {
+    // users table not created yet.
+  }
+
   await db.execute(`CREATE TABLE IF NOT EXISTS platform_settings (
     key TEXT PRIMARY KEY,
     value TEXT NOT NULL
