@@ -162,7 +162,7 @@ function PageDetail() {
       {children.length > 0 ? (
         <section className="mt-16">
           <h2 className="text-2xl font-semibold text-foreground">Explore</h2>
-          <PageCardGrid pages={children} currency={currency} />
+          <PageCardGrid pages={children} currency={currency} seller={seller} />
         </section>
       ) : null}
     </article>
