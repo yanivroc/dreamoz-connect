@@ -20,6 +20,8 @@ const schema = z.object({
   captchaA: z.coerce.number().int().min(0).max(99),
   captchaB: z.coerce.number().int().min(0).max(99),
   marketingConsent: z.literal(true),
+  verificationToken: z.string().trim().min(16).max(128),
+
 });
 
 export type SignUpResult =
@@ -40,6 +42,15 @@ export const signUp = createServerFn({ method: "POST" })
     await ensureUsersTable(db);
 
     const email = data.email.toLowerCase();
+
+    // The email address must have been verified with a one-time code.
+    const { ensureEmailOtpsTable, consumeVerification } = await import(
+      "./email-otp.server"
+    );
+    await ensureEmailOtpsTable(db);
+    await consumeVerification(db, email, "signup", data.verificationToken);
+
+
     const existing = await db.execute({
       sql: "SELECT id FROM users WHERE email = ? LIMIT 1",
       args: [email],

@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { signUp } from "@/lib/signup.functions";
 import { AddressAutocomplete } from "@/components/site/AddressAutocomplete";
+import { EmailVerifyField } from "@/components/EmailVerifyField";
 import { AU_PHONE_HINT, normalizeAuPhone } from "@/lib/phone";
 
 export function SignUpForm() {
@@ -11,10 +12,13 @@ export function SignUpForm() {
   const [seed, setSeed] = useState(0);
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [email, setEmail] = useState("");
+  const [token, setToken] = useState<string | null>(null);
   const captcha = useMemo(
     () => ({ a: 4 + ((seed * 3) % 6), b: 2 + ((seed * 5) % 7) }),
     [seed],
   );
+
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -27,6 +31,10 @@ export function SignUpForm() {
     }
     if (fd.get("marketingConsent") !== "on") {
       toast.error("Please tick the consent box to continue.");
+      return;
+    }
+    if (!token) {
+      toast.error("Please verify your email address before creating your account.");
       return;
     }
     const phoneE164 = normalizeAuPhone(phone);
@@ -44,7 +52,7 @@ export function SignUpForm() {
       const res = await submit({
         data: {
           name: String(fd.get("name") ?? ""),
-          email: String(fd.get("email") ?? ""),
+          email: email.trim(),
           password,
           phone: phoneE164,
           address: address.trim(),
@@ -52,13 +60,18 @@ export function SignUpForm() {
           captchaA: captcha.a,
           captchaB: captcha.b,
           marketingConsent: true as const,
+          verificationToken: token,
         },
       });
+
       if (res.ok) {
         toast.success("Account created! Check your inbox for a welcome email.");
         form.reset();
         setPhone("");
         setAddress("");
+        setEmail("");
+        setToken(null);
+
       } else if (res.reason === "exists") {
         toast.error("An account with this email already exists.");
       } else if (res.reason === "phone_exists") {
@@ -84,10 +97,14 @@ export function SignUpForm() {
           <span className="text-muted-foreground">Your name</span>
           <input name="name" required maxLength={100} className={field} />
         </label>
-        <label className="block text-sm">
-          <span className="text-muted-foreground">Email</span>
-          <input name="email" type="email" required maxLength={255} className={field} />
-        </label>
+        <EmailVerifyField
+          purpose="signup"
+          email={email}
+          onEmailChange={setEmail}
+          token={token}
+          onTokenChange={setToken}
+        />
+
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block text-sm">

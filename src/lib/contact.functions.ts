@@ -10,6 +10,7 @@ const schema = z.object({
   captchaA: z.coerce.number().int().min(0).max(99),
   captchaB: z.coerce.number().int().min(0).max(99),
   marketingConsent: z.literal(true),
+  verificationToken: z.string().trim().min(16).max(128),
 });
 
 export const sendContactEmail = createServerFn({ method: "POST" })
@@ -18,6 +19,22 @@ export const sendContactEmail = createServerFn({ method: "POST" })
     if (data.captchaAnswer !== data.captchaA + data.captchaB) {
       throw new Error("Captcha verification failed. Please try again.");
     }
+
+    // The email address must have been verified with a one-time code.
+    const { dbClient } = await import("./db.server");
+    const db = dbClient();
+    if (!db) throw new Error("Messages cannot be sent right now. Please try later.");
+    const { ensureEmailOtpsTable, consumeVerification } = await import(
+      "./email-otp.server"
+    );
+    await ensureEmailOtpsTable(db);
+    await consumeVerification(
+      db,
+      data.email.toLowerCase(),
+      "contact",
+      data.verificationToken,
+    );
+
 
     const { getMailConfig, sendMail } = await import("./mailer.server");
     const { fetchSiteContent } = await import("./content.server");
