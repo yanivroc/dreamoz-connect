@@ -138,6 +138,70 @@ function billingSquare(): {
   return { applicationId, locationId, accessToken, environment };
 }
 
+async function getMaxTrialExtensions(db: Db): Promise<number> {
+  try {
+    const res = await db.execute(
+      "SELECT value FROM platform_settings WHERE key = 'max_trial_extensions' LIMIT 1",
+    );
+    const v = Number((res.rows[0] as unknown as Record<string, unknown> | undefined)?.["value"]);
+    return Number.isFinite(v) && v >= 0 ? Math.floor(v) : 1;
+  } catch {
+    return 1;
+  }
+}
+
+async function getTrialExtensionsUsed(db: Db, userId: number): Promise<number> {
+  try {
+    const res = await db.execute({
+      sql: "SELECT trial_extensions_used FROM users WHERE id = ? LIMIT 1",
+      args: [userId],
+    });
+    const v = Number(
+      (res.rows[0] as unknown as Record<string, unknown> | undefined)?.["trial_extensions_used"],
+    );
+    return Number.isFinite(v) ? v : 0;
+  } catch {
+    return 0;
+  }
+}
+
+export const selfExtendTrial = createServerFn({ method: "POST" }).handler(
+  async (): Promise<
+    { ok: true; trialEndsAt: string; days: number } | { ok: false; error: string }
+  > => {
+    const ctx = await requireSessionUser();
+    const { getTrialDays } = await import("./plan-access.server");
+    const res = await ctx.db.execute({
+      sql: "SELECT role, plan, trial_ends_at, plan_expires_at, trial_extensions_used FROM users WHERE id = ? LIMIT 1",
+      args: [ctx.userId],
+    });
+    const row = res.rows[0] as unknown as Record<string, unknown> | undefined;
+    if (!row) return { ok: false, error: "Not signed in." };
+    if (String(row["role"] ?? "user") === "admin") {
+      return { ok: false, error: "Admins always have full access." };
+    }
+    const planEnds = row["plan_expires_at"] ? Date.parse(String(row["plan_expires_at"])) : NaN;
+    if (Number.isFinite(planEnds) && planEnds > Date.now()) {
+      return { ok: false, error: "You already have an active paid plan." };
+    }
+    const used = Number(row["trial_extensions_used"] ?? 0) || 0;
+    const max = await getMaxTrialExtensions(ctx.db);
+    if (used >= max) {
+      return { ok: false, error: "Trial extension limit reached. Please choose a plan to continue." };
+    }
+    const days = await getTrialDays(ctx.db);
+    const curMs = row["trial_ends_at"] ? Date.parse(String(row["trial_ends_at"])) : NaN;
+    const base = Number.isFinite(curMs) && curMs > Date.now() ? curMs : Date.now();
+    const trialEndsAt = new Date(base + days * 24 * 60 * 60 * 1000).toISOString();
+    const now = new Date().toISOString();
+    await ctx.db.execute({
+      sql: "UPDATE users SET trial_ends_at = ?, trial_extensions_used = ?, trial_last_extended_at = ? WHERE id = ?",
+      args: [trialEndsAt, used + 1, now, ctx.userId],
+    });
+    return { ok: true, trialEndsAt, days };
+  },
+);
+
 export const getBillingOverview = createServerFn({ method: "GET" }).handler(
   async (): Promise<BillingOverview> => {
     const ctx = await requireSessionUser();
@@ -150,6 +214,8 @@ export const getBillingOverview = createServerFn({ method: "GET" }).handler(
     return {
       plans: await loadPlans(ctx.db),
       trialDays: await getTrialDays(ctx.db),
+      maxTrialExtensions: await getMaxTrialExtensions(ctx.db),
+      trialExtensionsUsed: await getTrialExtensionsUsed(ctx.db, ctx.userId),
       square: {
         applicationId: sq.applicationId,
         locationId: sq.locationId,
