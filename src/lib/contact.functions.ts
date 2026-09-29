@@ -10,7 +10,7 @@ const schema = z.object({
   captchaA: z.coerce.number().int().min(0).max(99),
   captchaB: z.coerce.number().int().min(0).max(99),
   marketingConsent: z.literal(true),
-  verificationToken: z.string().trim().min(16).max(128),
+  verificationToken: z.string().trim().min(16).max(128).optional(),
 });
 
 export const sendContactEmail = createServerFn({ method: "POST" })
@@ -20,20 +20,45 @@ export const sendContactEmail = createServerFn({ method: "POST" })
       throw new Error("Captcha verification failed. Please try again.");
     }
 
-    // The email address must have been verified with a one-time code.
     const { dbClient } = await import("./db.server");
     const db = dbClient();
     if (!db) throw new Error("Messages cannot be sent right now. Please try later.");
-    const { ensureEmailOtpsTable, consumeVerification } = await import(
-      "./email-otp.server"
-    );
-    await ensureEmailOtpsTable(db);
-    await consumeVerification(
-      db,
-      data.email.toLowerCase(),
-      "contact",
-      data.verificationToken,
-    );
+
+    // Signed-in members use their already-verified account email; guests must
+    // confirm their address with a one-time code.
+    const { readSession } = await import("./session.server");
+    const session = await readSession();
+    let verified = false;
+    if (session.userId) {
+      const res = await db.execute({
+        sql: `SELECT email FROM users WHERE id = ? AND deleted_at IS NULL LIMIT 1`,
+        args: [session.userId],
+      });
+      const accountEmail = res.rows[0]?.["email"];
+      if (
+        accountEmail &&
+        String(accountEmail).toLowerCase() === data.email.toLowerCase()
+      ) {
+        verified = true;
+      }
+    }
+
+    if (!verified) {
+      if (!data.verificationToken) {
+        throw new Error("Please verify your email address before sending your message.");
+      }
+      const { ensureEmailOtpsTable, consumeVerification } = await import(
+        "./email-otp.server"
+      );
+      await ensureEmailOtpsTable(db);
+      await consumeVerification(
+        db,
+        data.email.toLowerCase(),
+        "contact",
+        data.verificationToken,
+      );
+    }
+
 
 
     const { getMailConfig, sendMail } = await import("./mailer.server");

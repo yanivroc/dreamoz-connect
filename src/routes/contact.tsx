@@ -2,9 +2,20 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { siteContentQuery } from "@/lib/content-query";
 import { ContactForm } from "@/components/ContactForm";
+import { me } from "@/lib/auth.functions";
 
 export const Route = createFileRoute("/contact")({
-  loader: ({ context }) => context.queryClient.ensureQueryData(siteContentQuery),
+  loader: async ({ context }) => {
+    const [content, user] = await Promise.all([
+      context.queryClient.ensureQueryData(siteContentQuery),
+      me().catch(() => null),
+    ]);
+    return {
+      ...content,
+      account: user ? { name: user.name, email: user.email } : null,
+    };
+  },
+
   head: ({ loaderData }) => {
     const app = loaderData?.content.webApp;
     const brand = app?.title?.trim() || "DreamozTech";
@@ -28,8 +39,10 @@ export const Route = createFileRoute("/contact")({
 
 function Contact() {
   const { data } = useSuspenseQuery(siteContentQuery);
+  const { account } = Route.useLoaderData();
   const app = data.content.webApp;
   const brand = app.title?.trim() || "DreamozTech";
+
 
   return (
     <>
@@ -47,7 +60,7 @@ function Contact() {
         <div className="max-w-3xl rounded-xl border border-border/70 bg-surface p-7 shadow-card">
           <h2 className="text-xl font-semibold">Send us a message</h2>
           <div className="mt-6">
-            <ContactForm />
+            <ContactForm account={account} />
           </div>
         </div>
       </section>

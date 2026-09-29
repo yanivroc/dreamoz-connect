@@ -4,16 +4,19 @@ import { toast } from "sonner";
 import { sendContactEmail } from "@/lib/contact.functions";
 import { EmailVerifyField } from "@/components/EmailVerifyField";
 
-export function ContactForm() {
+export type ContactAccount = { name: string; email: string };
+
+export function ContactForm({ account = null }: { account?: ContactAccount | null }) {
   const send = useServerFn(sendContactEmail);
   const [pending, setPending] = useState(false);
   const [seed, setSeed] = useState(0);
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(account?.email ?? "");
   const [token, setToken] = useState<string | null>(null);
   const captcha = useMemo(
     () => ({ a: 3 + ((seed * 7) % 6), b: 2 + ((seed * 5) % 7) }),
     [seed],
   );
+
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -23,7 +26,7 @@ export function ContactForm() {
       toast.error("Please tick the consent box to continue.");
       return;
     }
-    if (!token) {
+    if (!account && !token) {
       toast.error("Please verify your email address before sending your message.");
       return;
     }
@@ -32,21 +35,24 @@ export function ContactForm() {
       await send({
         data: {
           name: String(fd.get("name") ?? ""),
-          email: email.trim(),
+          email: (account?.email ?? email).trim(),
           subject: String(fd.get("subject") ?? ""),
           message: String(fd.get("message") ?? ""),
           captchaAnswer: Number(fd.get("captchaAnswer") ?? NaN),
           captchaA: captcha.a,
           captchaB: captcha.b,
           marketingConsent: true as const,
-          verificationToken: token,
+          ...(token ? { verificationToken: token } : {}),
         },
       });
       toast.success("Thanks! Your message has been sent.");
       form.reset();
-      setEmail("");
-      setToken(null);
+      if (!account) {
+        setEmail("");
+        setToken(null);
+      }
       setSeed((s) => s + 1);
+
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not send your message.");
     } finally {
@@ -63,15 +69,38 @@ export function ContactForm() {
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block text-sm">
           <span className="text-muted-foreground">Your name</span>
-          <input name="name" required maxLength={100} className={field} />
+          <input
+            name="name"
+            required
+            maxLength={100}
+            defaultValue={account?.name ?? ""}
+            className={field}
+          />
         </label>
-        <EmailVerifyField
-          purpose="contact"
-          email={email}
-          onEmailChange={setEmail}
-          token={token}
-          onTokenChange={setToken}
-        />
+        {account ? (
+          <label className="block text-sm">
+            <span className="text-muted-foreground">Email</span>
+            <input
+              name="email"
+              type="email"
+              value={account.email}
+              readOnly
+              className={`${field} opacity-70`}
+            />
+            <span className="mt-1 block text-xs text-muted-foreground/80">
+              Using your account email. To change it, mention it in your message.
+            </span>
+          </label>
+        ) : (
+          <EmailVerifyField
+            purpose="contact"
+            email={email}
+            onEmailChange={setEmail}
+            token={token}
+            onTokenChange={setToken}
+          />
+        )}
+
       </div>
 
       <label className="block text-sm">
