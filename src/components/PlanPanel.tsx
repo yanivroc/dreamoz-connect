@@ -174,6 +174,31 @@ export function PlanPanel({ user }: { user: CurrentUser }) {
         </p>
       )}
 
+      {canSeeExtension && (
+        <div className="max-w-3xl space-y-2 rounded-2xl border border-primary/40 bg-primary/5 p-5">
+          <h3 className="font-semibold">Need more time?</h3>
+          {extensionsLeft > 0 ? (
+            <>
+              <button
+                type="button"
+                disabled={extending}
+                onClick={onExtendTrial}
+                className="rounded-full bg-gradient-accent px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-card transition hover:opacity-90 disabled:opacity-60"
+              >
+                {extending ? "Extending…" : `Extend free trial by ${trialDays} days`}
+              </button>
+              <p className="text-xs text-muted-foreground">
+                You have {extensionsLeft} extension{extensionsLeft === 1 ? "" : "s"} remaining.
+              </p>
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Trial extension limit reached. Please choose a plan below to continue.
+            </p>
+          )}
+        </div>
+      )}
+
       {user.access.state !== "admin" && (
         <div className="max-w-3xl space-y-5 rounded-2xl border border-border/60 bg-surface/40 p-6 shadow-card">
           {user.access.state === "trial" && (
