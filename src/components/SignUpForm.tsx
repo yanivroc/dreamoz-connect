@@ -69,6 +69,9 @@ export function SignUpForm() {
         form.reset();
         setPhone("");
         setAddress("");
+        setEmail("");
+        setToken(null);
+
       } else if (res.reason === "exists") {
         toast.error("An account with this email already exists.");
       } else if (res.reason === "phone_exists") {
@@ -94,10 +97,14 @@ export function SignUpForm() {
           <span className="text-muted-foreground">Your name</span>
           <input name="name" required maxLength={100} className={field} />
         </label>
-        <label className="block text-sm">
-          <span className="text-muted-foreground">Email</span>
-          <input name="email" type="email" required maxLength={255} className={field} />
-        </label>
+        <EmailVerifyField
+          purpose="signup"
+          email={email}
+          onEmailChange={setEmail}
+          token={token}
+          onTokenChange={setToken}
+        />
+
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block text-sm">

@@ -20,6 +20,8 @@ const schema = z.object({
   captchaA: z.coerce.number().int().min(0).max(99),
   captchaB: z.coerce.number().int().min(0).max(99),
   marketingConsent: z.literal(true),
+  verificationToken: z.string().trim().min(16).max(128),
+
 });
 
 export type SignUpResult =
