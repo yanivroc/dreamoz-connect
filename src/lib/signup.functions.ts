@@ -42,6 +42,15 @@ export const signUp = createServerFn({ method: "POST" })
     await ensureUsersTable(db);
 
     const email = data.email.toLowerCase();
+
+    // The email address must have been verified with a one-time code.
+    const { ensureEmailOtpsTable, consumeVerification } = await import(
+      "./email-otp.server"
+    );
+    await ensureEmailOtpsTable(db);
+    await consumeVerification(db, email, "signup", data.verificationToken);
+
+
     const existing = await db.execute({
       sql: "SELECT id FROM users WHERE email = ? LIMIT 1",
       args: [email],
