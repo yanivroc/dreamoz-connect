@@ -21,13 +21,14 @@ function CommissionCard() {
   const load = useServerFn(getCommissionSetting);
   const saveCommission = useServerFn(saveCommissionSetting);
   const qc = useQueryClient();
-  const { data } = useQuery({ queryKey: ["commission"], queryFn: () => load() });
-  const [percent, setPercent] = useState("0");
+  const { data, isLoading } = useQuery({ queryKey: ["commission"], queryFn: () => load() });
+  const [percent, setPercent] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (data) setPercent(String(data.percent));
   }, [data]);
+
 
   async function onSave() {
     setSaving(true);
@@ -57,17 +58,20 @@ function CommissionCard() {
           step="0.1"
           className={input}
           value={percent}
+          disabled={isLoading}
+          placeholder={isLoading ? "Loading…" : "0"}
           onChange={(e) => setPercent(e.target.value)}
         />
       </label>
       <button
         type="button"
         onClick={() => void onSave()}
-        disabled={saving}
+        disabled={saving || isLoading}
         className="rounded-full bg-gradient-accent px-5 py-2 text-sm font-semibold text-primary-foreground shadow-card transition hover:opacity-90 disabled:opacity-60"
       >
         {saving ? "Saving…" : "Save commission"}
       </button>
+
     </div>
   );
 }
