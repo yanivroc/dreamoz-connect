@@ -60,7 +60,7 @@ function Contact() {
         <div className="max-w-3xl rounded-xl border border-border/70 bg-surface p-7 shadow-card">
           <h2 className="text-xl font-semibold">Send us a message</h2>
           <div className="mt-6">
-            <ContactForm />
+            <ContactForm account={account} />
           </div>
         </div>
       </section>

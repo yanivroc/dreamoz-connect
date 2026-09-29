@@ -4,16 +4,19 @@ import { toast } from "sonner";
 import { sendContactEmail } from "@/lib/contact.functions";
 import { EmailVerifyField } from "@/components/EmailVerifyField";
 
-export function ContactForm() {
+export type ContactAccount = { name: string; email: string };
+
+export function ContactForm({ account = null }: { account?: ContactAccount | null }) {
   const send = useServerFn(sendContactEmail);
   const [pending, setPending] = useState(false);
   const [seed, setSeed] = useState(0);
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(account?.email ?? "");
   const [token, setToken] = useState<string | null>(null);
   const captcha = useMemo(
     () => ({ a: 3 + ((seed * 7) % 6), b: 2 + ((seed * 5) % 7) }),
     [seed],
   );
+
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
