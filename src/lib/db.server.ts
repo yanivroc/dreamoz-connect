@@ -57,6 +57,8 @@ export async function ensureUsersTable(db: Client): Promise<void> {
     `ALTER TABLE users ADD COLUMN phone_verified_at TEXT`,
     `ALTER TABLE users ADD COLUMN address TEXT`,
     `ALTER TABLE users ADD COLUMN country TEXT NOT NULL DEFAULT 'AU'`,
+    `ALTER TABLE users ADD COLUMN trial_extensions_used INTEGER NOT NULL DEFAULT 0`,
+    `ALTER TABLE users ADD COLUMN trial_last_extended_at TEXT`,
   ]) {
     try {
       await db.execute(ddl);
@@ -110,6 +112,9 @@ export async function ensureBillingTables(db: Client): Promise<void> {
   )`);
   await db.execute(
     `INSERT OR IGNORE INTO platform_settings (key, value) VALUES ('trial_days', '14')`,
+  );
+  await db.execute(
+    `INSERT OR IGNORE INTO platform_settings (key, value) VALUES ('max_trial_extensions', '1')`,
   );
   await db.execute(`CREATE TABLE IF NOT EXISTS subscription_payments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
