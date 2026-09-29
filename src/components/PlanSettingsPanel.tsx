@@ -21,13 +21,14 @@ function CommissionCard() {
   const load = useServerFn(getCommissionSetting);
   const saveCommission = useServerFn(saveCommissionSetting);
   const qc = useQueryClient();
-  const { data } = useQuery({ queryKey: ["commission"], queryFn: () => load() });
-  const [percent, setPercent] = useState("0");
+  const { data, isLoading } = useQuery({ queryKey: ["commission"], queryFn: () => load() });
+  const [percent, setPercent] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (data) setPercent(String(data.percent));
   }, [data]);
+
 
   async function onSave() {
     setSaving(true);
