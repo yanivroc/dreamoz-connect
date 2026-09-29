@@ -517,6 +517,7 @@ export const updatePlanSettings = createServerFn({ method: "POST" })
       .object({
         plans: z.array(planSettingSchema).min(1).max(4),
         trialDays: z.coerce.number().int().min(1).max(365),
+        maxTrialExtensions: z.coerce.number().int().min(0).max(10).optional(),
       })
       .parse(input),
   )
@@ -534,8 +535,15 @@ export const updatePlanSettings = createServerFn({ method: "POST" })
       sql: "INSERT INTO platform_settings (key, value) VALUES ('trial_days', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
       args: [String(data.trialDays || DEFAULT_TRIAL_DAYS)],
     });
+    if (data.maxTrialExtensions !== undefined) {
+      await ctx.db.execute({
+        sql: "INSERT INTO platform_settings (key, value) VALUES ('max_trial_extensions', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+        args: [String(data.maxTrialExtensions)],
+      });
+    }
     return { ok: true as const };
   });
+
 
 export type UserAccessRow = {
   id: number;
