@@ -26,7 +26,7 @@ export function ContactForm({ account = null }: { account?: ContactAccount | nul
       toast.error("Please tick the consent box to continue.");
       return;
     }
-    if (!token) {
+    if (!account && !token) {
       toast.error("Please verify your email address before sending your message.");
       return;
     }
@@ -35,21 +35,24 @@ export function ContactForm({ account = null }: { account?: ContactAccount | nul
       await send({
         data: {
           name: String(fd.get("name") ?? ""),
-          email: email.trim(),
+          email: (account?.email ?? email).trim(),
           subject: String(fd.get("subject") ?? ""),
           message: String(fd.get("message") ?? ""),
           captchaAnswer: Number(fd.get("captchaAnswer") ?? NaN),
           captchaA: captcha.a,
           captchaB: captcha.b,
           marketingConsent: true as const,
-          verificationToken: token,
+          ...(token ? { verificationToken: token } : {}),
         },
       });
       toast.success("Thanks! Your message has been sent.");
       form.reset();
-      setEmail("");
-      setToken(null);
+      if (!account) {
+        setEmail("");
+        setToken(null);
+      }
       setSeed((s) => s + 1);
+
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not send your message.");
     } finally {
