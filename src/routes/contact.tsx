@@ -2,9 +2,20 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { siteContentQuery } from "@/lib/content-query";
 import { ContactForm } from "@/components/ContactForm";
+import { me } from "@/lib/auth.functions";
 
 export const Route = createFileRoute("/contact")({
-  loader: ({ context }) => context.queryClient.ensureQueryData(siteContentQuery),
+  loader: async ({ context }) => {
+    const [content, user] = await Promise.all([
+      context.queryClient.ensureQueryData(siteContentQuery),
+      me().catch(() => null),
+    ]);
+    return {
+      ...content,
+      account: user ? { name: user.name, email: user.email } : null,
+    };
+  },
+
   head: ({ loaderData }) => {
     const app = loaderData?.content.webApp;
     const brand = app?.title?.trim() || "DreamozTech";
