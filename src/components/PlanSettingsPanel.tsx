@@ -135,6 +135,20 @@ export function PlanSettingsPanel() {
             onChange={(e) => setTrialDays(Number(e.target.value))}
           />
         </label>
+        <label className="block max-w-xs space-y-1.5 text-sm">
+          <span className="text-muted-foreground">
+            Self-serve trial extensions allowed per user (each adds {trialDays} days)
+          </span>
+          <input
+            type="number"
+            min={0}
+            max={10}
+            className={input}
+            value={maxExtensions}
+            onChange={(e) => setMaxExtensions(Number(e.target.value))}
+          />
+        </label>
+
         {plans.map((p) => (
           <div key={p.id} className="grid gap-3 rounded-xl border border-border/60 p-4 sm:grid-cols-4">
             <label className="space-y-1.5 text-sm">
@@ -211,8 +225,10 @@ function UserAccessTable() {
               <th className="px-4 py-3 font-medium">User</th>
               <th className="px-4 py-3 font-medium">Status</th>
               <th className="px-4 py-3 font-medium">Trial ends</th>
+              <th className="px-4 py-3 font-medium">Extensions</th>
               <th className="px-4 py-3 font-medium">Plan ends</th>
               <th className="px-4 py-3 font-medium">Actions</th>
+
             </tr>
           </thead>
           <tbody>
@@ -250,7 +266,7 @@ function UserRow({
       <tr className="border-t border-border/60">
         <td className="px-4 py-3">{u.name}<div className="text-xs text-muted-foreground">{u.email}</div></td>
         <td className="px-4 py-3">admin</td>
-        <td className="px-4 py-3" colSpan={3}>Always has access</td>
+        <td className="px-4 py-3" colSpan={4}>Always has access</td>
       </tr>
     );
   }
@@ -261,7 +277,22 @@ function UserRow({
         {access.state}{access.state !== "expired" ? ` (${access.daysLeft}d)` : ""}
       </td>
       <td className="px-4 py-3">{u.trialEndsAt ? formatDate(u.trialEndsAt) : "—"}</td>
+      <td className="px-4 py-3">
+        {u.trialExtensionsUsed > 0 ? (
+          <>
+            {u.trialExtensionsUsed} used
+            {u.trialLastExtendedAt && (
+              <div className="text-xs text-muted-foreground">
+                last {formatDate(u.trialLastExtendedAt)}
+              </div>
+            )}
+          </>
+        ) : (
+          "—"
+        )}
+      </td>
       <td className="px-4 py-3">{u.planExpiresAt ? `${formatDate(u.planExpiresAt)} (${u.plan})` : "—"}</td>
+
       <td className="space-y-2 px-4 py-3">
         <div className="flex items-center gap-2">
           <input type="number" min={1} max={365} value={days} onChange={(e) => setDays(Number(e.target.value))} className="w-16 rounded-md border border-border/70 bg-background px-2 py-1" />
