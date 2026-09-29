@@ -69,15 +69,38 @@ export function ContactForm({ account = null }: { account?: ContactAccount | nul
       <div className="grid gap-4 sm:grid-cols-2">
         <label className="block text-sm">
           <span className="text-muted-foreground">Your name</span>
-          <input name="name" required maxLength={100} className={field} />
+          <input
+            name="name"
+            required
+            maxLength={100}
+            defaultValue={account?.name ?? ""}
+            className={field}
+          />
         </label>
-        <EmailVerifyField
-          purpose="contact"
-          email={email}
-          onEmailChange={setEmail}
-          token={token}
-          onTokenChange={setToken}
-        />
+        {account ? (
+          <label className="block text-sm">
+            <span className="text-muted-foreground">Email</span>
+            <input
+              name="email"
+              type="email"
+              value={account.email}
+              readOnly
+              className={`${field} opacity-70`}
+            />
+            <span className="mt-1 block text-xs text-muted-foreground/80">
+              Using your account email. To change it, mention it in your message.
+            </span>
+          </label>
+        ) : (
+          <EmailVerifyField
+            purpose="contact"
+            email={email}
+            onEmailChange={setEmail}
+            token={token}
+            onTokenChange={setToken}
+          />
+        )}
+
       </div>
 
       <label className="block text-sm">
