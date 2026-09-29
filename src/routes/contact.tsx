@@ -39,8 +39,10 @@ export const Route = createFileRoute("/contact")({
 
 function Contact() {
   const { data } = useSuspenseQuery(siteContentQuery);
+  const { account } = Route.useLoaderData();
   const app = data.content.webApp;
   const brand = app.title?.trim() || "DreamozTech";
+
 
   return (
     <>
