@@ -80,12 +80,14 @@ export function PlanSettingsPanel() {
   const { data } = useQuery({ queryKey: ["billing"], queryFn: () => fetchOverview() });
   const [plans, setPlans] = useState<PlanSetting[]>([]);
   const [trialDays, setTrialDays] = useState(14);
+  const [maxExtensions, setMaxExtensions] = useState(1);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (data) {
       setPlans(data.plans);
       setTrialDays(data.trialDays);
+      setMaxExtensions(data.maxTrialExtensions ?? 1);
     }
   }, [data]);
 
@@ -98,6 +100,7 @@ export function PlanSettingsPanel() {
       await save({
         data: {
           trialDays,
+          maxTrialExtensions: maxExtensions,
           plans: plans.map((p) => ({
             id: p.id,
             label: p.label,
