@@ -111,6 +111,14 @@ function DashboardPage() {
                   <dd>{user.email}</dd>
                 </div>
                 <div className="flex justify-between gap-4">
+                  <dt className="text-muted-foreground">Mobile number</dt>
+                  <dd>{user.phone || "—"}</dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-muted-foreground">Address</dt>
+                  <dd className="text-right">{user.address || "—"}</dd>
+                </div>
+                <div className="flex justify-between gap-4">
                   <dt className="text-muted-foreground">Role</dt>
                   <dd>{user.role}</dd>
                 </div>
@@ -119,7 +127,15 @@ function DashboardPage() {
                   <dd>{user.createdAt ? user.createdAt.slice(0, 10) : "—"}</dd>
                 </div>
               </dl>
+              <p className="mt-4 text-xs text-muted-foreground">
+                To update your email, phone number or address, please{" "}
+                <Link to="/contact" className="text-primary underline">
+                  contact support
+                </Link>
+                .
+              </p>
             </div>
+
 
             <div className="max-w-xl rounded-2xl border border-border/60 bg-surface/40 p-6 shadow-card">
               <h2 className="text-xl font-semibold">Build Web Apps</h2>
