@@ -16,6 +16,8 @@ export type BillingPayment = {
 export type BillingOverview = {
   plans: PlanSetting[];
   trialDays: number;
+  maxTrialExtensions: number;
+  trialExtensionsUsed: number;
   square: {
     applicationId: string | null;
     locationId: string | null;
