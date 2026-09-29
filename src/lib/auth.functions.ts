@@ -14,6 +14,8 @@ export type CurrentUser = {
   id: number;
   name: string;
   email: string;
+  phone: string | null;
+  address: string | null;
   role: string;
   createdAt: string;
   plan: string;
@@ -26,7 +28,8 @@ export type LoginResult =
   | { ok: true; user: CurrentUser }
   | { ok: false; reason: "invalid" | "not_configured" };
 
-const USER_COLUMNS = "id, name, email, role, created_at, plan, trial_ends_at, plan_expires_at";
+const USER_COLUMNS =
+  "id, name, email, phone, address, role, created_at, plan, trial_ends_at, plan_expires_at";
 
 function toCurrentUser(row: Record<string, unknown>): CurrentUser {
   const role = String(row["role"] ?? "user");
@@ -36,6 +39,8 @@ function toCurrentUser(row: Record<string, unknown>): CurrentUser {
     id: Number(row["id"]),
     name: String(row["name"]),
     email: String(row["email"]),
+    phone: row["phone"] ? String(row["phone"]) : null,
+    address: row["address"] ? String(row["address"]) : null,
     role,
     createdAt: String(row["created_at"] ?? ""),
     plan: String(row["plan"] ?? "none"),
@@ -44,6 +49,7 @@ function toCurrentUser(row: Record<string, unknown>): CurrentUser {
     access: computeAccess({ role, trialEndsAt, planExpiresAt }),
   };
 }
+
 
 export const login = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => loginSchema.parse(input))
