@@ -553,13 +553,15 @@ export type UserAccessRow = {
   plan: string;
   trialEndsAt: string | null;
   planExpiresAt: string | null;
+  trialExtensionsUsed: number;
+  trialLastExtendedAt: string | null;
 };
 
 export const listUserAccess = createServerFn({ method: "GET" }).handler(
   async (): Promise<UserAccessRow[]> => {
     const ctx = await requireAdminCtx();
     const res = await ctx.db.execute(
-      "SELECT id, name, email, role, plan, trial_ends_at, plan_expires_at FROM users WHERE deleted_at IS NULL ORDER BY id ASC",
+      "SELECT id, name, email, role, plan, trial_ends_at, plan_expires_at, trial_extensions_used, trial_last_extended_at FROM users WHERE deleted_at IS NULL ORDER BY id ASC",
     );
     return res.rows.map((r) => {
       const row = r as unknown as Record<string, unknown>;
@@ -571,10 +573,15 @@ export const listUserAccess = createServerFn({ method: "GET" }).handler(
         plan: String(row["plan"] ?? "none"),
         trialEndsAt: row["trial_ends_at"] ? String(row["trial_ends_at"]) : null,
         planExpiresAt: row["plan_expires_at"] ? String(row["plan_expires_at"]) : null,
+        trialExtensionsUsed: Number(row["trial_extensions_used"] ?? 0) || 0,
+        trialLastExtendedAt: row["trial_last_extended_at"]
+          ? String(row["trial_last_extended_at"])
+          : null,
       };
     });
   },
 );
+
 
 export const extendTrial = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
