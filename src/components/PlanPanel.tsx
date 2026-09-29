@@ -3,7 +3,12 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { downloadPlanInvoice, getBillingOverview, purchasePlan } from "@/lib/billing.functions";
+import {
+  downloadPlanInvoice,
+  getBillingOverview,
+  purchasePlan,
+  selfExtendTrial,
+} from "@/lib/billing.functions";
 import type { CurrentUser } from "@/lib/auth.functions";
 import {
   formatPlanPrice,
@@ -52,9 +57,11 @@ export function PlanPanel({ user }: { user: CurrentUser }) {
 
   const [ready, setReady] = useState(false);
   const [paying, setPaying] = useState(false);
+  const [extending, setExtending] = useState(false);
   const [invoiceBusy, setInvoiceBusy] = useState<number | null>(null);
   const cardRef = useRef<SquareCard | null>(null);
   const getInvoice = useServerFn(downloadPlanInvoice);
+  const extend = useServerFn(selfExtendTrial);
 
   const downloadInvoice = async (id: number) => {
     setInvoiceBusy(id);
@@ -153,6 +160,37 @@ export function PlanPanel({ user }: { user: CurrentUser }) {
 
   const expiringSoon =
     user.access.state === "active" && user.access.daysLeft <= 7;
+
+  const trialDays = data?.trialDays ?? 14;
+  const extensionsLeft = Math.max(
+    0,
+    (data?.maxTrialExtensions ?? 0) - (data?.trialExtensionsUsed ?? 0),
+  );
+  const canSeeExtension =
+    !isAdmin &&
+    (data?.maxTrialExtensions ?? 0) > 0 &&
+    (user.access.state === "trial" || user.access.state === "expired");
+
+  async function onExtendTrial() {
+    setExtending(true);
+    try {
+      const res = await extend({});
+      if (!res.ok) {
+        toast.error(res.error);
+        return;
+      }
+      toast.success(
+        `Your trial has been extended by ${res.days} days until ${formatDateTime(res.trialEndsAt)}.`,
+      );
+      await refetch();
+      await router.invalidate();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not extend the trial.");
+    } finally {
+      setExtending(false);
+    }
+  }
+
 
   return (
     <div className="space-y-6">
