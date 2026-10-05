@@ -12,6 +12,7 @@ export function ContactForm({ account = null }: { account?: ContactAccount | nul
   const [seed, setSeed] = useState(0);
   const [email, setEmail] = useState(account?.email ?? "");
   const [token, setToken] = useState<string | null>(null);
+  const [verifyKey, setVerifyKey] = useState(0);
   const captcha = useMemo(
     () => ({ a: 3 + ((seed * 7) % 6), b: 2 + ((seed * 5) % 7) }),
     [seed],
@@ -50,6 +51,7 @@ export function ContactForm({ account = null }: { account?: ContactAccount | nul
       if (!account) {
         setEmail("");
         setToken(null);
+        setVerifyKey((k) => k + 1);
       }
       setSeed((s) => s + 1);
 
@@ -93,6 +95,7 @@ export function ContactForm({ account = null }: { account?: ContactAccount | nul
           </label>
         ) : (
           <EmailVerifyField
+            key={verifyKey}
             purpose="contact"
             email={email}
             onEmailChange={setEmail}
