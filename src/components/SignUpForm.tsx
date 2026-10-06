@@ -155,14 +155,33 @@ export function SignUpForm() {
             maxLength={20}
             placeholder="+61 412 345 678"
             value={phone}
+            readOnly={!!token}
+            aria-readonly={!!token}
             onChange={(e) => setPhone(e.target.value)}
             onBlur={(e) => {
               const e164 = normalizeAuPhone(e.target.value);
               if (e164) setPhone(e164);
             }}
-            className={field}
+            className={`${field} ${token ? "cursor-not-allowed opacity-70" : ""}`}
           />
-          <span className="mt-1 block text-xs text-muted-foreground/80">{AU_PHONE_HINT}</span>
+          {token ? (
+            <span className="mt-1 block text-xs text-muted-foreground/80">
+              Locked after email verification.{" "}
+              <button
+                type="button"
+                className="font-semibold text-primary underline"
+                onClick={() => {
+                  setToken(null);
+                  setVerifyKey((k) => k + 1);
+                }}
+              >
+                Change number
+              </button>{" "}
+              (you'll need to verify your email again)
+            </span>
+          ) : (
+            <span className="mt-1 block text-xs text-muted-foreground/80">{AU_PHONE_HINT}</span>
+          )}
         </label>
         <div className="block text-sm">
           <span className="text-muted-foreground">Australian address</span>
