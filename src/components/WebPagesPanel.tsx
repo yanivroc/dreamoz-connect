@@ -597,11 +597,14 @@ export function WebPagesPanel({ appId }: { appId: number }) {
                     className={inputClass}
                     type="number"
                     min={0}
-                    max={1000000}
+                    max={1000}
                     step="0.01"
                     value={form.price}
                     onChange={(e) => setForm({ ...form, price: e.target.value })}
                   />
+                  <span className="block text-xs text-muted-foreground">
+                    Maximum price: $1,000.00
+                  </span>
                 </label>
                 <label className="space-y-1.5 text-sm">
                   <span className="text-muted-foreground">Shipping price (optional)</span>

@@ -216,7 +216,12 @@ const pageShape = {
   productEnabled: z.boolean(),
   contactEnabled: z.boolean().optional().default(false),
   feedEnabled: z.boolean().optional().default(false),
-  price: z.coerce.number().min(0).max(1_000_000).nullable().optional(),
+  price: z.coerce
+    .number()
+    .min(0)
+    .max(1000, { message: "Product price cannot exceed $1,000.00." })
+    .nullable()
+    .optional(),
   minQty: z.coerce.number().int().min(0).max(1_000_000).nullable().optional(),
   maxQty: z.coerce.number().int().min(0).max(1_000_000).nullable().optional(),
   shippingPrice: z.coerce.number().min(0).max(1_000_000).nullable().optional(),
