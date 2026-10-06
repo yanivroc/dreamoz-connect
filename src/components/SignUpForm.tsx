@@ -14,6 +14,7 @@ export function SignUpForm() {
   const [address, setAddress] = useState("");
   const [email, setEmail] = useState("");
   const [token, setToken] = useState<string | null>(null);
+  const [verifyKey, setVerifyKey] = useState(0);
   const captcha = useMemo(
     () => ({ a: 4 + ((seed * 3) % 6), b: 2 + ((seed * 5) % 7) }),
     [seed],
@@ -65,12 +66,16 @@ export function SignUpForm() {
       });
 
       if (res.ok) {
-        toast.success("Account created! Check your inbox for a welcome email.");
+        toast.success(
+          "Account created! Check your inbox for a welcome email, then log in with the email and password you just created.",
+          { duration: 10000 },
+        );
         form.reset();
         setPhone("");
         setAddress("");
         setEmail("");
         setToken(null);
+        setVerifyKey((k) => k + 1);
 
       } else if (res.reason === "exists") {
         toast.error("An account with this email already exists.");
@@ -98,6 +103,7 @@ export function SignUpForm() {
           <input name="name" required maxLength={100} className={field} />
         </label>
         <EmailVerifyField
+          key={verifyKey}
           purpose="signup"
           email={email}
           onEmailChange={setEmail}
