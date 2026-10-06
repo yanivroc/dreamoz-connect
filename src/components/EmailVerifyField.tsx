@@ -13,6 +13,7 @@ export function EmailVerifyField({
   token,
   onTokenChange,
   label = "Email",
+  getPhone,
 }: {
   purpose: "contact" | "signup";
   email: string;
@@ -20,6 +21,8 @@ export function EmailVerifyField({
   token: string | null;
   onTokenChange: (token: string | null) => void;
   label?: string;
+  /** Returns a validated phone (E.164) or null after showing an error. */
+  getPhone?: () => string | null;
 }) {
   const sendCode = useServerFn(requestEmailOtp);
   const checkCode = useServerFn(verifyEmailOtp);
@@ -43,9 +46,15 @@ export function EmailVerifyField({
       toast.error("Please enter a valid email address first.");
       return;
     }
+    let phoneValue: string | undefined;
+    if (getPhone) {
+      const p = getPhone();
+      if (!p) return;
+      phoneValue = p;
+    }
     setSending(true);
     try {
-      const res = await sendCode({ data: { email: value, purpose } });
+      const res = await sendCode({ data: { email: value, purpose, phone: phoneValue } });
       setCodeSent(true);
       setCooldown(res.resendSeconds);
       toast.success(`We sent a 6-digit code to ${value}.`);
