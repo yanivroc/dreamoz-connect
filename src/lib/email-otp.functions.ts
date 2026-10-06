@@ -6,6 +6,7 @@ const purposeSchema = z.enum(["contact", "signup"]);
 const requestSchema = z.object({
   email: z.string().trim().email().max(255),
   purpose: purposeSchema,
+  phone: z.string().trim().max(20).optional(),
 });
 
 const verifySchema = z.object({
@@ -26,6 +27,11 @@ export const requestEmailOtp = createServerFn({ method: "POST" })
     await otp.ensureEmailOtpsTable(db);
 
     if (data.purpose === "signup") {
+      const { normalizeAuPhone } = await import("./phone");
+      const phone = normalizeAuPhone(data.phone ?? "");
+      if (!phone) {
+        throw new Error("Please enter a valid Australian mobile number before verifying your email.");
+      }
       const { ensureUsersTable } = await import("./db.server");
       await ensureUsersTable(db);
       const existing = await db.execute({
@@ -34,6 +40,13 @@ export const requestEmailOtp = createServerFn({ method: "POST" })
       });
       if (existing.rows.length > 0) {
         throw new Error("An account with this email already exists.");
+      }
+      const existingPhone = await db.execute({
+        sql: "SELECT id FROM users WHERE phone = ? AND deleted_at IS NULL LIMIT 1",
+        args: [phone],
+      });
+      if (existingPhone.rows.length > 0) {
+        throw new Error("An account with this mobile number already exists. Please log in instead.");
       }
     }
 

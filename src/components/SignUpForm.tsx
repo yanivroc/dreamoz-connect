@@ -109,6 +109,15 @@ export function SignUpForm() {
           onEmailChange={setEmail}
           token={token}
           onTokenChange={setToken}
+          getPhone={() => {
+            const p = normalizeAuPhone(phone);
+            if (!p) {
+              toast.error(`Please enter your ${AU_PHONE_HINT} before verifying your email.`);
+              return null;
+            }
+            setPhone(p);
+            return p;
+          }}
         />
 
       </div>
