@@ -44,6 +44,16 @@ export function priceOrder(
     const max = page.product.maxQty ?? 999;
     const qty = Math.min(Math.max(item.qty, min), max);
     const price = page.product.price;
+    if (price > 1000) {
+      return {
+        lines: [],
+        subtotal: 0,
+        shipping: 0,
+        total: 0,
+        currency: siteCurrency(content),
+        error: `"${item.title}" is priced above the $1,000 limit and can't be purchased.`,
+      };
+    }
     lines.push({ id: page.id, title: page.title, qty, price, lineTotal: price * qty });
     cartItems.push({
       id: page.id,
