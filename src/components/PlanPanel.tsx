@@ -170,6 +170,12 @@ export function PlanPanel({ user }: { user: CurrentUser }) {
     !isAdmin &&
     (data?.maxTrialExtensions ?? 0) > 0 &&
     user.access.state === "expired";
+  const hasPaidBefore = (data?.payments.length ?? 0) > 0;
+  const purchaseLocked =
+    !isAdmin &&
+    !hasPaidBefore &&
+    (user.access.state === "trial" ||
+      (user.access.state === "expired" && extensionsLeft > 0));
 
   async function onExtendTrial() {
     setExtending(true);
@@ -237,7 +243,15 @@ export function PlanPanel({ user }: { user: CurrentUser }) {
         </div>
       )}
 
-      {user.access.state !== "admin" && (
+      {purchaseLocked && (
+        <p className="max-w-3xl rounded-xl border border-primary/40 bg-primary/10 p-4 text-sm">
+          {user.access.state === "trial"
+            ? "During your free trial you have everything, including full API access. Paid plans become available once your free trial and all trial extensions have been used."
+            : "Paid plans become available once you've used all your trial extensions. Extend your trial above to keep going."}
+        </p>
+      )}
+
+      {user.access.state !== "admin" && !purchaseLocked && (
         <div className="max-w-3xl space-y-5 rounded-2xl border border-border/60 bg-surface/40 p-6 shadow-card">
           {user.access.state === "trial" && (
             <p className="rounded-lg border border-primary/40 bg-primary/10 px-3 py-2 text-sm">
