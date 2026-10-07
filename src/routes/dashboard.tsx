@@ -6,9 +6,11 @@ import { PlanPanel } from "@/components/PlanPanel";
 import { PlanSettingsPanel } from "@/components/PlanSettingsPanel";
 import { PayoutsPanel } from "@/components/PayoutsPanel";
 import { AdminPayoutsPanel } from "@/components/AdminPayoutsPanel";
+import { BuilderPanel } from "@/components/BuilderPanel";
 
 const tabIds = [
   "overview",
+  "build",
   "plan",
   "payouts",
   "seller-payouts",
@@ -53,6 +55,7 @@ function DashboardPage() {
 
   const tabs: { id: Tab; label: string }[] = [
     { id: "overview", label: "Overview" },
+    { id: "build", label: "Build Web Apps" },
     { id: "plan", label: "Plan" },
     { id: "payouts", label: "Payouts" },
     ...(isAdmin
@@ -135,34 +138,27 @@ function DashboardPage() {
                 .
               </p>
             </div>
-
-
-            <div className="max-w-xl rounded-2xl border border-border/60 bg-surface/40 p-6 shadow-card">
-              <h2 className="text-xl font-semibold">Build Web Apps</h2>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Create web apps, build their pages and sub pages, and manage logo,
-                favicon and shipping settings.
-              </p>
-              {expired ? (
-                <Link
-                  to="/dashboard"
-                  search={{ tab: "plan" }}
-                  className="mt-4 inline-block rounded-full bg-gradient-accent px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-card transition hover:opacity-90"
-                >
-                  Choose a plan to continue
-                </Link>
-              ) : (
-                <Link
-                  to="/build-web-apps"
-                  className="mt-4 inline-block rounded-full bg-gradient-accent px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-card transition hover:opacity-90"
-                >
-                  Open builder
-                </Link>
-              )}
-            </div>
           </>
         )}
 
+        {tab === "build" &&
+          (expired ? (
+            <div className="max-w-xl rounded-2xl border border-border/60 bg-surface/40 p-6 shadow-card">
+              <h2 className="text-xl font-semibold">Build Web Apps</h2>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Your access has ended. Choose a plan to keep building.
+              </p>
+              <Link
+                to="/dashboard"
+                search={{ tab: "plan" }}
+                className="mt-4 inline-block rounded-full bg-gradient-accent px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-card transition hover:opacity-90"
+              >
+                Choose a plan to continue
+              </Link>
+            </div>
+          ) : (
+            <BuilderPanel user={user} />
+          ))}
         {tab === "plan" && <PlanPanel user={user} />}
         {tab === "payouts" && <PayoutsPanel />}
         {tab === "seller-payouts" && isAdmin && <AdminPayoutsPanel />}
