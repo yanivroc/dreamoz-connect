@@ -189,10 +189,12 @@ export const selfExtendTrial = createServerFn({ method: "POST" }).handler(
     if (used >= max) {
       return { ok: false, error: "Trial extension limit reached. Please choose a plan to continue." };
     }
-    const days = await getTrialDays(ctx.db);
     const curMs = row["trial_ends_at"] ? Date.parse(String(row["trial_ends_at"])) : NaN;
-    const base = Number.isFinite(curMs) && curMs > Date.now() ? curMs : Date.now();
-    const trialEndsAt = new Date(base + days * 24 * 60 * 60 * 1000).toISOString();
+    if (Number.isFinite(curMs) && curMs > Date.now()) {
+      return { ok: false, error: "You can extend your trial once it has ended." };
+    }
+    const days = await getTrialDays(ctx.db);
+    const trialEndsAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
     const now = new Date().toISOString();
     await ctx.db.execute({
       sql: "UPDATE users SET trial_ends_at = ?, trial_extensions_used = ?, trial_last_extended_at = ? WHERE id = ?",

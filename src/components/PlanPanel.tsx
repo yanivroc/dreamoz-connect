@@ -169,7 +169,7 @@ export function PlanPanel({ user }: { user: CurrentUser }) {
   const canSeeExtension =
     !isAdmin &&
     (data?.maxTrialExtensions ?? 0) > 0 &&
-    (user.access.state === "trial" || user.access.state === "expired");
+    user.access.state === "expired";
 
   async function onExtendTrial() {
     setExtending(true);
