@@ -356,11 +356,6 @@ export function PlanPanel({ user }: { user: CurrentUser }) {
                   >
                     {invoiceBusy === p.id ? "Preparing…" : "Invoice (PDF)"}
                   </button>
-                  {p.receiptUrl && (
-                    <a href={p.receiptUrl} target="_blank" rel="noreferrer" className="ml-3 text-primary underline">
-                      Receipt
-                    </a>
-                  )}
                 </span>
               </li>
             ))}
