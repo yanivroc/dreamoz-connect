@@ -261,6 +261,30 @@ export const purchasePlan = createServerFn({ method: "POST" })
     if (!plan || !plan.enabled) return { ok: false, error: "This plan is not available." };
     if (plan.amountCents <= 0) return { ok: false, error: "This plan has no price set." };
 
+    // Trial-first gate: no purchase while trial active or extensions remain (unless already a paying customer).
+    {
+      const ur = await ctx.db.execute({
+        sql: "SELECT role, trial_ends_at, trial_extensions_used FROM users WHERE id = ? LIMIT 1",
+        args: [ctx.userId],
+      });
+      const u = (ur.rows[0] ?? {}) as unknown as Record<string, unknown>;
+      const paid = await ctx.db.execute({
+        sql: "SELECT 1 FROM subscription_payments WHERE user_id = ? LIMIT 1",
+        args: [ctx.userId],
+      });
+      if (String(u["role"] ?? "") !== "admin" && paid.rows.length === 0) {
+        const trialEnd = u["trial_ends_at"] ? Date.parse(String(u["trial_ends_at"])) : NaN;
+        if (Number.isFinite(trialEnd) && trialEnd > Date.now()) {
+          return { ok: false, error: "Paid plans unlock after your free trial ends." };
+        }
+        const max = await getMaxTrialExtensions(ctx.db);
+        const used = Number(u["trial_extensions_used"] ?? 0) || 0;
+        if (used < max) {
+          return { ok: false, error: "Please use your remaining trial extensions before choosing a paid plan." };
+        }
+      }
+    }
+
     const base =
       sq.environment === "production"
         ? "https://connect.squareup.com"
