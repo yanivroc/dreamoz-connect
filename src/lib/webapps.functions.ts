@@ -16,14 +16,6 @@ export type WebApp = {
   updatedAt: string;
 };
 
-const optionalEmail = z
-  .string()
-  .trim()
-  .max(255)
-  .refine((v) => v === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v), {
-    message: "Enter a valid email address.",
-  });
-
 const optionalLink = z
   .string()
   .trim()
@@ -81,7 +73,7 @@ function mapRow(r: unknown): WebApp {
 export const listWebApps = createServerFn({ method: "GET" }).handler(
   async (): Promise<WebApp[]> => {
     const { db, userId, isAdmin } = await requireUser();
-    const sql = `SELECT w.id, w.user_id, w.title, w.description, w.email, w.link, w.enabled,
+    const sql = `SELECT w.id, w.user_id, w.title, w.description, u.email AS email, w.link, w.enabled,
         w.created_at, w.updated_at, u.name AS owner_name
       FROM web_apps w LEFT JOIN users u ON u.id = w.user_id
       ${isAdmin ? "" : "WHERE w.user_id = ?"}
@@ -96,7 +88,6 @@ export const listWebApps = createServerFn({ method: "GET" }).handler(
 const upsertShape = {
   title: z.string().trim().min(1, "Title is required.").max(200),
   description: z.string().trim().max(20000).transform(stripHtml).pipe(z.string().max(4000)),
-  email: optionalEmail,
   link: optionalLink,
   enabled: z.boolean(),
 };
@@ -127,7 +118,7 @@ export const createWebApp = createServerFn({ method: "POST" })
         userId,
         data.title,
         data.description,
-        data.email,
+        "",
         data.link,
         data.enabled ? 1 : 0,
         now,
@@ -162,12 +153,11 @@ export const updateWebApp = createServerFn({ method: "POST" })
     const { db, userId, isAdmin } = await requireUser();
     await assertOwnership(db, data.id, userId, isAdmin);
     await db.execute({
-      sql: `UPDATE web_apps SET title = ?, description = ?, email = ?, link = ?, enabled = ?, updated_at = ?
+      sql: `UPDATE web_apps SET title = ?, description = ?, link = ?, enabled = ?, updated_at = ?
             WHERE id = ?`,
       args: [
         data.title,
         data.description,
-        data.email,
         data.link,
         data.enabled ? 1 : 0,
         new Date().toISOString(),

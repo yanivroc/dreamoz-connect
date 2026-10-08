@@ -26,7 +26,6 @@ import {
 type FormState = {
   title: string;
   description: string;
-  email: string;
   link: string;
   enabled: boolean;
 };
@@ -34,7 +33,6 @@ type FormState = {
 const empty: FormState = {
   title: "",
   description: "",
-  email: "",
   link: "",
   enabled: false,
 };
@@ -87,7 +85,6 @@ export function WebAppsPanel({ isAdmin }: { isAdmin: boolean }) {
     setForm({
       title: app.title,
       description: stripHtml(app.description),
-      email: app.email,
       link: app.link,
       enabled: app.enabled,
     });
@@ -154,16 +151,6 @@ export function WebAppsPanel({ isAdmin }: { isAdmin: boolean }) {
               maxLength={200}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
               required
-            />
-          </label>
-          <label className="space-y-1.5 text-sm">
-            <span className="text-muted-foreground">Email</span>
-            <input
-              className={inputClass}
-              type="email"
-              maxLength={255}
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
             />
           </label>
         </div>

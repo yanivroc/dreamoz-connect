@@ -151,7 +151,7 @@ export default async function handler(req: any, res: any) {
     }
 
     const appRes = await db.execute({
-      sql: "SELECT * FROM web_apps WHERE id = ? LIMIT 1",
+      sql: "SELECT a.id, a.user_id, a.title, a.description, a.link, a.enabled, a.created_at, a.updated_at, u.email AS email FROM web_apps a LEFT JOIN users u ON u.id = a.user_id WHERE a.id = ? LIMIT 1",
       args: [appId],
     });
     const app = appRes.rows[0] as unknown as Row | undefined;
