@@ -41,7 +41,15 @@ export type CommunityPage = {
   maxQty: number | null;
   shippingPrice: number | null;
   images: { id: number; url: string; alt: string; hyperlink: string }[];
-  children: { id: number; title: string; excerpt: string; price: number | null }[];
+  contactEnabled: boolean;
+  children: {
+    id: number;
+    title: string;
+    excerpt: string;
+    price: number | null;
+    isProduct: boolean;
+    imageUrl: string | null;
+  }[];
   internalSlug: string | null;
 };
 
@@ -209,11 +217,28 @@ export const getCommunityPage = createServerFn({ method: "GET" })
       args: [data.id],
     });
     const kidsRes = await db.execute({
-      sql: `SELECT id, title, description, seo_description, price FROM web_pages
+      sql: `SELECT id, title, description, seo_description, price, product_enabled FROM web_pages
              WHERE parent_id = ? AND enabled = 1 AND feed_enabled = 1
              ORDER BY order_no ASC, id ASC`,
       args: [data.id],
     });
+    const kidRows = kidsRes.rows as unknown as Row[];
+    const kidImage = new Map<number, string>();
+    if (kidRows.length > 0) {
+      const kidIds = kidRows.map((c) => Number(c["id"]));
+      const kImg = await db.execute({
+        sql: `SELECT page_id, mime, data FROM web_page_images
+               WHERE page_id IN (${kidIds.map(() => "?").join(",")})
+               ORDER BY order_no ASC, id ASC`,
+        args: kidIds,
+      });
+      for (const i of kImg.rows as unknown as Row[]) {
+        const pid = Number(i["page_id"]);
+        if (!kidImage.has(pid)) {
+          kidImage.set(pid, `data:${String(i["mime"] ?? "")};base64,${String(i["data"] ?? "")}`);
+        }
+      }
+    }
 
     const title = String(r["title"] ?? "");
     return {
@@ -224,6 +249,7 @@ export const getCommunityPage = createServerFn({ method: "GET" })
       embedCode: String(r["embed_code"] ?? ""),
       hyperlink: String(r["hyperlink"] ?? ""),
       isProduct: Number(r["product_enabled"] ?? 0) === 1,
+      contactEnabled: Number(r["contact_enabled"] ?? 0) === 1,
       price: num(r["price"]),
       currency: currencyFor(normalizeCountry(r["country"])),
       parentTitle: r["parent_title"] ? String(r["parent_title"]) : null,
@@ -242,12 +268,14 @@ export const getCommunityPage = createServerFn({ method: "GET" })
         alt: String(i["alt"] ?? ""),
         hyperlink: String(i["hyperlink"] ?? ""),
       })),
-      children: (kidsRes.rows as unknown as Row[]).map((c) => ({
+      children: kidRows.map((c) => ({
         id: Number(c["id"]),
         title: String(c["title"] ?? ""),
         excerpt:
           String(c["seo_description"] ?? "") || plain(String(c["description"] ?? ""), 120),
         price: num(c["price"]),
+        isProduct: Number(c["product_enabled"] ?? 0) === 1,
+        imageUrl: kidImage.get(Number(c["id"])) ?? null,
       })),
     };
   });
