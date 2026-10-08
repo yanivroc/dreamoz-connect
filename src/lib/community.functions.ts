@@ -34,6 +34,7 @@ export type CommunityPage = {
   price: number | null;
   currency: string;
   parentTitle: string | null;
+  parentId: number | null;
   appId: number;
   appTitle: string;
   ownerName: string;
@@ -253,6 +254,7 @@ export const getCommunityPage = createServerFn({ method: "GET" })
       price: num(r["price"]),
       currency: currencyFor(normalizeCountry(r["country"])),
       parentTitle: r["parent_title"] ? String(r["parent_title"]) : null,
+      parentId: r["parent_title"] && r["parent_id"] != null ? Number(r["parent_id"]) : null,
       appId: Number(r["app_id"]),
       appTitle: String(r["app_title"] ?? ""),
       ownerName: String(r["owner_name"] ?? ""),

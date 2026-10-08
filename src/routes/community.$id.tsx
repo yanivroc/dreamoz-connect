@@ -72,7 +72,17 @@ function CommunityDetail() {
         {page.parentTitle ? (
           <>
             <span className="mx-2">/</span>
-            <span>{page.parentTitle}</span>
+            {page.parentId != null ? (
+              <Link
+                to="/community/$id"
+                params={{ id: String(page.parentId) }}
+                className="hover:text-primary"
+              >
+                {page.parentTitle}
+              </Link>
+            ) : (
+              <span>{page.parentTitle}</span>
+            )}
           </>
         ) : null}
         <span className="mx-2">/</span>
