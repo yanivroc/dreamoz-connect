@@ -5,6 +5,7 @@ import { formatMoney } from "@/lib/content-types";
 import { parseEmbedCode } from "@/lib/embed-code";
 import { RichText } from "@/components/site/RichText";
 import { AddToCartPanel } from "@/components/site/AddToCartPanel";
+import { PageContactForm } from "@/components/site/PageContactForm";
 
 
 const pageQuery = (id: string) =>
@@ -172,6 +173,8 @@ function CommunityDetail() {
         </div>
       ) : null}
 
+      {page.contactEnabled ? <PageContactForm pageId={page.id} /> : null}
+
       {page.children.length > 0 ? (
         <section className="mt-12">
           <h2 className="text-xl font-semibold text-foreground">Inside this collection</h2>
@@ -181,15 +184,30 @@ function CommunityDetail() {
                 key={child.id}
                 to="/community/$id"
                 params={{ id: String(child.id) }}
-                className="flex flex-col gap-2 rounded-xl border border-border bg-card p-5 transition-colors hover:border-primary/60"
+                className="group flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/60"
               >
-                <h3 className="font-semibold text-foreground">{child.title}</h3>
-                <p className="text-sm text-muted-foreground">{child.excerpt}</p>
-                {child.price != null ? (
-                  <span className="text-sm font-semibold text-primary">
-                    {formatMoney(child.price, page.currency)}
-                  </span>
+                {child.imageUrl ? (
+                  <img
+                    src={child.imageUrl}
+                    alt={child.title}
+                    loading="lazy"
+                    className="h-44 w-full object-cover"
+                  />
                 ) : null}
+                <div className="flex flex-1 flex-col gap-2 p-5">
+                  <h3 className="font-semibold text-foreground group-hover:text-primary">
+                    {child.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground">{child.excerpt}</p>
+                  {child.isProduct && child.price != null ? (
+                    <span className="mt-auto text-sm font-semibold text-primary">
+                      {formatMoney(child.price, page.currency)}
+                    </span>
+                  ) : null}
+                  <span className="text-xs font-medium text-primary">
+                    {child.isProduct ? "View product →" : "Open →"}
+                  </span>
+                </div>
               </Link>
             ))}
           </div>
