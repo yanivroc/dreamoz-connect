@@ -255,16 +255,6 @@ export function WebAppsPanel({ isAdmin }: { isAdmin: boolean }) {
                     <dd>{app.ownerName || `#${app.userId}`}</dd>
                   </div>
                 )}
-                {app.email && (
-                  <div className="flex justify-between gap-3">
-                    <dt className="text-muted-foreground">Email</dt>
-                    <dd>
-                      <a className="hover:text-primary" href={`mailto:${app.email}`}>
-                        {app.email}
-                      </a>
-                    </dd>
-                  </div>
-                )}
                 {app.link && (
                   <div className="flex justify-between gap-3">
                     <dt className="text-muted-foreground">Link</dt>
