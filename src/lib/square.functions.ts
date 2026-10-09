@@ -257,3 +257,46 @@ export const createSquarePayment = createServerFn({ method: "POST" })
       currency: priced.currency,
     };
   });
+
+/** Signed-in buyer's locked checkout details, and whether they own this storefront. */
+export const getCheckoutViewer = createServerFn({ method: "GET" })
+  .inputValidator((input: unknown) =>
+    z.object({ appId: z.coerce.number().int().positive().nullable() }).parse(input),
+  )
+  .handler(async ({ data }) => {
+    const { readSession } = await import("./session.server");
+    const session = await readSession();
+    if (!session.userId) return { account: null, isOwner: false };
+    const { dbClient, ensureUsersTable, ensureWebAppsTable } = await import("./db.server");
+    const db = dbClient();
+    if (!db) return { account: null, isOwner: false };
+    await ensureUsersTable(db);
+    await ensureWebAppsTable(db);
+    const u = await db.execute({
+      sql: "SELECT name, email, phone, address FROM users WHERE id = ? AND deleted_at IS NULL LIMIT 1",
+      args: [session.userId],
+    });
+    const row = u.rows[0] as Record<string, unknown> | undefined;
+    if (!row) return { account: null, isOwner: false };
+    let isOwner = false;
+    if (data.appId) {
+      const o = await db.execute({
+        sql: "SELECT user_id FROM web_apps WHERE id = ? LIMIT 1",
+        args: [data.appId],
+      });
+      isOwner = Number(o.rows[0]?.["user_id"] ?? 0) === Number(session.userId);
+    }
+    const { splitAuAddress } = await import("./address");
+    const parts = splitAuAddress(String(row["address"] ?? ""));
+    return {
+      account: {
+        name: String(row["name"] ?? ""),
+        email: String(row["email"] ?? ""),
+        phone: String(row["phone"] ?? ""),
+        address: String(row["address"] ?? ""),
+        city: parts.city,
+        postcode: parts.postcode,
+      },
+      isOwner,
+    };
+  });
