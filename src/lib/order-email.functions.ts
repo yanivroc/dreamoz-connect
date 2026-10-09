@@ -72,22 +72,27 @@ export const sendOrderEmails = createServerFn({ method: "POST" })
     const cur = priced.currency.toUpperCase();
     const brand = content.webApp.title || "DreamozTech";
     let ownerEmail = content.webApp.email;
-    if (!ownerEmail) {
-      // Member storefronts may not set a contact email — fall back to the
-      // account that owns the web app so the seller still hears about sales.
-      try {
-        const { dbClient } = await import("./db.server");
-        const db = dbClient();
-        const res = await db?.execute({
-          sql: `SELECT u.email AS email FROM web_apps a JOIN users u ON u.id = a.user_id
-                 WHERE a.id = ? LIMIT 1`,
-          args: [data.appId],
-        });
-        const row = res?.rows[0] as Record<string, unknown> | undefined;
-        ownerEmail = row?.["email"] ? String(row["email"]) : "";
-      } catch (err) {
-        console.error("seller email lookup failed", err);
+    let sellerPhone = "";
+    let sellerAddress = "";
+    try {
+      const { dbClient } = await import("./db.server");
+      const { getSellerInfo } = await import("./seller-info.server");
+      const db = dbClient();
+      const res = await db?.execute({
+        sql: "SELECT user_id FROM web_apps WHERE id = ? LIMIT 1",
+        args: [data.appId],
+      });
+      const ownerId = Number((res?.rows[0] as Record<string, unknown> | undefined)?.["user_id"] ?? 0);
+      const seller = db && ownerId ? await getSellerInfo(db, ownerId) : null;
+      if (seller) {
+        // Member storefronts may not set a contact email — fall back to the
+        // account that owns the web app so the seller still hears about sales.
+        if (!ownerEmail) ownerEmail = seller.email;
+        sellerPhone = seller.phone;
+        sellerAddress = seller.address;
       }
+    } catch (err) {
+      console.error("seller lookup failed", err);
     }
 
 
@@ -167,6 +172,8 @@ export const sendOrderEmails = createServerFn({ method: "POST" })
         date: new Date(),
         brand,
         ownerEmail,
+        sellerPhone,
+        sellerAddress,
         buyer: data.buyer,
         lines: priced.lines,
         subtotal: priced.subtotal,
