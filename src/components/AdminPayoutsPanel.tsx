@@ -19,7 +19,7 @@ export function AdminPayoutsPanel() {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-xl font-semibold">Seller payouts</h2>
+        <h2 className="text-xl font-semibold">Member payouts</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Transfer the available amount from your bank, then record it here to clear the balance.
         </p>
@@ -118,18 +118,24 @@ function SellerCard({ s }: { s: SellerBalance }) {
       )}
 
       <div className="flex flex-wrap items-center gap-2">
-        <input className={`${field} w-28`} type="number" min="0" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} />
+        <input className={`${field} w-28`} type="number" min="0" max={s.earnings.available} step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} />
         <input className={`${field} w-44`} placeholder="Bank reference" maxLength={60} value={reference} onChange={(e) => setReference(e.target.value)} />
         <input className={`${field} w-56`} placeholder="Notes (optional)" maxLength={300} value={notes} onChange={(e) => setNotes(e.target.value)} />
         <button
           type="button"
           onClick={() => void onRecord()}
-          disabled={saving || !s.bank}
+          disabled={saving || !s.bank || s.earnings.available <= 0}
           className="rounded-full bg-gradient-accent px-4 py-2 text-sm font-semibold text-primary-foreground shadow-card transition hover:opacity-90 disabled:opacity-60"
         >
           {saving ? "Saving…" : "Record payout"}
         </button>
       </div>
+      {s.earnings.available <= 0 && (
+        <p className="text-xs text-muted-foreground">
+          Nothing to pay right now — earnings become available once orders are marked complete
+          {s.earnings.pending > 0 ? ` (${formatMoney(s.earnings.pending, cur)} awaiting completion)` : ""}.
+        </p>
+      )}
     </div>
   );
 }
