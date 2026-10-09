@@ -5,7 +5,6 @@ import { AdminUsersPanel } from "@/components/AdminUsersPanel";
 import { PlanPanel } from "@/components/PlanPanel";
 import { PlanSettingsPanel } from "@/components/PlanSettingsPanel";
 import { PayoutsPanel } from "@/components/PayoutsPanel";
-import { AdminPayoutsPanel } from "@/components/AdminPayoutsPanel";
 import { BuilderPanel } from "@/components/BuilderPanel";
 
 const tabIds = [
@@ -60,13 +59,12 @@ function DashboardPage() {
     { id: "payouts", label: "Payouts" },
     ...(isAdmin
       ? ([
-          { id: "seller-payouts", label: "Seller payouts" },
           { id: "plan-settings", label: "Plan settings" },
           { id: "users", label: "Users" },
         ] as { id: Tab; label: string }[])
       : []),
   ];
-  const requested = search.tab ?? (expired ? "plan" : "overview");
+  const requested = search.tab === "seller-payouts" ? "payouts" : search.tab ?? (expired ? "plan" : "overview");
   const tab: Tab = tabs.some((t) => t.id === requested) ? requested : "overview";
 
   return (
@@ -161,7 +159,6 @@ function DashboardPage() {
           ))}
         {tab === "plan" && <PlanPanel user={user} />}
         {tab === "payouts" && <PayoutsPanel />}
-        {tab === "seller-payouts" && isAdmin && <AdminPayoutsPanel />}
         {tab === "plan-settings" && isAdmin && <PlanSettingsPanel />}
         {tab === "users" && isAdmin && (
           <div className="space-y-4">

@@ -126,7 +126,7 @@ async function earningsFor(
     netEarned: round2(net),
     pending: round2(pending),
     paidOut: round2(paidOut),
-    available: round2(net - paidOut),
+    available: Math.max(0, round2(net - paidOut)),
     orderCount: count,
   };
 }
@@ -142,6 +142,8 @@ function mapBank(row: Row | undefined): BankDetails | null {
   };
 }
 
+export type PlatformTotals = { grossSales: number; commission: number; pending: number; available: number; directRevenue: number; memberPaidOut: number };
+
 /** Seller view: bank details, earnings summary and payout history. */
 export const getMyPayoutProfile = createServerFn({ method: "GET" }).handler(
   async (): Promise<{
@@ -149,6 +151,7 @@ export const getMyPayoutProfile = createServerFn({ method: "GET" }).handler(
     earnings: Earnings;
     payouts: PayoutRecord[];
     isAdmin: boolean;
+    platform: PlatformTotals | null;
   }> => {
     const { db, userId, isAdmin } = await requireUser();
     const percent = isAdmin ? 0 : await commissionPercent(db);
@@ -160,8 +163,25 @@ export const getMyPayoutProfile = createServerFn({ method: "GET" }).handler(
       sql: "SELECT id, amount, currency, reference, notes, created_at FROM seller_payouts WHERE user_id = ? ORDER BY created_at DESC, id DESC LIMIT 100",
       args: [userId],
     });
+    let platform: PlatformTotals | null = null;
+    if (isAdmin) {
+      const own = await earningsFor(db, userId, 0);
+      const pct = await commissionPercent(db);
+      const members = await db.execute(
+        `SELECT DISTINCT u.id FROM users u JOIN web_apps a ON a.user_id = u.id
+         WHERE u.deleted_at IS NULL AND COALESCE(u.role, 'user') <> 'admin'`,
+      );
+      const p: PlatformTotals = { grossSales: own.grossSales, commission: 0, pending: 0, available: 0, directRevenue: own.grossSales, memberPaidOut: 0 };
+      for (const r of members.rows as unknown as Row[]) {
+        const e = await earningsFor(db, Number(r["id"]), pct);
+        p.grossSales += e.grossSales; p.commission += e.commission; p.pending += e.pending;
+        p.available += e.available; p.memberPaidOut += e.paidOut;
+      }
+      platform = Object.fromEntries(Object.entries(p).map(([k, v]) => [k, round2(v)])) as PlatformTotals;
+    }
     return {
       isAdmin,
+      platform,
       bank: mapBank(bankRes.rows[0] as Row | undefined),
       earnings: await earningsFor(db, userId, percent),
       payouts: (payRes.rows as unknown as Row[]).map((r) => ({
@@ -263,6 +283,13 @@ export const recordSellerPayout = createServerFn({ method: "POST" })
       args: [data.userId],
     });
     const bank = mapBank(bankRes.rows[0] as Row | undefined);
+    const roleRes = await db.execute({ sql: "SELECT role FROM users WHERE id = ? LIMIT 1", args: [data.userId] });
+    if (String((roleRes.rows[0] as Row | undefined)?.["role"] ?? "user") === "admin")
+      throw new Error("Admin sales do not need a payout.");
+    const bal = await earningsFor(db, data.userId, await commissionPercent(db));
+    if (bal.available <= 0) throw new Error("No completed earnings are available for payout yet.");
+    if (round2(data.amount) > bal.available)
+      throw new Error(`Payout cannot exceed the available ${bal.available.toFixed(2)}.`);
     await db.execute({
       sql: `INSERT INTO seller_payouts
               (user_id, amount, currency, reference, notes, account_name, bsb, account_number, paid_by, created_at)

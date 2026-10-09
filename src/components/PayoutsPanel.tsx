@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { getMyPayoutProfile, saveMyBankDetails } from "@/lib/payouts.functions";
 import { formatMoney } from "@/lib/currency";
 import { formatDateTime } from "@/lib/format";
+import { AdminPayoutsPanel } from "@/components/AdminPayoutsPanel";
 
 const input =
   "w-full rounded-lg border border-border/70 bg-background px-3 py-2 text-sm outline-none transition focus:border-primary";
@@ -49,12 +50,19 @@ export function PayoutsPanel() {
   return (
     <div className="space-y-8">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {[
+        {(isAdmin && data?.platform ? [
+          { label: "Total gross sales", value: data.platform.grossSales },
+          { label: "Platform commission", value: data.platform.commission },
+          { label: "Your direct revenue", value: data.platform.directRevenue },
+          { label: "Members awaiting completion", value: data.platform.pending },
+          { label: "Members available for payout", value: data.platform.available },
+          { label: "Paid to members", value: data.platform.memberPaidOut },
+        ] : [
           { label: "Gross sales", value: e?.grossSales ?? 0 },
           { label: `Platform commission (${e?.commissionPercent ?? 0}%)`, value: e?.commission ?? 0 },
           { label: "Awaiting completion", value: e?.pending ?? 0 },
-          { label: isAdmin ? "Direct revenue" : "Available for payout", value: isAdmin ? (e?.netEarned ?? 0) : (e?.available ?? 0) },
-        ].map((card) => (
+          { label: "Available for payout", value: e?.available ?? 0 },
+        ]).map((card) => (
           <div
             key={card.label}
             className="rounded-2xl border border-border/60 bg-surface/40 p-5 shadow-card"
@@ -66,13 +74,11 @@ export function PayoutsPanel() {
       </div>
       <p className="text-sm text-muted-foreground">
         {isAdmin
-          ? "Direct revenue — these sales are deposited straight into your own bank account by Square, so no payout transfer is needed. No platform commission applies to your sales."
+          ? "Total gross includes all sales. Your own sales go straight to your bank via Square — no commission or payout needed. Member sales are paid out below."
           : `Earnings become available once an order is marked complete. Paid so far: ${formatMoney(e?.paidOut ?? 0, cur)}.`}
       </p>
       {isAdmin ? (
-        <p className="text-sm text-muted-foreground">
-          Member payouts are managed under the <span className="font-medium text-foreground">Seller payouts</span> tab.
-        </p>
+        <AdminPayoutsPanel />
       ) : null}
 
 
