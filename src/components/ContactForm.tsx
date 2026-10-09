@@ -75,8 +75,10 @@ export function ContactForm({ account = null }: { account?: ContactAccount | nul
             name="name"
             required
             maxLength={100}
-            defaultValue={account?.name ?? ""}
-            className={field}
+            {...(account
+              ? { value: account.name, readOnly: true }
+              : { defaultValue: "" })}
+            className={`${field} ${account ? "opacity-70" : ""}`}
           />
         </label>
         {account ? (

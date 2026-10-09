@@ -94,7 +94,7 @@ export const submitContactMessage = createServerFn({ method: "POST" })
       ...data.raw,
       email: acc.email,
       phone: acc.phone,
-      name: String(data.raw["name"] ?? "").trim() || acc.name,
+      name: acc.name,
     });
     if (!parsed.success) throw new Error(parsed.error.issues[0]?.message ?? "Invalid input.");
 

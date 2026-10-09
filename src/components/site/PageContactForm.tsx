@@ -140,10 +140,9 @@ export function PageContactForm({ pageId }: { pageId: number }) {
             <span className="text-muted-foreground">Name</span>
             <input
               name="name"
-              required
-              maxLength={100}
-              defaultValue={account.name}
-              className={field}
+              value={account.name}
+              readOnly
+              className={`${field} opacity-70`}
             />
           </label>
           <label className="block text-sm">
@@ -161,7 +160,7 @@ export function PageContactForm({ pageId }: { pageId: number }) {
           <input type="tel" value={account.phone} readOnly className={`${field} opacity-70`} />
         </label>
         <p className="text-xs text-muted-foreground">
-          Email and phone are locked to your verified account details to ensure genuine
+          Name, email and phone are locked to your verified account details to ensure genuine
           enquiries.
         </p>
         <label className="block text-sm">

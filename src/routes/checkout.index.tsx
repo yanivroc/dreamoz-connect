@@ -7,10 +7,8 @@ import { calcTotals, useCart } from "@/lib/cart";
 import { FALLBACK_STOREFRONT, storefrontQuery } from "@/lib/storefront-query";
 import { formatMoney } from "@/lib/content-types";
 
-import { createSquarePayment, getSquareConfig } from "@/lib/square.functions";
+import { createSquarePayment, getCheckoutViewer, getSquareConfig } from "@/lib/square.functions";
 import { sendOrderEmails } from "@/lib/order-email.functions";
-import { AddressAutocomplete } from "@/components/site/AddressAutocomplete";
-import { AU_PHONE_HINT, normalizeAuPhone } from "@/lib/phone";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -47,6 +45,13 @@ function CheckoutPage() {
     queryFn: () => getSquareConfig(),
   });
   const pay = useServerFn(createSquarePayment);
+  const fetchViewer = useServerFn(getCheckoutViewer);
+  const viewer = useQuery({
+    queryKey: ["checkout-viewer", sellerAppId],
+    queryFn: () => fetchViewer({ data: { appId: sellerAppId ?? null } }),
+  });
+  const account = viewer.data?.account ?? null;
+  const isOwner = viewer.data?.isOwner ?? false;
   const sendEmails = useServerFn(sendOrderEmails);
 
   const totals = calcTotals(items, storefront ?? FALLBACK_STOREFRONT);
@@ -54,18 +59,18 @@ function CheckoutPage() {
   const cardRef = useRef<SquareCard | null>(null);
   const [cardReady, setCardReady] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    address: "",
-    city: "",
-    postcode: "",
+  const form = {
+    name: account?.name ?? "",
+    email: account?.email ?? "",
+    phone: account?.phone ?? "",
+    address: account?.address ?? "",
+    city: account?.city ?? "",
+    postcode: account?.postcode ?? "",
     country: "Australia",
-  });
+  };
 
   useEffect(() => {
-    if (!squareConfig?.configured || cardRef.current) return;
+    if (!squareConfig?.configured || cardRef.current || !account || isOwner) return;
     let cancelled = false;
 
     const src =
@@ -108,28 +113,22 @@ function CheckoutPage() {
     return () => {
       cancelled = true;
     };
-  }, [squareConfig]);
+  }, [squareConfig, account, isOwner]);
 
   const handlePay = async () => {
-    if (
-      !form.name.trim() ||
-      !form.email.trim() ||
-      !form.phone.trim() ||
-      !form.address.trim() ||
-      !form.city.trim() ||
-      !form.postcode.trim() ||
-      !form.country.trim()
-    ) {
-      toast.error("Please enter your full name, email, phone, address, city, postcode, and country.");
+    if (!account) {
+      toast.error("Please log in to complete your purchase.");
       return;
     }
-    const phoneE164 = normalizeAuPhone(form.phone);
-    if (!phoneE164) {
-      toast.error(`Please enter a valid ${AU_PHONE_HINT}.`);
+    if (isOwner) {
+      toast.error("You cannot purchase products from your own storefront.");
       return;
     }
-    if (phoneE164 !== form.phone) setForm((f) => ({ ...f, phone: phoneE164 }));
-    const customer = { ...form, phone: phoneE164, country: "Australia" };
+    if (!form.phone || !form.address) {
+      toast.error("Your account is missing a phone number or address. Please contact support.");
+      return;
+    }
+    let customer = { ...form };
     if (!cardRef.current) {
       toast.error("Card form is not ready yet.");
       return;
@@ -159,6 +158,7 @@ function CheckoutPage() {
         toast.error(payment.error ?? "Payment failed.");
         return;
       }
+      if (payment.customer) customer = payment.customer;
 
       // Emails are best-effort — a captured payment must never fail on them.
       try {
@@ -206,6 +206,49 @@ function CheckoutPage() {
     );
   }
 
+  if (viewer.isLoading) {
+    return (
+      <div className="mx-auto max-w-2xl px-6 py-24 text-center text-muted-foreground">
+        Loading…
+      </div>
+    );
+  }
+
+  if (!account) {
+    return (
+      <div className="mx-auto max-w-2xl px-6 py-24 text-center">
+        <h1 className="text-3xl font-bold text-foreground">Checkout</h1>
+        <p className="mt-3 text-muted-foreground">
+          Please log in or create an account to complete your purchase. Your cart will be kept.
+        </p>
+        <div className="mt-6 flex justify-center gap-3">
+          <Button asChild>
+            <Link to="/login" search={{ redirect: "/checkout" }}>
+              Log in
+            </Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/signup">Sign up</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (isOwner) {
+    return (
+      <div className="mx-auto max-w-2xl px-6 py-24 text-center">
+        <h1 className="text-3xl font-bold text-foreground">Checkout</h1>
+        <p className="mt-3 text-muted-foreground">
+          This is your own storefront. You cannot purchase products from yourself.
+        </p>
+        <Link to="/cart" className="mt-6 inline-block text-primary underline">
+          Back to cart
+        </Link>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto grid max-w-5xl gap-10 px-6 py-16 lg:grid-cols-[1fr_360px]">
       <div>
@@ -217,63 +260,30 @@ function CheckoutPage() {
               ["name", "Full name"],
               ["email", "Email"],
               ["phone", "Phone"],
-              ["address", "Address"],
-              ["city", "City"],
-              ["postcode", "Postcode"],
+              ["address", "Delivery address"],
               ["country", "Country"],
             ] as const
           ).map(([key, label]) => (
             <div key={key} className={key === "address" ? "sm:col-span-2" : ""}>
               <Label htmlFor={key}>{label}</Label>
-              {key === "address" ? (
-                <AddressAutocomplete
-                  id="address"
-                  value={form.address}
-                  className="mt-1.5"
-                  required
-                  onChange={(v) => setForm((f) => ({ ...f, address: v }))}
-                  onSelect={(p) =>
-                    setForm((f) => ({
-                      ...f,
-                      address: p.address || f.address,
-                      city: p.city || f.city,
-                      postcode: p.postcode || f.postcode,
-                      country: "Australia",
-                    }))
-                  }
-                />
-              ) : key === "country" ? (
-                <Input id={key} value="Australia" readOnly className="mt-1.5" />
-              ) : key === "phone" ? (
-                <>
-                  <Input
-                    id={key}
-                    value={form.phone}
-                    type="tel"
-                    required
-                    placeholder="+61 412 345 678"
-                    onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))}
-                    onBlur={(e) => {
-                      const e164 = normalizeAuPhone(e.target.value);
-                      if (e164) setForm((f) => ({ ...f, phone: e164 }));
-                    }}
-                    className="mt-1.5"
-                  />
-                  <p className="mt-1 text-xs text-muted-foreground">{AU_PHONE_HINT}</p>
-                </>
-              ) : (
-                <Input
-                  id={key}
-                  value={form[key]}
-                  type={key === "email" ? "email" : "text"}
-                  required
-                  onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
-                  className="mt-1.5"
-                />
-              )}
+              <Input
+                id={key}
+                value={form[key]}
+                readOnly
+                aria-readonly
+                className="mt-1.5 cursor-not-allowed opacity-70"
+              />
             </div>
           ))}
         </div>
+        <p className="mt-3 text-xs text-muted-foreground">
+          Your details and delivery address are locked to your registered account. To update
+          your name, email, phone number or address, please{" "}
+          <Link to="/contact" className="text-primary underline">
+            contact support
+          </Link>
+          .
+        </p>
 
         <h2 className="mt-10 text-xl font-semibold text-foreground">Card details</h2>
         {squareConfig && !squareConfig.configured ? (
