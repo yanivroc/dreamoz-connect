@@ -6,11 +6,13 @@ import { PlanPanel } from "@/components/PlanPanel";
 import { PlanSettingsPanel } from "@/components/PlanSettingsPanel";
 import { PayoutsPanel } from "@/components/PayoutsPanel";
 import { BuilderPanel } from "@/components/BuilderPanel";
+import { PurchasesPanel } from "@/components/PurchasesPanel";
 
 const tabIds = [
   "overview",
   "build",
   "plan",
+  "orders",
   "payouts",
   "seller-payouts",
   "plan-settings",
@@ -56,6 +58,7 @@ function DashboardPage() {
     { id: "overview", label: "Overview" },
     { id: "build", label: "Build Web Apps" },
     { id: "plan", label: "Plan" },
+    { id: "orders", label: "My orders" },
     { id: "payouts", label: "Payouts" },
     ...(isAdmin
       ? ([
@@ -158,6 +161,7 @@ function DashboardPage() {
             <BuilderPanel user={user} />
           ))}
         {tab === "plan" && <PlanPanel user={user} />}
+        {tab === "orders" && <PurchasesPanel />}
         {tab === "payouts" && <PayoutsPanel />}
         {tab === "plan-settings" && isAdmin && <PlanSettingsPanel />}
         {tab === "users" && isAdmin && (

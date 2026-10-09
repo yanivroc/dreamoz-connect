@@ -94,6 +94,7 @@ export const createSquarePayment = createServerFn({ method: "POST" })
     }
 
     // Buyer must be signed in; their registered details are the only ones used.
+    let buyerUserId = 0;
     {
       const { readSession } = await import("./session.server");
       const session = await readSession();
@@ -126,6 +127,7 @@ export const createSquarePayment = createServerFn({ method: "POST" })
       }
       const { splitAuAddress } = await import("./address");
       const parts = splitAuAddress(addr);
+      buyerUserId = Number(session.userId);
       data.customer = {
         name: String(row["name"] ?? ""),
         email: String(row["email"] ?? ""),
@@ -211,8 +213,8 @@ export const createSquarePayment = createServerFn({ method: "POST" })
       const ins = await db.execute({
         sql: `INSERT INTO orders (app_id, user_id, order_no, status, payment_provider, payment_id, receipt_url,
                 buyer_name, buyer_email, buyer_phone, buyer_address, buyer_city, buyer_postcode, buyer_country,
-                subtotal, shipping, total, currency, created_at, updated_at, payment_confirmed_at)
-              VALUES (?, ?, ?, 'payment_confirmed', 'square', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                subtotal, shipping, total, currency, created_at, updated_at, payment_confirmed_at, buyer_user_id)
+              VALUES (?, ?, ?, 'payment_confirmed', 'square', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         args: [
           appId,
           ownerId,
@@ -233,6 +235,7 @@ export const createSquarePayment = createServerFn({ method: "POST" })
           now,
           now,
           now,
+          buyerUserId || null,
         ],
       });
       const orderId = Number(ins.lastInsertRowid);

@@ -384,6 +384,12 @@ export async function ensureOrdersTables(db: Client): Promise<void> {
     line_total REAL NOT NULL
   )`);
   await db.execute(`CREATE INDEX IF NOT EXISTS order_items_order ON order_items (order_id)`);
+  try {
+    await db.execute(`ALTER TABLE orders ADD COLUMN buyer_user_id INTEGER`);
+  } catch {
+    // Column already exists.
+  }
+  await db.execute(`CREATE INDEX IF NOT EXISTS orders_buyer ON orders (buyer_user_id)`);
   ordersReady = true;
 }
 

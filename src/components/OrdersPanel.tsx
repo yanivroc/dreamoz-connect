@@ -12,6 +12,7 @@ import {
 } from "@/lib/orders.functions";
 import { formatMoney } from "@/lib/currency";
 import { formatDateTime } from "@/lib/format";
+import { useOrderInvoiceDownload } from "@/components/PurchasesPanel";
 
 const statusClass: Record<OrderStatus, string> = {
   waiting_for_confirmation: "bg-accent/20 text-accent-foreground",
@@ -42,6 +43,7 @@ export function OrdersPanel({ appId }: { appId: number }) {
   const fetchOrders = useServerFn(listOrders);
   const changeStatus = useServerFn(updateOrderStatus);
   const [openId, setOpenId] = useState<number | null>(null);
+  const invoice = useOrderInvoiceDownload();
 
   const { data, isLoading, error } = useQuery<Order[]>({
     queryKey: ["orders", appId],
@@ -149,6 +151,14 @@ export function OrdersPanel({ appId }: { appId: number }) {
                     <p className="text-xs text-muted-foreground">
                       Square payment ID: <span className="text-foreground">{o.paymentId}</span>
                     </p>
+                    <button
+                      type="button"
+                      disabled={invoice.busy === o.id}
+                      onClick={() => invoice.download(o.id)}
+                      className="text-xs text-primary underline disabled:opacity-50"
+                    >
+                      {invoice.busy === o.id ? "Preparing…" : "Download PDF invoice"}
+                    </button>
                   </div>
 
                   <div className="space-y-3">
