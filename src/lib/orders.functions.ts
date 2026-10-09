@@ -259,3 +259,101 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
     const items = await loadItems(ctx, [data.id]);
     return mapOrder(fresh.rows[0], items.get(data.id) ?? []);
   });
+
+export type Purchase = Order & { storeName: string };
+
+async function requireSignedIn() {
+  const { readSession } = await import("./session.server");
+  const session = await readSession();
+  if (!session.userId) throw new Error("Not signed in.");
+  const { dbClient, ensureUsersTable, ensureWebAppsTable, ensureOrdersTables } =
+    await import("./db.server");
+  const db = dbClient();
+  if (!db) throw new Error("Database is not configured.");
+  await ensureUsersTable(db);
+  await ensureWebAppsTable(db);
+  await ensureOrdersTables(db);
+  const res = await db.execute({
+    sql: "SELECT id, email, role FROM users WHERE id = ? AND deleted_at IS NULL LIMIT 1",
+    args: [session.userId],
+  });
+  const row = res.rows[0] as Record<string, unknown> | undefined;
+  if (!row) throw new Error("Not signed in.");
+  return {
+    db,
+    userId: Number(row["id"]),
+    email: String(row["email"] ?? "").toLowerCase(),
+    isAdmin: String(row["role"] ?? "user") === "admin",
+  };
+}
+
+/** Orders the signed-in user placed as a buyer. */
+export const listMyPurchases = createServerFn({ method: "GET" }).handler(
+  async (): Promise<Purchase[]> => {
+    const ctx = await requireSignedIn();
+    const res = await ctx.db.execute({
+      sql: `SELECT o.*, a.title AS store_name FROM orders o LEFT JOIN web_apps a ON a.id = o.app_id
+            WHERE o.buyer_user_id = ? OR (o.buyer_user_id IS NULL AND lower(o.buyer_email) = ?)
+            ORDER BY o.created_at DESC, o.id DESC LIMIT 500`,
+      args: [ctx.userId, ctx.email],
+    });
+    const ids = res.rows.map((r) => Number((r as Record<string, unknown>)["id"]));
+    const items = await loadItems(ctx as unknown as Ctx, ids);
+    return res.rows.map((r) => {
+      const row = r as Record<string, unknown>;
+      return {
+        ...mapOrder(r, items.get(Number(row["id"])) ?? []),
+        storeName: str(row["store_name"]) || "Store",
+      };
+    });
+  },
+);
+
+/** Rebuilds the PDF invoice for an order (buyer, seller, or admin). */
+export const downloadOrderInvoice = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) => z.object({ id: z.coerce.number().int().positive() }).parse(input))
+  .handler(
+    async ({ data }): Promise<{ ok: true; name: string; content: string } | { ok: false; error: string }> => {
+      const ctx = await requireSignedIn();
+      const res = await ctx.db.execute({
+        sql: `SELECT o.*, a.title AS store_name, a.email AS app_email FROM orders o
+              LEFT JOIN web_apps a ON a.id = o.app_id WHERE o.id = ? LIMIT 1`,
+        args: [data.id],
+      });
+      const row = res.rows[0] as Record<string, unknown> | undefined;
+      if (!row) return { ok: false, error: "Invoice not found." };
+      const isBuyer =
+        Number(row["buyer_user_id"] ?? 0) === ctx.userId ||
+        (!row["buyer_user_id"] && str(row["buyer_email"]).toLowerCase() === ctx.email);
+      const isSeller = Number(row["user_id"]) === ctx.userId;
+      if (!isBuyer && !isSeller && !ctx.isAdmin) {
+        return { ok: false, error: "You do not have permission to view this invoice." };
+      }
+      const items = await loadItems(ctx as unknown as Ctx, [data.id]);
+      const order = mapOrder(row, items.get(data.id) ?? []);
+      const { getSellerInfo } = await import("./seller-info.server");
+      const seller = await getSellerInfo(ctx.db, Number(row["user_id"]));
+      const { buildInvoicePdf } = await import("./invoice.server");
+      const content = await buildInvoicePdf({
+        orderNo: order.orderNo,
+        paymentId: order.paymentId,
+        date: new Date(order.createdAt),
+        brand: str(row["store_name"]) || "DreamozTech",
+        ownerEmail: str(row["app_email"]) || seller?.email,
+        sellerPhone: seller?.phone,
+        sellerAddress: seller?.address,
+        buyer: order.buyer,
+        lines: order.items.map((i) => ({
+          title: i.title,
+          qty: i.qty,
+          price: i.unitPrice,
+          lineTotal: i.lineTotal,
+        })),
+        subtotal: order.subtotal,
+        shipping: order.shipping,
+        total: order.total,
+        currency: order.currency,
+      });
+      return { ok: true, name: `Invoice-${order.orderNo.replace(/[^\w.\-]/g, "_")}.pdf`, content };
+    },
+  );
