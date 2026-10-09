@@ -25,6 +25,12 @@ function readFile(file: File): Promise<Att> {
 
 export function PageContactForm({ pageId }: { pageId: number }) {
   const send = useServerFn(submitContactMessage);
+  const fetchViewer = useServerFn(getContactViewer);
+  const viewer = useQuery({
+    queryKey: ["contact-viewer", pageId],
+    queryFn: () => fetchViewer({ data: { pageId } }),
+    staleTime: 60_000,
+  });
   const [pending, setPending] = useState(false);
   const [seed, setSeed] = useState(() => Math.floor(Math.random() * 1000));
   const captcha = useMemo(() => ({ a: 2 + (seed % 8), b: 1 + ((seed * 7) % 9) }), [seed]);
