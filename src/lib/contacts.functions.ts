@@ -4,7 +4,61 @@ import type { ContactMessage } from "./contacts.server";
 
 export type { ContactMessage } from "./contacts.server";
 
-/** Public: submit the contact form on a contact page of the public site. */
+async function pageOwnerInfo(pageId: number) {
+  const { dbClient, ensureUsersTable, ensureWebAppsTable, ensureWebPagesTables } =
+    await import("./db.server");
+  const db = dbClient();
+  if (!db) throw new Error("Service unavailable.");
+  await ensureUsersTable(db);
+  await ensureWebAppsTable(db);
+  await ensureWebPagesTables(db);
+  const r = await db.execute({
+    sql: `SELECT p.app_id, a.user_id FROM web_pages p JOIN web_apps a ON a.id = p.app_id
+           WHERE p.id = ? LIMIT 1`,
+    args: [pageId],
+  });
+  const row = r.rows[0] as Record<string, unknown> | undefined;
+  return {
+    db,
+    appId: row ? Number(row["app_id"]) : null,
+    ownerId: row ? Number(row["user_id"]) : null,
+  };
+}
+
+async function sessionAccount(db: import("@libsql/client").Client) {
+  const { readSession } = await import("./session.server");
+  const session = await readSession();
+  if (!session.userId) return null;
+  const u = await db.execute({
+    sql: "SELECT id, name, email, phone FROM users WHERE id = ? AND deleted_at IS NULL LIMIT 1",
+    args: [session.userId],
+  });
+  const row = u.rows[0] as Record<string, unknown> | undefined;
+  if (!row) return null;
+  return {
+    id: Number(row["id"]),
+    name: String(row["name"] ?? ""),
+    email: String(row["email"] ?? ""),
+    phone: String(row["phone"] ?? ""),
+  };
+}
+
+/** Who is viewing a page's contact form: signed-in account details and ownership. */
+export const getContactViewer = createServerFn({ method: "GET" })
+  .inputValidator((input: unknown) =>
+    z.object({ pageId: z.number().int().positive() }).parse(input),
+  )
+  .handler(async ({ data }) => {
+    const { db, ownerId } = await pageOwnerInfo(data.pageId);
+    const acc = await sessionAccount(db);
+    if (!acc) return { account: null, isOwner: false };
+    return {
+      account: { name: acc.name, email: acc.email, phone: acc.phone },
+      isOwner: ownerId !== null && ownerId === acc.id,
+    };
+  });
+
+/** Signed-in only: submit the contact form on a page. Email/phone come from the account. */
 export const submitContactMessage = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => {
     const o = (input ?? {}) as Record<string, unknown>;
@@ -25,16 +79,25 @@ export const submitContactMessage = createServerFn({ method: "POST" })
     const { contactInputSchema, saveContactMessage, notifyContactMessage } = await import(
       "./contacts.server"
     );
-    const parsed = contactInputSchema.safeParse(data.raw);
+    const pageId = Number(data.raw["pageId"]);
+    if (!Number.isInteger(pageId) || pageId <= 0) throw new Error("Invalid page.");
+    const { db, appId, ownerId } = await pageOwnerInfo(pageId);
+    if (appId === null) throw new Error("This page does not accept contact messages.");
+    const acc = await sessionAccount(db);
+    if (!acc) throw new Error("Please log in to send an enquiry.");
+    if (ownerId === acc.id) throw new Error("You cannot send an enquiry to your own page.");
+    if (!acc.phone) {
+      throw new Error("Your account has no phone number. Please contact support.");
+    }
+
+    const parsed = contactInputSchema.safeParse({
+      ...data.raw,
+      email: acc.email,
+      phone: acc.phone,
+      name: String(data.raw["name"] ?? "").trim() || acc.name,
+    });
     if (!parsed.success) throw new Error(parsed.error.issues[0]?.message ?? "Invalid input.");
 
-    const { resolveSiteAppId } = await import("./content.server");
-    const { dbClient, ensureWebAppsTable, ensureWebPagesTables } = await import("./db.server");
-    const db = dbClient();
-    if (!db) throw new Error("Service unavailable.");
-    await ensureWebAppsTable(db);
-    await ensureWebPagesTables(db);
-    const appId = await resolveSiteAppId();
     const saved = await saveContactMessage(db, appId, parsed.data);
     await notifyContactMessage(parsed.data, saved);
     return { ok: true as const, id: saved.id };
