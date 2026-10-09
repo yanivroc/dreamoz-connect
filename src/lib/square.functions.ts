@@ -249,6 +249,7 @@ export const createSquarePayment = createServerFn({ method: "POST" })
     // a mail problem can never fail a captured payment.
     return {
       ok: true,
+      customer: data.customer,
       paymentId: body.payment.id,
       ...(body.payment.receipt_url ? { receiptUrl: body.payment.receipt_url } : {}),
       ...(orderNo ? { orderNo } : {}),
