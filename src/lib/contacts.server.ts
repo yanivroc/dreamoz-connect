@@ -58,14 +58,14 @@ export async function saveContactMessage(
   input: ContactInput,
 ): Promise<{ id: number; ownerId: number; appEmail: string; pageTitle: string }> {
   const page = await db.execute({
-    sql: `SELECT p.title, p.enabled, p.contact_enabled, a.user_id, u.email AS email
+    sql: `SELECT p.title, p.enabled, p.contact_enabled, a.enabled AS app_enabled, a.user_id, u.email AS email
           FROM web_pages p JOIN web_apps a ON a.id = p.app_id
           LEFT JOIN users u ON u.id = a.user_id
           WHERE p.id = ? AND p.app_id = ? LIMIT 1`,
     args: [input.pageId, appId],
   });
   const row = page.rows[0] as Record<string, unknown> | undefined;
-  if (!row || Number(row["enabled"]) !== 1 || Number(row["contact_enabled"]) !== 1) {
+  if (!row || Number(row["enabled"]) !== 1 || Number(row["contact_enabled"]) !== 1 || Number(row["app_enabled"] ?? 1) !== 1) {
     throw new Error("This page does not accept contact messages.");
   }
   const ownerId = Number(row["user_id"]);

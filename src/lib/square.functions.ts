@@ -110,9 +110,12 @@ export const createSquarePayment = createServerFn({ method: "POST" })
       const row = u.rows[0] as Record<string, unknown> | undefined;
       if (!row) return { ok: false, error: "Please log in to complete your purchase." };
       const owner = await udb.execute({
-        sql: "SELECT user_id FROM web_apps WHERE id = ? LIMIT 1",
+        sql: "SELECT user_id, enabled FROM web_apps WHERE id = ? LIMIT 1",
         args: [data.appId],
       });
+      if (!owner.rows[0] || Number(owner.rows[0]["enabled"] ?? 1) !== 1) {
+        return { ok: false, error: "This store is currently unavailable." };
+      }
       if (Number(owner.rows[0]?.["user_id"] ?? 0) === Number(session.userId)) {
         return { ok: false, error: "You cannot purchase products from your own storefront." };
       }
