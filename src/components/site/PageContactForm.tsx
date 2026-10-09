@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { submitContactMessage } from "@/lib/contacts.functions";
+import { getContactViewer, submitContactMessage } from "@/lib/contacts.functions";
 
 const MAX_BYTES = 1_500_000;
 const ACCEPT = "application/pdf,image/png,image/jpeg,image/webp,image/gif";
@@ -23,6 +25,12 @@ function readFile(file: File): Promise<Att> {
 
 export function PageContactForm({ pageId }: { pageId: number }) {
   const send = useServerFn(submitContactMessage);
+  const fetchViewer = useServerFn(getContactViewer);
+  const viewer = useQuery({
+    queryKey: ["contact-viewer", pageId],
+    queryFn: () => fetchViewer({ data: { pageId } }),
+    staleTime: 60_000,
+  });
   const [pending, setPending] = useState(false);
   const [seed, setSeed] = useState(() => Math.floor(Math.random() * 1000));
   const captcha = useMemo(() => ({ a: 2 + (seed % 8), b: 1 + ((seed * 7) % 9) }), [seed]);
@@ -52,8 +60,6 @@ export function PageContactForm({ pageId }: { pageId: number }) {
         data: {
           pageId,
           name: String(fd.get("name") ?? ""),
-          email: String(fd.get("email") ?? ""),
-          phone: String(fd.get("phone") ?? ""),
           message: String(fd.get("message") ?? ""),
           attachment1: atts[0],
           attachment2: atts[1],
@@ -74,25 +80,90 @@ export function PageContactForm({ pageId }: { pageId: number }) {
 
   const field =
     "mt-1 w-full rounded-lg border border-border/70 bg-background px-3 py-2 text-sm outline-none focus:border-primary";
+  const box = "mt-12 max-w-3xl rounded-xl border border-border/70 bg-surface p-7 shadow-card";
+
+  if (viewer.isLoading) {
+    return (
+      <section className={box}>
+        <h2 className="text-xl font-semibold text-foreground">Contact us</h2>
+        <p className="mt-3 text-sm text-muted-foreground">Loading…</p>
+      </section>
+    );
+  }
+
+  const account = viewer.data?.account ?? null;
+
+  if (!account) {
+    const here = typeof window !== "undefined" ? window.location.pathname : "/";
+    return (
+      <section className={box}>
+        <h2 className="text-xl font-semibold text-foreground">Contact us</h2>
+        <p className="mt-3 text-sm text-muted-foreground">
+          Please log in or create an account to send an enquiry to this seller.
+        </p>
+        <div className="mt-5 flex flex-wrap gap-3">
+          <Link
+            to="/login"
+            search={{ redirect: here }}
+            className="inline-flex rounded-full bg-gradient-accent px-6 py-2.5 text-sm font-semibold text-primary-foreground shadow-card transition hover:opacity-90"
+          >
+            Log in
+          </Link>
+          <Link
+            to="/signup"
+            className="inline-flex rounded-full border border-border px-6 py-2.5 text-sm font-semibold transition hover:bg-card"
+          >
+            Sign up
+          </Link>
+        </div>
+      </section>
+    );
+  }
+
+  if (viewer.data?.isOwner) {
+    return (
+      <section className={box}>
+        <h2 className="text-xl font-semibold text-foreground">Contact us</h2>
+        <p className="mt-3 text-sm text-muted-foreground">
+          This is your own page. You cannot send an enquiry to yourself.
+        </p>
+      </section>
+    );
+  }
 
   return (
-    <section className="mt-12 max-w-3xl rounded-xl border border-border/70 bg-surface p-7 shadow-card">
+    <section className={box}>
       <h2 className="text-xl font-semibold text-foreground">Contact us</h2>
       <form onSubmit={onSubmit} className="mt-6 space-y-4">
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block text-sm">
             <span className="text-muted-foreground">Name</span>
-            <input name="name" required maxLength={100} className={field} />
+            <input
+              name="name"
+              required
+              maxLength={100}
+              defaultValue={account.name}
+              className={field}
+            />
           </label>
           <label className="block text-sm">
             <span className="text-muted-foreground">Email</span>
-            <input name="email" type="email" required maxLength={255} className={field} />
+            <input
+              type="email"
+              value={account.email}
+              readOnly
+              className={`${field} opacity-70`}
+            />
           </label>
         </div>
         <label className="block text-sm">
           <span className="text-muted-foreground">Phone</span>
-          <input name="phone" type="tel" required maxLength={40} className={field} />
+          <input type="tel" value={account.phone} readOnly className={`${field} opacity-70`} />
         </label>
+        <p className="text-xs text-muted-foreground">
+          Email and phone are locked to your verified account details to ensure genuine
+          enquiries.
+        </p>
         <label className="block text-sm">
           <span className="text-muted-foreground">Message</span>
           <textarea name="message" required rows={5} maxLength={5000} className={field} />
