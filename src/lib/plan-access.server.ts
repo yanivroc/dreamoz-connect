@@ -58,13 +58,16 @@ export async function appOwnerApiCheck(
 ): Promise<{ status: number; body: { error: string; message: string } } | null> {
   try {
     const res = await db.execute({
-      sql: `SELECT u.role, u.plan, u.trial_ends_at, u.plan_expires_at
+      sql: `SELECT a.enabled AS app_enabled, u.role, u.plan, u.trial_ends_at, u.plan_expires_at
               FROM web_apps a JOIN users u ON u.id = a.user_id
              WHERE a.id = ? AND u.deleted_at IS NULL LIMIT 1`,
       args: [appId],
     });
     const row = res.rows[0] as Record<string, unknown> | undefined;
     if (!row) return { status: 402, body: PLAN_EXPIRED_BODY };
+    if (Number(row["app_enabled"] ?? 1) !== 1) {
+      return { status: 403, body: { error: "app_disabled", message: "This web app is disabled." } };
+    }
     const info = rowAccess(row);
     if (!hasAccess(info)) return { status: 402, body: PLAN_EXPIRED_BODY };
     const plan = row["plan"] ? String(row["plan"]) : null;

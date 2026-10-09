@@ -136,7 +136,7 @@ export const listCommunityFeed = createServerFn({ method: "GET" }).handler(
           JOIN users u ON u.id = a.user_id
           LEFT JOIN web_pages parent ON parent.id = p.parent_id
           LEFT JOIN web_app_settings s ON s.app_id = a.id
-         WHERE p.enabled = 1 AND p.feed_enabled = 1 AND u.deleted_at IS NULL
+         WHERE p.enabled = 1 AND p.feed_enabled = 1 AND a.enabled = 1 AND u.deleted_at IS NULL
            AND ${OWNER_ACTIVE_SQL}
          ORDER BY p.updated_at DESC
          LIMIT 60`,
@@ -204,7 +204,7 @@ export const getCommunityPage = createServerFn({ method: "GET" })
               JOIN users u ON u.id = a.user_id
               LEFT JOIN web_pages parent ON parent.id = p.parent_id
               LEFT JOIN web_app_settings s ON s.app_id = a.id
-             WHERE p.id = ? AND p.enabled = 1 AND p.feed_enabled = 1 AND u.deleted_at IS NULL
+             WHERE p.id = ? AND p.enabled = 1 AND p.feed_enabled = 1 AND a.enabled = 1 AND u.deleted_at IS NULL
                AND ${OWNER_ACTIVE_SQL}
              LIMIT 1`,
       args: [data.id, nowIso, nowIso],
