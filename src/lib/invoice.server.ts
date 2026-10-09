@@ -13,9 +13,9 @@ export interface InvoiceInput {
   paymentId?: string;
   date?: Date;
   brand: string;
-  ownerEmail?: string | null;
-  sellerPhone?: string | null;
-  sellerAddress?: string | null;
+  ownerEmail?: string | null | undefined;
+  sellerPhone?: string | null | undefined;
+  sellerAddress?: string | null | undefined;
   buyer: {
     name: string;
     email: string;
