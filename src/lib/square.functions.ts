@@ -156,8 +156,8 @@ export const createSquarePayment = createServerFn({ method: "POST" })
       const ins = await db.execute({
         sql: `INSERT INTO orders (app_id, user_id, order_no, status, payment_provider, payment_id, receipt_url,
                 buyer_name, buyer_email, buyer_phone, buyer_address, buyer_city, buyer_postcode, buyer_country,
-                subtotal, shipping, total, currency, created_at, updated_at)
-              VALUES (?, ?, ?, 'waiting_for_confirmation', 'square', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                subtotal, shipping, total, currency, created_at, updated_at, payment_confirmed_at)
+              VALUES (?, ?, ?, 'payment_confirmed', 'square', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         args: [
           appId,
           ownerId,
@@ -175,6 +175,7 @@ export const createSquarePayment = createServerFn({ method: "POST" })
           priced.shipping,
           priced.total,
           priced.currency,
+          now,
           now,
           now,
         ],

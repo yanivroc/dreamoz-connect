@@ -81,9 +81,8 @@ export function OrdersPanel({ appId }: { appId: number }) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        Orders move from <strong>Waiting for confirmation</strong> to{" "}
-        <strong>Payment confirmed</strong> once you verify the money arrived, and then to{" "}
-        <strong>Order complete</strong> after shipping or delivery.
+        Customer payments are confirmed automatically at checkout. Ship or deliver the order,
+        then click <strong>Mark complete</strong> — completed earnings become available for payout.
       </p>
 
       <ul className="space-y-3">
