@@ -52,11 +52,22 @@ const checkoutSchema = z.object({
     .max(50),
 });
 
+export interface CheckoutCustomer {
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  postcode: string;
+  country: string;
+}
+
 export interface CheckoutResult {
   ok: boolean;
   paymentId?: string;
   receiptUrl?: string;
   orderNo?: string;
+  customer?: CheckoutCustomer;
   amount?: number;
   currency?: string;
   error?: string;
@@ -80,6 +91,47 @@ export const createSquarePayment = createServerFn({ method: "POST" })
     const environment = (process.env["SQUARE_ENVIRONMENT"] ?? "sandbox").toLowerCase();
     if (!accessToken || !locationId) {
       return { ok: false, error: "Payments are not configured yet." };
+    }
+
+    // Buyer must be signed in; their registered details are the only ones used.
+    {
+      const { readSession } = await import("./session.server");
+      const session = await readSession();
+      if (!session.userId) return { ok: false, error: "Please log in to complete your purchase." };
+      const { dbClient, ensureUsersTable, ensureWebAppsTable } = await import("./db.server");
+      const udb = dbClient();
+      if (!udb) return { ok: false, error: "Checkout is unavailable right now." };
+      await ensureUsersTable(udb);
+      await ensureWebAppsTable(udb);
+      const u = await udb.execute({
+        sql: "SELECT name, email, phone, address FROM users WHERE id = ? AND deleted_at IS NULL LIMIT 1",
+        args: [session.userId],
+      });
+      const row = u.rows[0] as Record<string, unknown> | undefined;
+      if (!row) return { ok: false, error: "Please log in to complete your purchase." };
+      const owner = await udb.execute({
+        sql: "SELECT user_id FROM web_apps WHERE id = ? LIMIT 1",
+        args: [data.appId],
+      });
+      if (Number(owner.rows[0]?.["user_id"] ?? 0) === Number(session.userId)) {
+        return { ok: false, error: "You cannot purchase products from your own storefront." };
+      }
+      const phone = String(row["phone"] ?? "");
+      const addr = String(row["address"] ?? "");
+      if (!phone || !addr) {
+        return { ok: false, error: "Your account is missing a phone number or address. Please contact support." };
+      }
+      const { splitAuAddress } = await import("./address");
+      const parts = splitAuAddress(addr);
+      data.customer = {
+        name: String(row["name"] ?? ""),
+        email: String(row["email"] ?? ""),
+        phone,
+        address: parts.address,
+        city: parts.city,
+        postcode: parts.postcode,
+        country: "Australia",
+      };
     }
 
     // Price the order server-side from the seller's own catalogue — never
