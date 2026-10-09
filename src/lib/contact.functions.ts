@@ -80,12 +80,12 @@ export const sendContactEmail = createServerFn({ method: "POST" })
     const consentAt = new Date().toISOString();
 
     await sendMail({
-      from: { email: config.emailFrom, name: `${data.name} via ${config.fromName}` },
+      from: { email: config.emailFrom, name: `${senderName} via ${config.fromName}` },
       to: [{ email: toEmail }],
-      replyTo: { email: data.email, name: data.name },
+      replyTo: { email: data.email, name: senderName },
       subject: `[Contact] ${data.subject}`,
-      textContent: `Name: ${data.name}\nEmail: ${data.email}\nMarketing consent: Yes — given ${consentAt} UTC\n\n${data.message}`,
-      htmlContent: `<p><strong>Name:</strong> ${safe(data.name)}<br/>
+      textContent: `Name: ${senderName}\nEmail: ${data.email}\nMarketing consent: Yes — given ${consentAt} UTC\n\n${data.message}`,
+      htmlContent: `<p><strong>Name:</strong> ${safe(senderName)}<br/>
 <strong>Email:</strong> ${safe(data.email)}<br/>
 <strong>Marketing consent:</strong> Yes — given ${consentAt} UTC</p>
 <p><strong>Subject:</strong> ${safe(data.subject)}</p>
