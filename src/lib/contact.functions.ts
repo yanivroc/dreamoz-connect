@@ -29,9 +29,10 @@ export const sendContactEmail = createServerFn({ method: "POST" })
     const { readSession } = await import("./session.server");
     const session = await readSession();
     let verified = false;
+    let senderName = data.name;
     if (session.userId) {
       const res = await db.execute({
-        sql: `SELECT email FROM users WHERE id = ? AND deleted_at IS NULL LIMIT 1`,
+        sql: `SELECT email, name FROM users WHERE id = ? AND deleted_at IS NULL LIMIT 1`,
         args: [session.userId],
       });
       const accountEmail = res.rows[0]?.["email"];
@@ -40,6 +41,7 @@ export const sendContactEmail = createServerFn({ method: "POST" })
         String(accountEmail).toLowerCase() === data.email.toLowerCase()
       ) {
         verified = true;
+        senderName = String(res.rows[0]?.["name"] ?? data.name);
       }
     }
 
