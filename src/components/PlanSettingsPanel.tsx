@@ -23,18 +23,22 @@ function CommissionCard() {
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({ queryKey: ["commission"], queryFn: () => load() });
   const [percent, setPercent] = useState("");
+  const [abn, setAbn] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (data) setPercent(String(data.percent));
+    if (data) {
+      setPercent(String(data.percent));
+      setAbn(data.abn);
+    }
   }, [data]);
 
 
   async function onSave() {
     setSaving(true);
     try {
-      await saveCommission({ data: { percent: Number(percent) } });
-      toast.success("Commission saved.");
+      await saveCommission({ data: { percent: Number(percent), abn } });
+      toast.success("Settings saved.");
       await qc.invalidateQueries({ queryKey: ["commission"] });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not save.");
@@ -63,13 +67,26 @@ function CommissionCard() {
           onChange={(e) => setPercent(e.target.value)}
         />
       </label>
+      <label className="block max-w-xs space-y-1.5 text-sm">
+        <span className="text-muted-foreground">Platform ABN</span>
+        <input
+          className={input}
+          inputMode="numeric"
+          maxLength={14}
+          value={abn}
+          disabled={isLoading}
+          placeholder="12 345 678 901"
+          onChange={(e) => setAbn(e.target.value)}
+        />
+        <span className="block text-xs text-muted-foreground">Shown on plan invoices.</span>
+      </label>
       <button
         type="button"
         onClick={() => void onSave()}
         disabled={saving || isLoading}
         className="rounded-full bg-gradient-accent px-5 py-2 text-sm font-semibold text-primary-foreground shadow-card transition hover:opacity-90 disabled:opacity-60"
       >
-        {saving ? "Saving…" : "Save commission"}
+        {saving ? "Saving…" : "Save settings"}
       </button>
 
     </div>

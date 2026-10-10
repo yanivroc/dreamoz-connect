@@ -284,12 +284,12 @@ export const getCommunityPage = createServerFn({ method: "GET" })
 
 /** Global sale commission percentage, set by an admin. */
 export const getCommissionSetting = createServerFn({ method: "GET" }).handler(
-  async (): Promise<{ percent: number; canEdit: boolean }> => {
+  async (): Promise<{ percent: number; canEdit: boolean; abn: string }> => {
     let db;
     try {
       db = await openDb();
     } catch {
-      return { percent: 0, canEdit: false };
+      return { percent: 0, canEdit: false, abn: "" };
     }
     let percent = 0;
     try {
@@ -315,13 +315,30 @@ export const getCommissionSetting = createServerFn({ method: "GET" }).handler(
     } catch {
       canEdit = false;
     }
-    return { percent, canEdit };
+    let abn = "";
+    if (canEdit) {
+      try {
+        const res = await db.execute(
+          "SELECT value FROM platform_settings WHERE key = 'platform_abn' LIMIT 1",
+        );
+        const { formatAbn } = await import("./abn");
+        abn = formatAbn(String((res.rows[0] as Row | undefined)?.["value"] ?? ""));
+      } catch {
+        abn = "";
+      }
+    }
+    return { percent, canEdit, abn };
   },
 );
 
 export const saveCommissionSetting = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) =>
-    z.object({ percent: z.coerce.number().min(0).max(100) }).parse(input),
+    z
+      .object({
+        percent: z.coerce.number().min(0).max(100),
+        abn: z.string().trim().max(20).optional(),
+      })
+      .parse(input),
   )
   .handler(async ({ data }) => {
     const { readSession } = await import("./session.server");
@@ -341,5 +358,14 @@ export const saveCommissionSetting = createServerFn({ method: "POST" })
       sql: "INSERT INTO platform_settings (key, value) VALUES ('commission_percent', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
       args: [String(data.percent)],
     });
+    if (data.abn !== undefined) {
+      const { digitsOnly, isValidAbn } = await import("./abn");
+      const abn = digitsOnly(data.abn);
+      if (abn && !isValidAbn(abn)) throw new Error("Please enter a valid 11-digit ABN.");
+      await db.execute({
+        sql: "INSERT INTO platform_settings (key, value) VALUES ('platform_abn', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+        args: [abn],
+      });
+    }
     return { ok: true as const };
   });
