@@ -331,8 +331,9 @@ export const downloadOrderInvoice = createServerFn({ method: "POST" })
       }
       const items = await loadItems(ctx as unknown as Ctx, [data.id]);
       const order = mapOrder(row, items.get(data.id) ?? []);
-      const { getSellerInfo } = await import("./seller-info.server");
+      const { getSellerInfo, getAppAbn } = await import("./seller-info.server");
       const seller = await getSellerInfo(ctx.db, Number(row["user_id"]));
+      const sellerAbn = await getAppAbn(ctx.db, Number(row["app_id"]));
       const { buildInvoicePdf } = await import("./invoice.server");
       const content = await buildInvoicePdf({
         orderNo: order.orderNo,
@@ -342,6 +343,7 @@ export const downloadOrderInvoice = createServerFn({ method: "POST" })
         ownerEmail: str(row["app_email"]) || seller?.email,
         sellerPhone: seller?.phone,
         sellerAddress: seller?.address,
+        sellerAbn,
         buyer: order.buyer,
         lines: order.items.map((i) => ({
           title: i.title,

@@ -290,6 +290,11 @@ export async function ensureWebPagesTables(db: Client): Promise<void> {
   } catch {
     // Column already exists.
   }
+  try {
+    await db.execute(`ALTER TABLE web_app_settings ADD COLUMN abn TEXT`);
+  } catch {
+    // Column already exists.
+  }
   await db.execute(`CREATE TABLE IF NOT EXISTS web_app_shipping_rates (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     app_id INTEGER NOT NULL,

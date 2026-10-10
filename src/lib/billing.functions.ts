@@ -385,11 +385,15 @@ async function buildPlanInvoicePdf(args: {
   const { getMailConfig } = await import("./mailer.server");
   const amount = args.plan.amountCents / 100;
   let seller: { phone: string; address: string } | null = null;
+  let sellerAbn = "";
   try {
     const { dbClient } = await import("./db.server");
-    const { getPlatformSeller } = await import("./seller-info.server");
+    const { getPlatformSeller, getPlatformAbn } = await import("./seller-info.server");
     const db = dbClient();
-    if (db) seller = await getPlatformSeller(db);
+    if (db) {
+      seller = await getPlatformSeller(db);
+      sellerAbn = await getPlatformAbn(db);
+    }
   } catch (err) {
     console.error("platform seller lookup failed", err);
   }
@@ -400,6 +404,7 @@ async function buildPlanInvoicePdf(args: {
     ownerEmail: getMailConfig().emailFrom,
     sellerPhone: seller?.phone,
     sellerAddress: seller?.address,
+    sellerAbn,
     buyer: args.buyer,
     lines: [
       { title: planInvoiceDescription(args.plan), qty: 1, price: amount, lineTotal: amount },
