@@ -8,8 +8,8 @@ export function isValidAbn(v: string): boolean {
   if (d.length !== 11) return false;
   const weights = [10, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19];
   const nums = d.split("").map(Number);
-  nums[0] -= 1;
-  const sum = nums.reduce((acc, n, i) => acc + n * weights[i], 0);
+  nums[0] = (nums[0] ?? 0) - 1;
+  const sum = nums.reduce((acc, n, i) => acc + n * (weights[i] ?? 0), 0);
   return sum % 89 === 0;
 }
 
