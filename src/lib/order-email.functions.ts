@@ -74,9 +74,10 @@ export const sendOrderEmails = createServerFn({ method: "POST" })
     let ownerEmail = content.webApp.email;
     let sellerPhone = "";
     let sellerAddress = "";
+    let sellerAbn = "";
     try {
       const { dbClient } = await import("./db.server");
-      const { getSellerInfo } = await import("./seller-info.server");
+      const { getSellerInfo, getAppAbn } = await import("./seller-info.server");
       const db = dbClient();
       const res = await db?.execute({
         sql: "SELECT user_id FROM web_apps WHERE id = ? LIMIT 1",
@@ -84,6 +85,7 @@ export const sendOrderEmails = createServerFn({ method: "POST" })
       });
       const ownerId = Number((res?.rows[0] as Record<string, unknown> | undefined)?.["user_id"] ?? 0);
       const seller = db && ownerId ? await getSellerInfo(db, ownerId) : null;
+      if (db) sellerAbn = await getAppAbn(db, data.appId);
       if (seller) {
         // Member storefronts may not set a contact email — fall back to the
         // account that owns the web app so the seller still hears about sales.
@@ -174,6 +176,7 @@ export const sendOrderEmails = createServerFn({ method: "POST" })
         ownerEmail,
         sellerPhone,
         sellerAddress,
+        sellerAbn,
         buyer: data.buyer,
         lines: priced.lines,
         subtotal: priced.subtotal,

@@ -4,6 +4,7 @@ import { sanitizeHtml } from "./sanitize-html";
 import { isSafeEmbedCode } from "./embed-code";
 import { COUNTRY_CODES, DEFAULT_COUNTRY, normalizeCountry, type CountryCode } from "./locale";
 import { MAX_PAGES_PER_APP, MAX_PAGE_DEPTH } from "./limits";
+import { digitsOnly, formatAbn, isValidAbn } from "./abn";
 
 export type WebPageImage = {
   id: number;
@@ -44,6 +45,8 @@ export type AppSettings = {
   country: CountryCode;
   logo: { mime: string; data: string } | null;
   favicon: { mime: string; data: string } | null;
+  abn: string;
+  hasProducts: boolean;
 };
 
 export type ShippingRateType = "qty" | "amount";
@@ -307,6 +310,7 @@ export const createWebPage = createServerFn({ method: "POST" })
     const ownerId = await assertApp(ctx, data.appId);
     await assertPageCapacity(ctx, data.appId);
     const p = normalizeProduct(data);
+    if (p.productEnabled) await assertAppHasAbn(ctx, data.appId);
     if (p.parentId !== null) {
       await assertPage(ctx, p.parentId);
       await assertParentDepth(ctx, p.parentId);
@@ -352,6 +356,7 @@ export const updateWebPage = createServerFn({ method: "POST" })
     const ctx = await requireUser();
     await assertPage(ctx, data.id);
     const p = normalizeProduct(data);
+    if (p.productEnabled) await assertAppHasAbn(ctx, data.appId);
     if (p.parentId !== null) {
       if (p.parentId === data.id) throw new Error("A page cannot be its own parent.");
       await assertPage(ctx, p.parentId);
@@ -607,8 +612,9 @@ export const getAppSettings = createServerFn({ method: "GET" })
       args: [data.appId],
     });
     const row = res.rows[0] as Record<string, unknown> | undefined;
+    const hasProducts = await appHasProducts(ctx, data.appId);
     if (!row) {
-      return { appId: data.appId, country: DEFAULT_COUNTRY, logo: null, favicon: null };
+      return { appId: data.appId, country: DEFAULT_COUNTRY, logo: null, favicon: null, abn: "", hasProducts };
     }
     const logoData = row["logo_data"] ? String(row["logo_data"]) : "";
     const favData = row["favicon_data"] ? String(row["favicon_data"]) : "";
@@ -619,6 +625,8 @@ export const getAppSettings = createServerFn({ method: "GET" })
       favicon: favData
         ? { mime: String(row["favicon_mime"] ?? ""), data: favData }
         : null,
+      abn: row["abn"] ? formatAbn(String(row["abn"])) : "",
+      hasProducts,
     };
   });
 
@@ -644,23 +652,30 @@ export const saveAppSettings = createServerFn({ method: "POST" })
           })
           .nullable()
           .optional(),
+        abn: z.string().trim().max(20).optional().default(""),
       })
       .parse(input),
   )
   .handler(async ({ data }) => {
     const ctx = await requireUser();
     const ownerId = await assertApp(ctx, data.appId);
+    const abn = digitsOnly(data.abn);
+    if (abn && !isValidAbn(abn)) throw new Error("Please enter a valid 11-digit ABN.");
+    if (!abn && (await appHasProducts(ctx, data.appId))) {
+      throw new Error("ABN is required because a page in this web app sells products.");
+    }
     const now = new Date().toISOString();
     await ctx.db.execute({
       sql: `INSERT INTO web_app_settings (app_id, user_id, country, logo_mime, logo_data,
-              favicon_mime, favicon_data, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+              favicon_mime, favicon_data, abn, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(app_id) DO UPDATE SET
               country = excluded.country,
               logo_mime = excluded.logo_mime,
               logo_data = excluded.logo_data,
               favicon_mime = excluded.favicon_mime,
               favicon_data = excluded.favicon_data,
+              abn = excluded.abn,
               updated_at = excluded.updated_at`,
       args: [
         data.appId,
@@ -670,11 +685,23 @@ export const saveAppSettings = createServerFn({ method: "POST" })
         data.logo?.data ?? null,
         data.favicon?.mime ?? null,
         data.favicon?.data ?? null,
+        abn || null,
         now,
       ],
     });
     return { ok: true as const };
   });
+
+async function assertAppHasAbn(ctx: Ctx, appId: number): Promise<void> {
+  const res = await ctx.db.execute({
+    sql: "SELECT abn FROM web_app_settings WHERE app_id = ? LIMIT 1",
+    args: [appId],
+  });
+  const abn = String((res.rows[0] as Record<string, unknown> | undefined)?.["abn"] ?? "");
+  if (!abn) {
+    throw new Error("Add your ABN in General settings before selling products.");
+  }
+}
 
 async function appHasProducts(ctx: Ctx, appId: number): Promise<boolean> {
   const res = await ctx.db.execute({

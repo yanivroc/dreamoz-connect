@@ -16,6 +16,8 @@ export interface InvoiceInput {
   ownerEmail?: string | null | undefined;
   sellerPhone?: string | null | undefined;
   sellerAddress?: string | null | undefined;
+  /** Pre-formatted, e.g. "ABN: 12 345 678 901". */
+  sellerAbn?: string | null | undefined;
   buyer: {
     name: string;
     email: string;
@@ -114,7 +116,7 @@ export async function buildInvoicePdf(input: InvoiceInput): Promise<string> {
   text(input.brand, left, 20, bold);
   text("INVOICE", right, 20, bold, grey, "right");
   y -= 16;
-  const sellerLines = [input.ownerEmail, input.sellerAddress, input.sellerPhone].filter(
+  const sellerLines = [input.ownerEmail, input.sellerAddress, input.sellerPhone, input.sellerAbn].filter(
     (v): v is string => !!v && !!String(v).trim(),
   );
   sellerLines.forEach((s, i) => {

@@ -586,7 +586,7 @@ export function WebPagesPanel({ appId }: { appId: number }) {
             </label>
             <p className="-mt-3 pl-6 text-xs text-muted-foreground">
               Accepts payment for this product, with a minimum and maximum order
-              quantity and a shipping rate.
+              quantity and a shipping rate. Requires your ABN in General settings.
             </p>
 
             {form.productEnabled && (

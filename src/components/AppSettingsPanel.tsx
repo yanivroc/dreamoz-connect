@@ -20,6 +20,7 @@ export function AppSettingsPanel({ appId }: { appId: number }) {
   const [logo, setLogo] = useState<Media>(null);
   const [favicon, setFavicon] = useState<Media>(null);
   const [country, setCountry] = useState<CountryCode>(DEFAULT_COUNTRY);
+  const [abn, setAbn] = useState("");
   const [saving, setSaving] = useState(false);
 
   const { data, isLoading, error } = useQuery<AppSettings>({
@@ -32,6 +33,7 @@ export function AppSettingsPanel({ appId }: { appId: number }) {
     setCountry(data.country);
     setLogo(data.logo);
     setFavicon(data.favicon);
+    setAbn(data.abn);
   }, [data]);
 
   async function pick(file: File | undefined, set: (m: Media) => void, max: number) {
@@ -53,6 +55,7 @@ export function AppSettingsPanel({ appId }: { appId: number }) {
           country,
           logo,
           favicon,
+          abn,
         },
       });
       toast.success("Settings saved.");
@@ -94,6 +97,23 @@ export function AppSettingsPanel({ appId }: { appId: number }) {
         </select>
         <span className="block text-xs text-muted-foreground">
           Sets the currency shown on products, cart and checkout, and the weight unit.
+        </span>
+      </label>
+
+      <label className="block max-w-xs space-y-1.5 text-sm">
+        <span className="text-muted-foreground">
+          ABN{data?.hasProducts ? " *" : ""}
+        </span>
+        <input
+          className="w-full rounded-lg border border-border/70 bg-background px-3 py-2 text-sm outline-none transition focus:border-primary"
+          inputMode="numeric"
+          maxLength={14}
+          placeholder="12 345 678 901"
+          value={abn}
+          onChange={(e) => setAbn(e.target.value)}
+        />
+        <span className="block text-xs text-muted-foreground">
+          Required if any page sells products.
         </span>
       </label>
 
