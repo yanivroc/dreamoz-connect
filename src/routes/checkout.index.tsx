@@ -49,6 +49,8 @@ function CheckoutPage() {
   const viewer = useQuery({
     queryKey: ["checkout-viewer", sellerAppId],
     queryFn: () => fetchViewer({ data: { appId: sellerAppId ?? null } }),
+    staleTime: 0,
+    refetchOnMount: "always",
   });
   const account = viewer.data?.account ?? null;
   const isOwner = viewer.data?.isOwner ?? false;
