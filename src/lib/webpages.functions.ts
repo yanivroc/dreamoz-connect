@@ -4,6 +4,7 @@ import { sanitizeHtml } from "./sanitize-html";
 import { isSafeEmbedCode } from "./embed-code";
 import { COUNTRY_CODES, DEFAULT_COUNTRY, normalizeCountry, type CountryCode } from "./locale";
 import { MAX_PAGES_PER_APP, MAX_PAGE_DEPTH } from "./limits";
+import { digitsOnly, formatAbn, isValidAbn } from "./abn";
 
 export type WebPageImage = {
   id: number;
@@ -690,6 +691,17 @@ export const saveAppSettings = createServerFn({ method: "POST" })
     });
     return { ok: true as const };
   });
+
+async function assertAppHasAbn(ctx: Ctx, appId: number): Promise<void> {
+  const res = await ctx.db.execute({
+    sql: "SELECT abn FROM web_app_settings WHERE app_id = ? LIMIT 1",
+    args: [appId],
+  });
+  const abn = String((res.rows[0] as Record<string, unknown> | undefined)?.["abn"] ?? "");
+  if (!abn) {
+    throw new Error("Add your ABN in General settings before selling products.");
+  }
+}
 
 async function appHasProducts(ctx: Ctx, appId: number): Promise<boolean> {
   const res = await ctx.db.execute({
