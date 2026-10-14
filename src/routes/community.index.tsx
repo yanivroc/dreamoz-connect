@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { listCommunityFeed, type CommunityItem } from "@/lib/community.functions";
-import { formatMoney } from "@/lib/content-types";
+import { formatMoney, communitySlug } from "@/lib/content-types";
 import { useCart } from "@/lib/cart";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -38,7 +38,7 @@ type Filter = "all" | "products" | "pages";
 function Card({ item }: { item: CommunityItem }) {
   const to = item.internalSlug
     ? { to: "/page/$slug" as const, params: { slug: item.internalSlug } }
-    : { to: "/community/$id" as const, params: { id: String(item.id) } };
+    : { to: "/community/$id" as const, params: { id: communitySlug(item.id, item.title) } };
   const { add, setOpen } = useCart();
   const buyable = item.isProduct && item.price != null;
 

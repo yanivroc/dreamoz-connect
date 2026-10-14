@@ -10,6 +10,8 @@ import {
   siteWeightUnit,
   slugify,
   sortPages,
+  sortImages,
+  plainExcerpt,
 } from "@/lib/content-types";
 import { RichText } from "@/components/site/RichText";
 import { PageMedia, PageEmbed } from "@/components/site/PageMedia";
@@ -22,25 +24,73 @@ import { PageContactForm } from "@/components/site/PageContactForm";
 export const Route = createFileRoute("/page/$slug")({
   loader: async ({ context, params }) => {
     const result = await context.queryClient.ensureQueryData(siteContentQuery);
-    const page = findPageBySlug(result.content.pages, params.slug);
+    const content = result.content;
+    const page = findPageBySlug(content.pages, params.slug);
+    const parent = page ? findParent(content.pages, page) : undefined;
+    const img = page ? sortImages(page.images ?? [])[0]?.url ?? "" : "";
     return {
+      found: !!page,
       title: page?.title ?? "Page",
-      description: page?.seoDescription ?? result.content.webApp.description ?? "",
+      description:
+        page?.seoDescription || plainExcerpt(page?.description ?? "") || content.webApp.description || "",
+      keywords: page?.keywords ?? "",
+      image: img,
+      path: `/page/${params.slug}`,
+      product: page && isProductPage(page) ? { price: page.product.price, currency: siteCurrency(content) } : null,
+      parent: parent ? { name: parent.title, path: `/page/${slugify(parent.title)}` } : null,
     };
   },
-  head: ({ loaderData }) => {
-    const title = loaderData ? `${loaderData.title} — DreamozTech` : "DreamozTech";
-    const description =
-      loaderData?.description || "Digital innovation, web apps and growth by DreamozTech.";
+  head: ({ loaderData: d }) => {
+    const title = d?.found ? `${d.title} — DreamozTech` : "Page not found — DreamozTech";
+    const description = d?.description || "Digital innovation, web apps and growth by DreamozTech.";
+    const meta: Array<Record<string, string>> = [
+      { title },
+      { name: "description", content: description },
+      { property: "og:title", content: title },
+      { property: "og:description", content: description },
+      { property: "og:type", content: d?.product ? "product" : "article" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: title },
+      { name: "twitter:description", content: description },
+    ];
+    if (!d?.found) meta.push({ name: "robots", content: "noindex" });
+    if (d?.path) meta.push({ property: "og:url", content: d.path });
+    if (d?.keywords) meta.push({ name: "keywords", content: d.keywords.replace(/\s*\n\s*/g, ", ") });
+    if (d?.image && /^https?:\/\//.test(d.image)) {
+      meta.push({ property: "og:image", content: d.image }, { name: "twitter:image", content: d.image });
+    }
+    const ld: object[] = [];
+    if (d?.found) {
+      const crumbs = [{ name: "Home", path: "/" }, ...(d.parent ? [d.parent] : []), { name: d.title, path: d.path }];
+      ld.push({
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: crumbs.map((c, i) => ({ "@type": "ListItem", position: i + 1, name: c.name, item: c.path })),
+      });
+      ld.push(
+        d.product
+          ? {
+              "@context": "https://schema.org",
+              "@type": "Product",
+              name: d.title,
+              description,
+              ...(d.image ? { image: d.image } : {}),
+              offers: { "@type": "Offer", price: d.product.price, priceCurrency: d.product.currency, availability: "https://schema.org/InStock" },
+            }
+          : {
+              "@context": "https://schema.org",
+              "@type": "Article",
+              headline: d.title,
+              description,
+              ...(d.image ? { image: d.image } : {}),
+              publisher: { "@type": "Organization", name: "DreamozTech" },
+            },
+      );
+    }
     return {
-      meta: [
-        { title },
-        { name: "description", content: description },
-        { property: "og:title", content: title },
-        { property: "og:description", content: description },
-        { property: "og:type", content: "article" },
-        { name: "twitter:card", content: "summary_large_image" },
-      ],
+      meta,
+      links: d?.found ? [{ rel: "canonical", href: d.path }] : [],
+      scripts: ld.map((x) => ({ type: "application/ld+json", children: JSON.stringify(x) })),
     };
   },
   component: PageDetail,

@@ -28,6 +28,7 @@ export type CommunityPage = {
   title: string;
   description: string;
   seoDescription: string;
+  keywords: string;
   embedCode: string;
   hyperlink: string;
   isProduct: boolean;
@@ -247,6 +248,7 @@ export const getCommunityPage = createServerFn({ method: "GET" })
       title,
       description: String(r["description"] ?? ""),
       seoDescription: String(r["seo_description"] ?? ""),
+      keywords: String(r["keywords"] ?? ""),
       embedCode: String(r["embed_code"] ?? ""),
       hyperlink: String(r["hyperlink"] ?? ""),
       isProduct: Number(r["product_enabled"] ?? 0) === 1,
