@@ -38,7 +38,7 @@ type Filter = "all" | "products" | "pages";
 function Card({ item }: { item: CommunityItem }) {
   const to = item.internalSlug
     ? { to: "/page/$slug" as const, params: { slug: item.internalSlug } }
-    : { to: "/community/$id" as const, params: { id: String(item.id) } };
+    : { to: "/community/$id" as const, params: { id: communitySlug(item.id, item.title) } };
   const { add, setOpen } = useCart();
   const buyable = item.isProduct && item.price != null;
 

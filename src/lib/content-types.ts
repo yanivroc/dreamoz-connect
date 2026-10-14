@@ -89,6 +89,24 @@ export function slugify(title: string): string {
     .slice(0, 80);
 }
 
+/** Community URL segment: "23-land-for-sale-in-donnybrook". */
+export function communitySlug(id: number, title: string): string {
+  const s = slugify(title);
+  return s ? `${id}-${s}` : String(id);
+}
+
+/** Extract numeric ID from "23-some-title" (or plain "23"). */
+export function communityIdFromParam(param: string): string {
+  const m = /^(\d+)/.exec(param);
+  return m ? m[1]! : "0";
+}
+
+/** Strip HTML to plain text for meta descriptions. */
+export function plainExcerpt(html: string, max = 160): string {
+  const t = (html || "").replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
+  return t.length > max ? `${t.slice(0, max - 1).trimEnd()}…` : t;
+}
+
 export function sortPages(pages: WaPage[]): WaPage[] {
   return [...pages].filter((p) => p.enabled).sort((a, b) => a.orderNo - b.orderNo);
 }
