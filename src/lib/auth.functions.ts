@@ -22,6 +22,8 @@ export type CurrentUser = {
   trialEndsAt: string | null;
   planExpiresAt: string | null;
   access: AccessInfo;
+  /** Storefronts (web apps) this account owns; only filled by `me()`. */
+  ownedAppIds?: number[];
 };
 
 export type LoginResult =
@@ -105,6 +107,19 @@ export const me = createServerFn({ method: "GET" }).handler(
       args: [session.userId],
     });
     const row = res.rows[0] as Record<string, unknown> | undefined;
-    return row ? toCurrentUser(row) : null;
+    if (!row) return null;
+    const user = toCurrentUser(row);
+    try {
+      const { ensureWebAppsTable } = await import("./db.server");
+      await ensureWebAppsTable(db);
+      const apps = await db.execute({
+        sql: "SELECT id FROM web_apps WHERE user_id = ?",
+        args: [user.id],
+      });
+      user.ownedAppIds = apps.rows.map((r) => Number((r as Record<string, unknown>)["id"]));
+    } catch {
+      user.ownedAppIds = [];
+    }
+    return user;
   },
 );

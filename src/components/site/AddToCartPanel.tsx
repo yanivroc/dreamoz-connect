@@ -4,6 +4,7 @@ import type { CartItem } from "@/lib/cart";
 import { useCart } from "@/lib/cart";
 import { Button } from "@/components/ui/button";
 import { QuantityInput } from "./QuantityInput";
+import { OWN_PRODUCT_MESSAGE, useIsOwnApp } from "@/lib/use-owned-apps";
 
 /** Quantity picker + add-to-cart for any seller's product. */
 export function AddToCartPanel({
@@ -14,9 +15,20 @@ export function AddToCartPanel({
   className?: string;
 }) {
   const { add, setOpen } = useCart();
+  const isOwn = useIsOwnApp();
   const min = item.minQty ?? 1;
   const max = item.maxQty ?? 99;
   const [qty, setQty] = useState(min);
+
+  if (isOwn(item.appId)) {
+    return (
+      <div
+        className={`max-w-md rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground ${className ?? "mt-8"}`}
+      >
+        This is your own product. {OWN_PRODUCT_MESSAGE}
+      </div>
+    );
+  }
 
   return (
     <div

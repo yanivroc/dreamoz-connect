@@ -4,6 +4,7 @@ import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { listCommunityFeed, type CommunityItem } from "@/lib/community.functions";
 import { formatMoney, communitySlug } from "@/lib/content-types";
 import { useCart } from "@/lib/cart";
+import { useIsOwnApp } from "@/lib/use-owned-apps";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -40,6 +41,7 @@ function Card({ item }: { item: CommunityItem }) {
     ? { to: "/page/$slug" as const, params: { slug: item.internalSlug } }
     : { to: "/community/$id" as const, params: { id: communitySlug(item.id, item.title) } };
   const { add, setOpen } = useCart();
+  const isOwn = useIsOwnApp();
   const buyable = item.isProduct && item.price != null;
 
   return (
@@ -86,7 +88,9 @@ function Card({ item }: { item: CommunityItem }) {
           </div>
         </div>
       </Link>
-      {buyable ? (
+      {buyable && isOwn(item.appId) ? (
+        <p className="px-5 pb-5 text-sm text-muted-foreground">This is your own product.</p>
+      ) : buyable ? (
         <div className="px-5 pb-5">
           <Button
             className="w-full"
