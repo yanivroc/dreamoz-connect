@@ -257,7 +257,16 @@ export const updateOrderStatus = createServerFn({ method: "POST" })
       args: [data.id],
     });
     const items = await loadItems(ctx, [data.id]);
-    return mapOrder(fresh.rows[0], items.get(data.id) ?? []);
+    const order = mapOrder(fresh.rows[0], items.get(data.id) ?? []);
+    if (data.status === "cancelled") {
+      try {
+        const { sendCancellationEmails } = await import("./order-cancel-email.server");
+        await sendCancellationEmails(ctx.db, order);
+      } catch (err) {
+        console.error("cancellation emails failed", err);
+      }
+    }
+    return order;
   });
 
 export type Purchase = Order & { storeName: string };
