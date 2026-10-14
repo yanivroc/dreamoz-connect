@@ -16,34 +16,95 @@ const pageQuery = (id: string) =>
 
 export const Route = createFileRoute("/community/$id")({
   loader: async ({ context, params }) => {
-    const page = await context.queryClient.ensureQueryData(pageQuery(params.id));
+    const id = communityIdFromParam(params.id);
+    const page = await context.queryClient.ensureQueryData(pageQuery(id));
+    if (page) {
+      const canonical = communitySlug(page.id, page.title);
+      if (params.id !== canonical) {
+        throw redirect({ to: "/community/$id", params: { id: canonical }, statusCode: 301 });
+      }
+    }
     return {
+      found: !!page,
       title: page?.title ?? "Community",
-      description: page?.seoDescription ?? "",
+      description: page?.seoDescription || plainExcerpt(page?.description ?? ""),
+      keywords: page?.keywords ?? "",
+      image: page?.images[0]?.url ?? "",
+      path: page ? `/community/${communitySlug(page.id, page.title)}` : "/community",
+      isProduct: !!page?.isProduct && page?.price != null,
+      price: page?.price ?? null,
+      currency: page?.currency ?? "AUD",
+      seller: page ? page.ownerName || page.appTitle : "",
+      parent:
+        page?.parentId != null && page.parentTitle
+          ? { name: page.parentTitle, path: `/community/${communitySlug(page.parentId, page.parentTitle)}` }
+          : null,
     };
   },
-  head: ({ loaderData }) => {
-    const title = loaderData?.title
-      ? `${loaderData.title} — Community | DreamozTech`
-      : "Community | DreamozTech";
-    const description =
-      loaderData?.description || "A page shared by a DreamozTech member in the community.";
+  head: ({ loaderData: d }) => {
+    const title = d?.found ? `${d.title} — Community | DreamozTech` : "Community | DreamozTech";
+    const description = d?.description || "A page shared by a DreamozTech member in the community.";
+    const meta: Array<Record<string, string>> = [
+      { title },
+      { name: "description", content: description },
+      { property: "og:title", content: title },
+      { property: "og:description", content: description },
+      { property: "og:type", content: d?.isProduct ? "product" : "article" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: title },
+      { name: "twitter:description", content: description },
+    ];
+    if (!d?.found) meta.push({ name: "robots", content: "noindex" });
+    if (d?.path) meta.push({ property: "og:url", content: d.path });
+    if (d?.keywords) meta.push({ name: "keywords", content: d.keywords.replace(/\s*\n\s*/g, ", ") });
+    if (d?.image && /^https?:\/\//.test(d.image)) {
+      meta.push({ property: "og:image", content: d.image }, { name: "twitter:image", content: d.image });
+    }
+    const crumbs = [
+      { name: "Community", path: "/community" },
+      ...(d?.parent ? [d.parent] : []),
+      ...(d?.found ? [{ name: d.title, path: d.path }] : []),
+    ];
+    const ld: object[] = [
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: crumbs.map((c, i) => ({ "@type": "ListItem", position: i + 1, name: c.name, item: c.path })),
+      },
+    ];
+    if (d?.found) {
+      ld.push(
+        d.isProduct
+          ? {
+              "@context": "https://schema.org",
+              "@type": "Product",
+              name: d.title,
+              description,
+              ...(d.image ? { image: d.image } : {}),
+              offers: { "@type": "Offer", price: d.price, priceCurrency: d.currency, availability: "https://schema.org/InStock", seller: { "@type": "Organization", name: d.seller } },
+            }
+          : {
+              "@context": "https://schema.org",
+              "@type": "Article",
+              headline: d.title,
+              description,
+              ...(d.image ? { image: d.image } : {}),
+              author: { "@type": "Person", name: d.seller },
+            },
+      );
+    }
     return {
-      meta: [
-        { title },
-        { name: "description", content: description },
-        { property: "og:title", content: title },
-        { property: "og:description", content: description },
-        { property: "og:type", content: "article" },
-        { name: "twitter:card", content: "summary_large_image" },
-      ],
+      meta,
+      links: d?.path ? [{ rel: "canonical", href: d.path }] : [],
+      scripts: ld.map((x) => ({ type: "application/ld+json", children: JSON.stringify(x) })),
     };
   },
   component: CommunityDetail,
 });
 
 function CommunityDetail() {
-  const { id } = Route.useParams();
+  const { id: param } = Route.useParams();
+  const id = communityIdFromParam(param);
   const { data: page } = useSuspenseQuery(pageQuery(id));
 
   if (!page) {
