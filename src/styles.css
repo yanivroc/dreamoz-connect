@@ -62,35 +62,35 @@
 }
 
 @theme inline {
-  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Sora", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
   --color-surface: var(--surface);
   --color-surface-foreground: var(--surface-foreground);
 }
 
 :root {
   --radius: 0.75rem;
-  --background: oklch(0.16 0.03 250);
+  --background: oklch(0.14 0.02 260);
   --foreground: oklch(0.97 0.01 240);
-  --surface: oklch(0.21 0.035 250);
+  --surface: oklch(0.19 0.03 262);
   --surface-foreground: oklch(0.97 0.01 240);
-  --card: oklch(0.21 0.035 250);
+  --card: oklch(0.19 0.03 262);
   --card-foreground: oklch(0.97 0.01 240);
-  --popover: oklch(0.21 0.035 250);
+  --popover: oklch(0.19 0.03 262);
   --popover-foreground: oklch(0.97 0.01 240);
-  --primary: oklch(0.75 0.14 205);
+  --primary: oklch(0.77 0.14 230);
   --primary-foreground: oklch(0.17 0.04 250);
   --secondary: oklch(0.28 0.04 255);
   --secondary-foreground: oklch(0.95 0.01 240);
   --muted: oklch(0.26 0.03 252);
-  --muted-foreground: oklch(0.72 0.02 245);
+  --muted-foreground: oklch(0.76 0.02 255);
   --accent: oklch(0.72 0.17 55);
   --accent-foreground: oklch(0.17 0.04 250);
   --destructive: oklch(0.62 0.22 25);
   --destructive-foreground: oklch(0.98 0.01 240);
-  --border: oklch(0.32 0.03 252);
+  --border: oklch(0.28 0.025 262);
   --input: oklch(0.32 0.03 252);
-  --ring: oklch(0.75 0.14 205);
+  --ring: oklch(0.77 0.14 230);
   --gradient-hero: radial-gradient(
       120% 100% at 15% 0%,
       oklch(0.32 0.09 210 / 0.55),
@@ -102,8 +102,8 @@
     oklch(0.75 0.14 205),
     oklch(0.72 0.17 55)
   );
-  --shadow-glow: 0 24px 60px -24px oklch(0.75 0.14 205 / 0.5);
-  --shadow-card: 0 18px 40px -28px oklch(0 0 0 / 0.8);
+  --shadow-glow: 0 0 32px -6px oklch(0.77 0.14 230 / 0.45);
+  --shadow-card: inset 0 1px 0 0 oklch(1 0 0 / 0.06), 0 18px 40px -28px oklch(0 0 0 / 0.9);
   --media-canvas: oklch(0.98 0.005 240);
 }
 
@@ -135,8 +135,8 @@
   h3,
   h4 {
     font-family: var(--font-display);
-    letter-spacing: 0;
-    line-height: 1.15;
+    letter-spacing: -0.02em;
+    line-height: 1.12;
     text-wrap: balance;
   }
 }
@@ -495,4 +495,13 @@
   height: 14px !important;
   stroke: #0f172a !important;
   stroke-width: 2.25 !important;
+}
+
+@layer base {
+  body {
+    background-image: radial-gradient(80% 50% at 50% -10%, oklch(0.77 0.14 230 / 0.12), transparent 70%);
+    background-attachment: fixed;
+  }
+  main h2 { font-size: clamp(2rem, 3.6vw, 2.9rem); font-weight: 700; }
+  .bg-card\/40 { background-color: oklch(0.17 0.025 262 / 0.6); }
 }
