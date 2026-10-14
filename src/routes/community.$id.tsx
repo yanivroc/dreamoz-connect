@@ -1,7 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { getCommunityPage } from "@/lib/community.functions";
-import { formatMoney } from "@/lib/content-types";
+import { formatMoney, communitySlug, communityIdFromParam, plainExcerpt } from "@/lib/content-types";
 import { parseEmbedCode } from "@/lib/embed-code";
 import { RichText } from "@/components/site/RichText";
 import { AddToCartPanel } from "@/components/site/AddToCartPanel";

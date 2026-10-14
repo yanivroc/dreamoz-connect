@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
 import { listCommunityFeed, type CommunityItem } from "@/lib/community.functions";
-import { formatMoney } from "@/lib/content-types";
+import { formatMoney, communitySlug } from "@/lib/content-types";
 import { useCart } from "@/lib/cart";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
