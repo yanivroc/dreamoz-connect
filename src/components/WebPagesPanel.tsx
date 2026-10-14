@@ -17,6 +17,7 @@ import {
   type WebPage,
   type WebPageImage,
 } from "@/lib/webpages.functions";
+import { ArchivedPagesPanel } from "@/components/ArchivedPagesPanel";
 import { weightUnitFor } from "@/lib/locale";
 import { encodeImage, imageSrc } from "@/lib/image-upload";
 import { RichTextEditor } from "@/components/RichTextEditor";
@@ -239,10 +240,11 @@ export function WebPagesPanel({ appId }: { appId: number }) {
       setPendingDelete(null);
       toast.success(
         kids.length > 0
-          ? `Deleted 1 page and ${kids.length} sub page${kids.length === 1 ? "" : "s"}.`
-          : "Deleted 1 page.",
+          ? `Archived 1 page and ${kids.length} sub page${kids.length === 1 ? "" : "s"}.`
+          : "Page archived. You can restore it from Archived pages.",
       );
       await refresh();
+      await queryClient.invalidateQueries({ queryKey: ["archived-pages", appId] });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Could not delete the page.");
     } finally {
@@ -781,6 +783,8 @@ export function WebPagesPanel({ appId }: { appId: number }) {
         </div>
       </div>
 
+      <ArchivedPagesPanel appId={appId} />
+
       <AlertDialog
         open={pendingDelete !== null}
         onOpenChange={(open) => {
@@ -795,17 +799,17 @@ export function WebPagesPanel({ appId }: { appId: number }) {
             <AlertDialogDescription>
               {pendingDelete && childrenOf(pendingDelete.id).length > 0 ? (
                 <>
-                  This will also permanently delete{" "}
+                  This will also move{" "}
                   {childrenOf(pendingDelete.id).length} sub page
                   {childrenOf(pendingDelete.id).length === 1 ? "" : "s"} and all their
                   images:{" "}
                   {childrenOf(pendingDelete.id)
                     .map((c) => c.title)
                     .join(", ")}
-                  . This cannot be undone.
+                  {" "}to Archived pages. You can restore them later.
                 </>
               ) : (
-                "This page and its images will be permanently deleted. This cannot be undone."
+                "This page will be moved to Archived pages and hidden from your site. You can restore it later."
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>

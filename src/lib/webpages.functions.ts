@@ -132,7 +132,7 @@ async function assertPage(ctx: Ctx, pageId: number) {
 async function assertPageCapacity(ctx: Ctx, appId: number) {
   if (ctx.isAdmin) return;
   const res = await ctx.db.execute({
-    sql: "SELECT COUNT(*) AS n FROM web_pages WHERE app_id = ?",
+    sql: "SELECT COUNT(*) AS n FROM web_pages WHERE app_id = ? AND deleted_at IS NULL",
     args: [appId],
   });
   const n = Number((res.rows[0] as Record<string, unknown> | undefined)?.["n"] ?? 0);
@@ -145,7 +145,7 @@ async function assertPageCapacity(ctx: Ctx, appId: number) {
 
 async function assertParentDepth(ctx: Ctx, parentId: number) {
   const res = await ctx.db.execute({
-    sql: "SELECT parent_id FROM web_pages WHERE id = ? LIMIT 1",
+    sql: "SELECT parent_id FROM web_pages WHERE id = ? AND deleted_at IS NULL LIMIT 1",
     args: [parentId],
   });
   const row = res.rows[0] as Record<string, unknown> | undefined;
@@ -271,7 +271,7 @@ export const listWebPages = createServerFn({ method: "GET" })
     const ctx = await requireUser();
     await assertApp(ctx, data.appId);
     const res = await ctx.db.execute({
-      sql: `SELECT * FROM web_pages WHERE app_id = ? ORDER BY order_no ASC, id ASC`,
+      sql: `SELECT * FROM web_pages WHERE app_id = ? AND deleted_at IS NULL ORDER BY order_no ASC, id ASC`,
       args: [data.appId],
     });
     const pages = res.rows.map(mapPage);
@@ -280,7 +280,7 @@ export const listWebPages = createServerFn({ method: "GET" })
       sql: `SELECT i.id, i.page_id, i.mime, i.data, i.alt, i.hyperlink, i.order_no
             FROM web_page_images i
             JOIN web_pages p ON p.id = i.page_id
-            WHERE p.app_id = ?
+            WHERE p.app_id = ? AND p.deleted_at IS NULL
             ORDER BY i.order_no ASC, i.id ASC`,
       args: [data.appId],
     });
@@ -363,7 +363,7 @@ export const updateWebPage = createServerFn({ method: "POST" })
       await assertParentDepth(ctx, p.parentId);
       if (!ctx.isAdmin) {
         const kids = await ctx.db.execute({
-          sql: "SELECT COUNT(*) AS n FROM web_pages WHERE parent_id = ?",
+          sql: "SELECT COUNT(*) AS n FROM web_pages WHERE parent_id = ? AND deleted_at IS NULL",
           args: [data.id],
         });
         const n = Number(
@@ -412,23 +412,102 @@ export const deleteWebPage = createServerFn({ method: "POST" })
     z.object({ id: z.coerce.number().int() }).parse(input),
   )
   .handler(async ({ data }) => {
+    // Soft delete: archive the page and its sub pages so they can be restored.
     const ctx = await requireUser();
     await assertPage(ctx, data.id);
-    const children = await ctx.db.execute({
-      sql: "SELECT id FROM web_pages WHERE parent_id = ?",
+    const now = new Date().toISOString();
+    await ctx.db.execute({
+      sql: `UPDATE web_pages SET deleted_at = ?, updated_at = ?
+             WHERE (id = ? OR parent_id = ?) AND deleted_at IS NULL`,
+      args: [now, now, data.id, data.id],
+    });
+    return { ok: true as const };
+  });
+
+export type ArchivedPage = {
+  id: number;
+  parentId: number | null;
+  title: string;
+  productEnabled: boolean;
+  deletedAt: string;
+};
+
+export const listArchivedPages = createServerFn({ method: "GET" })
+  .inputValidator((input: unknown) =>
+    z.object({ appId: z.coerce.number().int() }).parse(input),
+  )
+  .handler(async ({ data }): Promise<ArchivedPage[]> => {
+    const ctx = await requireUser();
+    await assertApp(ctx, data.appId);
+    const res = await ctx.db.execute({
+      sql: `SELECT id, parent_id, title, product_enabled, deleted_at FROM web_pages
+             WHERE app_id = ? AND deleted_at IS NOT NULL ORDER BY deleted_at DESC, id ASC`,
+      args: [data.appId],
+    });
+    return res.rows.map((r) => {
+      const row = r as unknown as Record<string, unknown>;
+      return {
+        id: Number(row["id"]),
+        parentId: row["parent_id"] == null ? null : Number(row["parent_id"]),
+        title: String(row["title"] ?? ""),
+        productEnabled: Number(row["product_enabled"] ?? 0) === 1,
+        deletedAt: String(row["deleted_at"] ?? ""),
+      };
+    });
+  });
+
+export const restoreWebPage = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z.object({ id: z.coerce.number().int() }).parse(input),
+  )
+  .handler(async ({ data }) => {
+    const ctx = await requireUser();
+    const { appId } = await assertPage(ctx, data.id);
+    const res = await ctx.db.execute({
+      sql: "SELECT parent_id, deleted_at FROM web_pages WHERE id = ? LIMIT 1",
       args: [data.id],
     });
-    const ids = [
-      data.id,
-      ...children.rows.map((r) =>
-        Number((r as unknown as Record<string, unknown>)["id"]),
-      ),
-    ];
-    for (const id of ids) {
-      await ctx.db.execute({
-        sql: "DELETE FROM web_page_images WHERE page_id = ?",
-        args: [id],
+    const row = res.rows[0] as unknown as Record<string, unknown>;
+    const deletedAt = row["deleted_at"];
+    if (deletedAt == null) return { ok: true as const };
+    const parentId = row["parent_id"] == null ? null : Number(row["parent_id"]);
+    if (parentId !== null) {
+      const parent = await ctx.db.execute({
+        sql: "SELECT deleted_at FROM web_pages WHERE id = ? LIMIT 1",
+        args: [parentId],
       });
+      const prow = parent.rows[0] as unknown as Record<string, unknown> | undefined;
+      if (!prow || prow["deleted_at"] != null) {
+        throw new Error("Restore the parent page first.");
+      }
+    }
+    await assertPageCapacity(ctx, appId);
+    const now = new Date().toISOString();
+    // Restore the page plus sub pages archived in the same delete.
+    await ctx.db.execute({
+      sql: `UPDATE web_pages SET deleted_at = NULL, updated_at = ?
+             WHERE id = ? OR (parent_id = ? AND deleted_at = ?)`,
+      args: [now, data.id, data.id, String(deletedAt)],
+    });
+    return { ok: true as const };
+  });
+
+export const purgeWebPage = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z.object({ id: z.coerce.number().int() }).parse(input),
+  )
+  .handler(async ({ data }) => {
+    // Permanent delete; only allowed for archived pages. Orders keep their own snapshot.
+    const ctx = await requireUser();
+    await assertPage(ctx, data.id);
+    const res = await ctx.db.execute({
+      sql: `SELECT id FROM web_pages WHERE (id = ? OR parent_id = ?) AND deleted_at IS NOT NULL`,
+      args: [data.id, data.id],
+    });
+    const ids = res.rows.map((r) => Number((r as unknown as Record<string, unknown>)["id"]));
+    if (!ids.includes(data.id)) throw new Error("Only archived pages can be permanently deleted.");
+    for (const id of ids) {
+      await ctx.db.execute({ sql: "DELETE FROM web_page_images WHERE page_id = ?", args: [id] });
       await ctx.db.execute({ sql: "DELETE FROM web_pages WHERE id = ?", args: [id] });
     }
     return { ok: true as const };
@@ -705,7 +784,7 @@ async function assertAppHasAbn(ctx: Ctx, appId: number): Promise<void> {
 
 async function appHasProducts(ctx: Ctx, appId: number): Promise<boolean> {
   const res = await ctx.db.execute({
-    sql: "SELECT COUNT(*) AS n FROM web_pages WHERE app_id = ? AND product_enabled = 1",
+    sql: "SELECT COUNT(*) AS n FROM web_pages WHERE app_id = ? AND product_enabled = 1 AND deleted_at IS NULL",
     args: [appId],
   });
   const row = res.rows[0] as unknown as Record<string, unknown> | undefined;

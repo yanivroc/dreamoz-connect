@@ -61,7 +61,7 @@ export async function saveContactMessage(
     sql: `SELECT p.title, p.enabled, p.contact_enabled, a.enabled AS app_enabled, a.user_id, u.email AS email
           FROM web_pages p JOIN web_apps a ON a.id = p.app_id
           LEFT JOIN users u ON u.id = a.user_id
-          WHERE p.id = ? AND p.app_id = ? LIMIT 1`,
+          WHERE p.id = ? AND p.app_id = ? AND p.deleted_at IS NULL LIMIT 1`,
     args: [input.pageId, appId],
   });
   const row = page.rows[0] as Record<string, unknown> | undefined;
