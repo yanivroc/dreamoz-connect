@@ -131,13 +131,13 @@ export const listCommunityFeed = createServerFn({ method: "GET" }).handler(
                a.title AS app_title,
                u.name AS owner_name,
                s.country AS country,
-               (SELECT COUNT(*) FROM web_pages c WHERE c.parent_id = p.id AND c.enabled = 1) AS child_count
+               (SELECT COUNT(*) FROM web_pages c WHERE c.parent_id = p.id AND c.enabled = 1 AND c.deleted_at IS NULL) AS child_count
           FROM web_pages p
           JOIN web_apps a ON a.id = p.app_id
           JOIN users u ON u.id = a.user_id
           LEFT JOIN web_pages parent ON parent.id = p.parent_id
           LEFT JOIN web_app_settings s ON s.app_id = a.id
-         WHERE p.enabled = 1 AND p.feed_enabled = 1 AND a.enabled = 1 AND u.deleted_at IS NULL
+         WHERE p.enabled = 1 AND p.deleted_at IS NULL AND p.feed_enabled = 1 AND a.enabled = 1 AND u.deleted_at IS NULL
            AND ${OWNER_ACTIVE_SQL}
          ORDER BY p.updated_at DESC
          LIMIT 60`,
@@ -205,7 +205,7 @@ export const getCommunityPage = createServerFn({ method: "GET" })
               JOIN users u ON u.id = a.user_id
               LEFT JOIN web_pages parent ON parent.id = p.parent_id
               LEFT JOIN web_app_settings s ON s.app_id = a.id
-             WHERE p.id = ? AND p.enabled = 1 AND p.feed_enabled = 1 AND a.enabled = 1 AND u.deleted_at IS NULL
+             WHERE p.id = ? AND p.enabled = 1 AND p.deleted_at IS NULL AND p.feed_enabled = 1 AND a.enabled = 1 AND u.deleted_at IS NULL
                AND ${OWNER_ACTIVE_SQL}
              LIMIT 1`,
       args: [data.id, nowIso, nowIso],
@@ -220,7 +220,7 @@ export const getCommunityPage = createServerFn({ method: "GET" })
     });
     const kidsRes = await db.execute({
       sql: `SELECT id, title, description, seo_description, price, product_enabled FROM web_pages
-             WHERE parent_id = ? AND enabled = 1 AND feed_enabled = 1
+             WHERE parent_id = ? AND enabled = 1 AND deleted_at IS NULL AND feed_enabled = 1
              ORDER BY order_no ASC, id ASC`,
       args: [data.id],
     });
