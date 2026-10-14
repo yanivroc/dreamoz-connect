@@ -1,5 +1,5 @@
 // Sends cancellation notices to buyer, seller and admin (admin processes Square refunds).
-import type { Client } from "@libsql/client";
+import type { Client } from "@libsql/client/web";
 import type { Order } from "./orders.functions";
 
 const esc = (s: string) =>
