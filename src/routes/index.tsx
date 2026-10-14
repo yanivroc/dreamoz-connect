@@ -64,7 +64,7 @@ function Index() {
       {rest.map((page, i) => {
         const children = sortPages(page.children ?? []);
         const wideMedia = (page.images?.length ?? 0) > 1;
-        const compactMedia = page.title.trim().toLowerCase().includes("testimonial");
+        const compactMedia = false;
         return (
           <section
             key={page.id}
