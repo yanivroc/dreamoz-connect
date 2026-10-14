@@ -5,6 +5,7 @@ import { formatMoney, slugify, sortImages, type WaPage } from "@/lib/content-typ
 import { cartItemFromPage, useCart } from "@/lib/cart";
 import { Button } from "@/components/ui/button";
 import { QuantityInput } from "./QuantityInput";
+import { useIsOwnApp } from "@/lib/use-owned-apps";
 
 export function ProductCard({
   page,
@@ -16,6 +17,7 @@ export function ProductCard({
   seller: { appId: number; sellerName: string };
 }) {
   const { add, setOpen } = useCart();
+  const isOwn = useIsOwnApp();
   const min = page.product.minQty ?? 1;
   const max = page.product.maxQty ?? 99;
   const [qty, setQty] = useState(min);
@@ -53,6 +55,11 @@ export function ProductCard({
           {formatMoney(page.product.price ?? 0, currency)}
         </p>
 
+        {isOwn(seller.appId) ? (
+          <p className="mt-auto text-sm text-muted-foreground">
+            This is your own product.
+          </p>
+        ) : (
         <div className="mt-auto flex items-center gap-3">
           <QuantityInput
             value={qty}
@@ -72,6 +79,7 @@ export function ProductCard({
             Add to cart
           </Button>
         </div>
+        )}
       </div>
     </article>
   );
