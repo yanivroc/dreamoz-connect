@@ -34,7 +34,17 @@ function Index() {
   const { data } = useSuspenseQuery(siteContentQuery);
   const content = data.content;
   const pages = sortPages(content.pages);
-  const [hero, ...rest] = pages;
+  const [hero, ...allRest] = pages;
+  // Legal/policy pages live on their own URL (nav + footer), not as home sections.
+  const LEGAL_SLUGS = new Set([
+    "terms-of-use",
+    "terms-and-conditions",
+    "terms-of-service",
+    "privacy-policy",
+    "refund-policy",
+    "cookie-policy",
+  ]);
+  const rest = allRest.filter((p) => !LEGAL_SLUGS.has(slugify(p.title)));
   const currency = siteCurrency(content);
   const seller = {
     appId: content.webApp.id,
