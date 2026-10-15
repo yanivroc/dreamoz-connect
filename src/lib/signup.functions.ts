@@ -19,7 +19,8 @@ const schema = z.object({
   captchaAnswer: z.coerce.number().int(),
   captchaA: z.coerce.number().int().min(0).max(99),
   captchaB: z.coerce.number().int().min(0).max(99),
-  marketingConsent: z.literal(true),
+  marketingConsent: z.boolean().optional().default(false),
+  termsConsent: z.literal(true),
   verificationToken: z.string().trim().min(16).max(128),
 
 });

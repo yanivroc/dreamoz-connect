@@ -30,6 +30,7 @@ const checkoutSchema = z.object({
   currency: z.string().min(3).max(3),
   /** The single seller storefront this cart belongs to. */
   appId: z.coerce.number().int().positive(),
+  termsConsent: z.literal(true),
 
   customer: z.object({
     name: z.string().min(1).max(120),

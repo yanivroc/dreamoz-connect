@@ -30,8 +30,8 @@ export function SignUpForm() {
       toast.error("Passwords do not match.");
       return;
     }
-    if (fd.get("marketingConsent") !== "on") {
-      toast.error("Please tick the consent box to continue.");
+    if (fd.get("termsConsent") !== "on") {
+      toast.error("Please agree to the Terms of Use to continue.");
       return;
     }
     if (!token) {
@@ -60,7 +60,8 @@ export function SignUpForm() {
           captchaAnswer: Number(fd.get("captchaAnswer") ?? NaN),
           captchaA: captcha.a,
           captchaB: captcha.b,
-          marketingConsent: true as const,
+          marketingConsent: fd.get("marketingConsent") === "on",
+          termsConsent: true as const,
           verificationToken: token,
         },
       });
@@ -214,7 +215,6 @@ export function SignUpForm() {
           <input
             name="marketingConsent"
             type="checkbox"
-            required
             defaultChecked={false}
             className="mt-1 h-4 w-4 shrink-0 accent-primary"
           />
@@ -229,6 +229,16 @@ export function SignUpForm() {
           communications you consent to.
         </p>
       </div>
+      <label className="flex items-start gap-3 rounded-lg border border-border/70 bg-background/60 p-3 text-sm">
+        <input name="termsConsent" type="checkbox" required className="mt-1 h-4 w-4 shrink-0 accent-primary" />
+        <span className="text-muted-foreground">
+          I have read and agree to the{" "}
+          <a href="/page/terms-of-use" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline">
+            Terms of Use
+          </a>
+          .
+        </span>
+      </label>
       <button
         type="submit"
         disabled={pending}
