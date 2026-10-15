@@ -7,6 +7,7 @@ import { PlanSettingsPanel } from "@/components/PlanSettingsPanel";
 import { PayoutsPanel } from "@/components/PayoutsPanel";
 import { BuilderPanel } from "@/components/BuilderPanel";
 import { PurchasesPanel } from "@/components/PurchasesPanel";
+import { AbnField } from "@/components/AbnField";
 
 const tabIds = [
   "overview",
@@ -123,6 +124,10 @@ function DashboardPage() {
                   <dd className="text-right">{user.address || "—"}</dd>
                 </div>
                 <div className="flex justify-between gap-4">
+                  <dt className="text-muted-foreground">ABN</dt>
+                  <dd>{user.abn || "—"}</dd>
+                </div>
+                <div className="flex justify-between gap-4">
                   <dt className="text-muted-foreground">Role</dt>
                   <dd>{user.role}</dd>
                 </div>
@@ -139,6 +144,7 @@ function DashboardPage() {
                 .
               </p>
             </div>
+            <AbnField initial={user.abn} />
           </>
         )}
 

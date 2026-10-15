@@ -738,11 +738,12 @@ export const saveAppSettings = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const ctx = await requireUser();
     const ownerId = await assertApp(ctx, data.appId);
-    const abn = digitsOnly(data.abn);
-    if (abn && !isValidAbn(abn)) throw new Error("Please enter a valid 11-digit ABN.");
-    if (!abn && (await appHasProducts(ctx, data.appId))) {
-      throw new Error("ABN is required because a page in this web app sells products.");
-    }
+    // ABN now lives on the account; keep any legacy per-app value untouched.
+    const prev = await ctx.db.execute({
+      sql: "SELECT abn FROM web_app_settings WHERE app_id = ? LIMIT 1",
+      args: [data.appId],
+    });
+    const abn = String((prev.rows[0] as Record<string, unknown> | undefined)?.["abn"] ?? "");
     const now = new Date().toISOString();
     await ctx.db.execute({
       sql: `INSERT INTO web_app_settings (app_id, user_id, country, logo_mime, logo_data,
@@ -773,12 +774,12 @@ export const saveAppSettings = createServerFn({ method: "POST" })
 
 async function assertAppHasAbn(ctx: Ctx, appId: number): Promise<void> {
   const res = await ctx.db.execute({
-    sql: "SELECT abn FROM web_app_settings WHERE app_id = ? LIMIT 1",
+    sql: "SELECT u.abn FROM web_apps a JOIN users u ON u.id = a.user_id WHERE a.id = ? LIMIT 1",
     args: [appId],
   });
   const abn = String((res.rows[0] as Record<string, unknown> | undefined)?.["abn"] ?? "");
   if (!abn) {
-    throw new Error("Add your ABN in General settings before selling products.");
+    throw new Error("Add your ABN in Dashboard → Overview (Your profile) before selling products.");
   }
 }
 

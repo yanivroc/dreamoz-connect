@@ -16,6 +16,8 @@ export type CurrentUser = {
   email: string;
   phone: string | null;
   address: string | null;
+  /** Australian Business Number, formatted ("" when none). */
+  abn: string;
   role: string;
   createdAt: string;
   plan: string;
@@ -31,7 +33,7 @@ export type LoginResult =
   | { ok: false; reason: "invalid" | "not_configured" };
 
 const USER_COLUMNS =
-  "id, name, email, phone, address, role, created_at, plan, trial_ends_at, plan_expires_at";
+  "id, name, email, phone, address, abn, role, created_at, plan, trial_ends_at, plan_expires_at";
 
 function toCurrentUser(row: Record<string, unknown>): CurrentUser {
   const role = String(row["role"] ?? "user");
@@ -43,6 +45,7 @@ function toCurrentUser(row: Record<string, unknown>): CurrentUser {
     email: String(row["email"]),
     phone: row["phone"] ? String(row["phone"]) : null,
     address: row["address"] ? String(row["address"]) : null,
+    abn: row["abn"] ? String(row["abn"]).replace(/^(\d{2})(\d{3})(\d{3})(\d{3})$/, "$1 $2 $3 $4") : "",
     role,
     createdAt: String(row["created_at"] ?? ""),
     plan: String(row["plan"] ?? "none"),
@@ -123,3 +126,32 @@ export const me = createServerFn({ method: "GET" }).handler(
     return user;
   },
 );
+
+/** Save the signed-in account's ABN (one per account; used on every invoice). */
+export const saveMyAbn = createServerFn({ method: "POST" })
+  .inputValidator((input: unknown) =>
+    z.object({ abn: z.string().trim().max(20) }).parse(input),
+  )
+  .handler(async ({ data }) => {
+    const { readSession } = await import("./session.server");
+    const session = await readSession();
+    if (!session.userId) throw new Error("Please sign in again.");
+    const { digitsOnly, isValidAbn, formatAbn } = await import("./abn");
+    const abn = digitsOnly(data.abn);
+    if (abn && !isValidAbn(abn)) throw new Error("Please enter a valid 11-digit ABN.");
+    const { dbClient, ensureUsersTable } = await import("./db.server");
+    const db = dbClient();
+    if (!db) throw new Error("Database is not configured.");
+    await ensureUsersTable(db);
+    if (!abn) {
+      const r = await db.execute({
+        sql: `SELECT COUNT(*) AS n FROM web_pages p JOIN web_apps a ON a.id = p.app_id
+              WHERE a.user_id = ? AND p.product_enabled = 1 AND p.deleted_at IS NULL`,
+        args: [session.userId],
+      }).catch(() => null);
+      const n = Number((r?.rows[0] as Record<string, unknown> | undefined)?.["n"] ?? 0);
+      if (n > 0) throw new Error("ABN is required because one of your pages sells products.");
+    }
+    await db.execute({ sql: "UPDATE users SET abn = ? WHERE id = ?", args: [abn || null, session.userId] });
+    return { ok: true as const, abn: abn ? formatAbn(abn) : "" };
+  });

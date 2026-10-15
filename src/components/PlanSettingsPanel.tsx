@@ -23,13 +23,11 @@ function CommissionCard() {
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({ queryKey: ["commission"], queryFn: () => load() });
   const [percent, setPercent] = useState("");
-  const [abn, setAbn] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (data) {
       setPercent(String(data.percent));
-      setAbn(data.abn);
     }
   }, [data]);
 
@@ -37,7 +35,7 @@ function CommissionCard() {
   async function onSave() {
     setSaving(true);
     try {
-      await saveCommission({ data: { percent: Number(percent), abn } });
+      await saveCommission({ data: { percent: Number(percent) } });
       toast.success("Settings saved.");
       await qc.invalidateQueries({ queryKey: ["commission"] });
     } catch (err) {
@@ -66,19 +64,6 @@ function CommissionCard() {
           placeholder={isLoading ? "Loading…" : "0"}
           onChange={(e) => setPercent(e.target.value)}
         />
-      </label>
-      <label className="block max-w-xs space-y-1.5 text-sm">
-        <span className="text-muted-foreground">Platform ABN</span>
-        <input
-          className={input}
-          inputMode="numeric"
-          maxLength={14}
-          value={abn}
-          disabled={isLoading}
-          placeholder="12 345 678 901"
-          onChange={(e) => setAbn(e.target.value)}
-        />
-        <span className="block text-xs text-muted-foreground">Shown on plan invoices.</span>
       </label>
       <button
         type="button"
