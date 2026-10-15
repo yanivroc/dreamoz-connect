@@ -152,6 +152,7 @@ function CheckoutPage() {
           sourceId: result.token,
           currency: totals.currency,
           appId: sellerAppId,
+          termsConsent: true as const,
           customer,
           items: items.map((i) => ({ id: i.id, title: i.title, qty: i.qty })),
         },
