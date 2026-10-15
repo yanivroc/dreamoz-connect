@@ -21,6 +21,7 @@ import { Route as CheckoutSuccessRouteImport } from './routes/checkout.success'
 import { Route as CommunityIndexRouteImport } from './routes/community.index'
 import { Route as CommunityIdRouteImport } from './routes/community.$id'
 import { Route as PageSlugRouteImport } from './routes/page.$slug'
+import { Route as PostSplatRouteImport } from './routes/post.$'
 import { Route as ApiAssetIdRouteImport } from './routes/api/asset.$id'
 import { Route as ApiPublicHealthRouteImport } from './routes/api/public/health'
 import { Route as ApiPublicWaContactsRouteImport } from './routes/api/public/wa/contacts'
@@ -87,6 +88,11 @@ const PageSlugRoute = PageSlugRouteImport.update({
   path: '/page/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PostSplatRoute = PostSplatRouteImport.update({
+  id: '/post/$',
+  path: '/post/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAssetIdRoute = ApiAssetIdRouteImport.update({
   id: '/api/asset/$id',
   path: '/api/asset/$id',
@@ -124,6 +130,7 @@ export interface FileRoutesByFullPath {
   '/checkout/success': typeof CheckoutSuccessRoute
   '/community/$id': typeof CommunityIdRoute
   '/page/$slug': typeof PageSlugRoute
+  '/post/$': typeof PostSplatRoute
   '/checkout/': typeof CheckoutIndexRoute
   '/community/': typeof CommunityIndexRoute
   '/api/asset/$id': typeof ApiAssetIdRoute
@@ -143,6 +150,7 @@ export interface FileRoutesByTo {
   '/checkout/success': typeof CheckoutSuccessRoute
   '/community/$id': typeof CommunityIdRoute
   '/page/$slug': typeof PageSlugRoute
+  '/post/$': typeof PostSplatRoute
   '/checkout': typeof CheckoutIndexRoute
   '/community': typeof CommunityIndexRoute
   '/api/asset/$id': typeof ApiAssetIdRoute
@@ -163,6 +171,7 @@ export interface FileRoutesById {
   '/checkout/success': typeof CheckoutSuccessRoute
   '/community/$id': typeof CommunityIdRoute
   '/page/$slug': typeof PageSlugRoute
+  '/post/$': typeof PostSplatRoute
   '/checkout/': typeof CheckoutIndexRoute
   '/community/': typeof CommunityIndexRoute
   '/api/asset/$id': typeof ApiAssetIdRoute
@@ -184,6 +193,7 @@ export interface FileRouteTypes {
     | '/checkout/success'
     | '/community/$id'
     | '/page/$slug'
+    | '/post/$'
     | '/checkout/'
     | '/community/'
     | '/api/asset/$id'
@@ -203,6 +213,7 @@ export interface FileRouteTypes {
     | '/checkout/success'
     | '/community/$id'
     | '/page/$slug'
+    | '/post/$'
     | '/checkout'
     | '/community'
     | '/api/asset/$id'
@@ -222,6 +233,7 @@ export interface FileRouteTypes {
     | '/checkout/success'
     | '/community/$id'
     | '/page/$slug'
+    | '/post/$'
     | '/checkout/'
     | '/community/'
     | '/api/asset/$id'
@@ -242,6 +254,7 @@ export interface RootRouteChildren {
   CheckoutSuccessRoute: typeof CheckoutSuccessRoute
   CommunityIdRoute: typeof CommunityIdRoute
   PageSlugRoute: typeof PageSlugRoute
+  PostSplatRoute: typeof PostSplatRoute
   CheckoutIndexRoute: typeof CheckoutIndexRoute
   CommunityIndexRoute: typeof CommunityIndexRoute
   ApiAssetIdRoute: typeof ApiAssetIdRoute
@@ -337,6 +350,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PageSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/post/$': {
+      id: '/post/$'
+      path: '/post/$'
+      fullPath: '/post/$'
+      preLoaderRoute: typeof PostSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/asset/$id': {
       id: '/api/asset/$id'
       path: '/api/asset/$id'
@@ -386,6 +406,7 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutSuccessRoute: CheckoutSuccessRoute,
   CommunityIdRoute: CommunityIdRoute,
   PageSlugRoute: PageSlugRoute,
+  PostSplatRoute: PostSplatRoute,
   CheckoutIndexRoute: CheckoutIndexRoute,
   CommunityIndexRoute: CommunityIndexRoute,
   ApiAssetIdRoute: ApiAssetIdRoute,
