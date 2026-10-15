@@ -61,10 +61,11 @@ function Index() {
         </section>
       ) : null}
 
-      {rest.map((page, i) => {
+      {(() => { let splitIndex = 0; return rest.map((page, i) => {
         const children = sortPages(page.children ?? []);
         const wideMedia = (page.images?.length ?? 0) > 1;
         const compactMedia = false;
+        const flipped = !wideMedia && splitIndex++ % 2 === 1;
         return (
           <section
             key={page.id}
@@ -79,7 +80,7 @@ function Index() {
                     : "grid items-center gap-10 text-left lg:grid-cols-2"
                 }
               >
-                <div className="min-w-0">
+                <div className={flipped ? "min-w-0 lg:order-2" : "min-w-0"}>
                   <h2 className="text-3xl font-bold text-foreground">{page.title}</h2>
                   <RichText html={page.description} className="home-copy mt-5" />
                   <PageEmbed page={page} className="mt-6" />
@@ -105,9 +106,10 @@ function Index() {
                     ) : null}
                   </div>
                 </div>
-                <div className="min-w-0">
+                <div className={flipped ? "min-w-0 lg:order-1" : "min-w-0"}>
                   <PageMedia page={page} wide={wideMedia} compact={compactMedia} embed={false} />
                 </div>
+
               </div>
               {children.length > 0 ? (
                 <PageCardGrid pages={children} currency={currency} seller={seller} />
@@ -115,7 +117,7 @@ function Index() {
             </div>
           </section>
         );
-      })}
+      }); })()}
     </>
   );
 }
