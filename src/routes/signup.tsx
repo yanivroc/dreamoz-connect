@@ -45,7 +45,8 @@ function SignUpPage() {
   return (
     <>
       <section className="hero-surface border-b border-border/60">
-        <div className="mx-auto w-full max-w-7xl px-5 py-14">
+        <div className="mx-auto grid w-full max-w-7xl gap-8 px-5 py-14 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:items-center">
+          <div>
           <h1 className="text-4xl font-bold md:text-5xl">Create your account</h1>
           <p className="mt-4 max-w-2xl text-muted-foreground">
             Start your {offer.trialDays}-day free trial with full access to every feature
@@ -56,7 +57,23 @@ function SignUpPage() {
               ? `Selling products? A ${offer.commissionPercent}% platform commission applies to each sale, and your net earnings are paid out to your Australian bank account.`
               : "Selling products? No platform commission applies at the moment — your full sale earnings are paid out to your Australian bank account."}
           </p>
-
+          </div>
+          <ul className="grid gap-3 sm:grid-cols-2">
+            {[
+              { t: `${offer.trialDays}-day full access`, d: "Every feature and the API from day one." },
+              { t: "No credit card required", d: "Pick a plan only when your trial ends." },
+              { t: "Australian bank payouts", d: "Net sale earnings paid straight to you." },
+              { t: "API & marketplace tools", d: "Pages, storefront, Community and more." },
+            ].map((h) => (
+              <li key={h.t} className="rounded-xl border border-border/60 bg-surface/40 p-4 shadow-card">
+                <p className="flex items-center gap-2 text-sm font-semibold">
+                  <span className="h-2 w-2 rounded-full bg-primary" aria-hidden />
+                  {h.t}
+                </p>
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">{h.d}</p>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
