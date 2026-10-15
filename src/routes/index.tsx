@@ -117,7 +117,7 @@ function Index() {
             </div>
           </section>
         );
-      })}
+      }); })()}
     </>
   );
 }
