@@ -1,3 +1,4 @@
+import { trackEvent } from "@/lib/analytics";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { siteContentQuery } from "@/lib/content-query";
 import { LoginForm } from "@/components/LoginForm";
@@ -80,6 +81,7 @@ function LoginPage() {
           </ul>
           <Link
             to="/signup"
+            onClick={() => trackEvent("trial_cta_click", { source: "login_panel" })}
             className="mt-6 inline-flex w-full items-center justify-center rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
           >
             Create an account

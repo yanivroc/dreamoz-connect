@@ -1,3 +1,4 @@
+import { trackEvent } from "@/lib/analytics";
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
@@ -69,6 +70,7 @@ export function PageContactForm({ pageId }: { pageId: number }) {
         },
       });
       toast.success("Thanks! Your message has been sent.");
+      trackEvent("enquiry_submitted", { form: "page" });
       form.reset();
       setSeed((s) => s + 1);
     } catch (err) {

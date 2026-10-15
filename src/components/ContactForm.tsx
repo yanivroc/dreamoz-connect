@@ -1,3 +1,4 @@
+import { trackEvent } from "@/lib/analytics";
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -47,6 +48,7 @@ export function ContactForm({ account = null }: { account?: ContactAccount | nul
         },
       });
       toast.success("Thanks! Your message has been sent.");
+      trackEvent("enquiry_submitted", { form: "contact" });
       form.reset();
       if (!account) {
         setEmail("");
