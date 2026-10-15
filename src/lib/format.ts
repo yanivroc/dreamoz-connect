@@ -28,3 +28,11 @@ export function formatDateTime(value: string | null | undefined): string {
     minute: "2-digit",
   }).format(d);
 }
+
+/** Capitalises the first letter of each word/hyphen part: "vinay kumar" -> "Vinay Kumar". */
+export function capitalizeName(value: string | null | undefined): string {
+  return String(value ?? "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/(^|[\s\-'])(\p{L})/gu, (_m, p: string, c: string) => p + c.toUpperCase());
+}

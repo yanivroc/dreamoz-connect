@@ -1,5 +1,6 @@
 // Server-only invoice PDF builder (pure JS, edge/Worker safe).
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import { capitalizeName } from "./format";
 
 export interface InvoiceLine {
   title: string;
@@ -152,7 +153,7 @@ export async function buildInvoicePdf(input: InvoiceInput): Promise<string> {
   // Bill to
   text("Bill to", left, 9, font, grey);
   y -= 14;
-  text(input.buyer.name, left, 11, bold);
+  text(capitalizeName(input.buyer.name), left, 11, bold);
   y -= 13;
   text(input.buyer.email, left, 10);
   if (input.buyer.phone) {

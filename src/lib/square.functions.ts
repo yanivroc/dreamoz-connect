@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { capitalizeName } from "./format";
 import { z } from "zod";
 
 export interface SquareConfig {
@@ -222,7 +223,7 @@ export const createSquarePayment = createServerFn({ method: "POST" })
           candidate,
           body.payment.id,
           body.payment.receipt_url ?? null,
-          data.customer.name,
+          capitalizeName(data.customer.name),
           data.customer.email,
           data.customer.phone,
           data.customer.address,
