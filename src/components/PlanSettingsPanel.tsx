@@ -23,13 +23,11 @@ function CommissionCard() {
   const qc = useQueryClient();
   const { data, isLoading } = useQuery({ queryKey: ["commission"], queryFn: () => load() });
   const [percent, setPercent] = useState("");
-  const [abn, setAbn] = useState("");
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (data) {
       setPercent(String(data.percent));
-      setAbn(data.abn);
     }
   }, [data]);
 
