@@ -1,9 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { normalizeAuPhone } from "./phone";
+import { capitalizeName } from "./format";
 
 const schema = z.object({
-  name: z.string().trim().min(1).max(100),
+  name: z.string().trim().min(1).max(100).transform((v) => capitalizeName(v)),
   email: z.string().trim().email().max(255),
   password: z.string().min(8).max(200),
   // Stored in E.164 (+61...) so SMS/OTP providers need no conversion later.
