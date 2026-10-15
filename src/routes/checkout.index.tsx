@@ -61,6 +61,7 @@ function CheckoutPage() {
   const cardRef = useRef<SquareCard | null>(null);
   const [cardReady, setCardReady] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [termsAgreed, setTermsAgreed] = useState(false);
   const form = {
     name: account?.name ?? "",
     email: account?.email ?? "",
@@ -151,6 +152,7 @@ function CheckoutPage() {
           sourceId: result.token,
           currency: totals.currency,
           appId: sellerAppId,
+          termsConsent: true as const,
           customer,
           items: items.map((i) => ({ id: i.id, title: i.title, qty: i.qty })),
         },
@@ -301,10 +303,25 @@ function CheckoutPage() {
           />
         )}
 
+        <label className="mt-6 flex items-start gap-3 text-sm">
+          <input
+            type="checkbox"
+            checked={termsAgreed}
+            onChange={(e) => setTermsAgreed(e.target.checked)}
+            className="mt-1 h-4 w-4 shrink-0 accent-primary"
+          />
+          <span className="text-muted-foreground">
+            I have read and agree to the{" "}
+            <a href="/page/terms-of-use" target="_blank" rel="noopener noreferrer" className="font-semibold text-primary underline">
+              Terms of Use
+            </a>
+            .
+          </span>
+        </label>
         <Button
-          className="mt-6 w-full sm:w-auto"
+          className="mt-4 w-full sm:w-auto"
           size="lg"
-          disabled={!cardReady || submitting}
+          disabled={!cardReady || submitting || !termsAgreed}
           onClick={handlePay}
         >
           {submitting ? "Processing…" : `Pay ${formatMoney(totals.total, totals.currency)}`}
