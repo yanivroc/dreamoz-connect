@@ -66,6 +66,29 @@ export async function ensureUsersTable(db: Client): Promise<void> {
       // Column already exists.
     }
   }
+  // ABN is one per account. Copy older per-app / platform ABNs onto accounts once.
+  try {
+    await db.execute(`ALTER TABLE users ADD COLUMN abn TEXT`);
+    try {
+      await db.execute(
+        `UPDATE users SET abn = (SELECT s.abn FROM web_app_settings s
+           WHERE s.user_id = users.id AND s.abn IS NOT NULL AND s.abn <> '' LIMIT 1)
+         WHERE abn IS NULL`,
+      );
+    } catch {
+      // No per-app settings table yet.
+    }
+    try {
+      await db.execute(
+        `UPDATE users SET abn = (SELECT value FROM platform_settings WHERE key = 'platform_abn' AND value <> '')
+         WHERE abn IS NULL AND id = (SELECT MIN(id) FROM users WHERE role = 'admin' AND deleted_at IS NULL)`,
+      );
+    } catch {
+      // No platform settings yet.
+    }
+  } catch {
+    // Column already exists.
+  }
   // Existing accounts get a fresh 14-day trial from launch day.
   await db.execute({
     sql: `UPDATE users SET trial_ends_at = ? WHERE trial_ends_at IS NULL`,
