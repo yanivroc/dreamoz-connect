@@ -1,3 +1,4 @@
+import { trackEvent } from "@/lib/analytics";
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { queryOptions, useSuspenseQuery } from "@tanstack/react-query";
@@ -111,6 +112,7 @@ function Card({ item }: { item: CommunityItem }) {
                 item.minQty ?? 1,
               );
               toast.success(`${item.title} added to cart`);
+              trackEvent("add_to_cart", { title: item.title, source: "community" });
               setOpen(true);
             }}
           >

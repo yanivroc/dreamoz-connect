@@ -1,3 +1,4 @@
+import { trackEvent } from "@/lib/analytics";
 import { useEffect, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
@@ -141,6 +142,7 @@ function CheckoutPage() {
       return;
     }
     setSubmitting(true);
+    trackEvent("checkout_pay_click", { items: items.length, total: totals.total });
     try {
       const result = await cardRef.current.tokenize();
       if (result.status !== "OK" || !result.token) {

@@ -1,3 +1,4 @@
+import { trackEvent } from "@/lib/analytics";
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -67,6 +68,7 @@ export function SignUpForm() {
       });
 
       if (res.ok) {
+        trackEvent("signup_completed");
         toast.success(
           "Account created! Check your inbox for a welcome email, then log in with the email and password you just created.",
           { duration: 10000 },

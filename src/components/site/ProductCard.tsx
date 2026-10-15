@@ -1,3 +1,4 @@
+import { trackEvent } from "@/lib/analytics";
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
@@ -73,6 +74,7 @@ export function ProductCard({
             onClick={() => {
               add(cartItemFromPage(page, seller), qty);
               toast.success(`${page.title} added to cart`);
+              trackEvent("add_to_cart", { title: page.title, qty, source: "product_card" });
               setOpen(true);
             }}
           >

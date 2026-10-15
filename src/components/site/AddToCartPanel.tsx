@@ -1,3 +1,4 @@
+import { trackEvent } from "@/lib/analytics";
 import { useState } from "react";
 import { toast } from "sonner";
 import type { CartItem } from "@/lib/cart";
@@ -48,6 +49,7 @@ export function AddToCartPanel({
         onClick={() => {
           add(item, qty);
           toast.success(`${item.title} added to cart`);
+          trackEvent("add_to_cart", { title: item.title, qty, source: "page" });
           setOpen(true);
         }}
       >
