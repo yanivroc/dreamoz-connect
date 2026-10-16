@@ -22,6 +22,7 @@ import { cartItemFromPage } from "@/lib/cart";
 import { PageContactForm } from "@/components/site/PageContactForm";
 
 export const Route = createFileRoute("/page/$slug")({
+  staticData: { sitemap: true },
   loader: async ({ context, params }) => {
     const result = await context.queryClient.ensureQueryData(siteContentQuery);
     const content = result.content;

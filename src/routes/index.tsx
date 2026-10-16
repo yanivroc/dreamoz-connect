@@ -8,6 +8,7 @@ import { PageEmbed, PageMedia } from "@/components/site/PageMedia";
 import { PageCardGrid } from "@/components/site/PageCardGrid";
 
 export const Route = createFileRoute("/")({
+  staticData: { sitemap: true },
   loader: ({ context }) => context.queryClient.ensureQueryData(siteContentQuery),
   head: ({ loaderData }) => {
     const title = loaderData?.content.webApp.title

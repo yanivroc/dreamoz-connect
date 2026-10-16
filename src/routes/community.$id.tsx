@@ -15,6 +15,7 @@ const pageQuery = (id: string) =>
   });
 
 export const Route = createFileRoute("/community/$id")({
+  staticData: { sitemap: true },
   loader: async ({ context, params }) => {
     const id = communityIdFromParam(params.id);
     const page = await context.queryClient.ensureQueryData(pageQuery(id));

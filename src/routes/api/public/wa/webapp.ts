@@ -7,6 +7,7 @@ const cors = {
 };
 
 export const Route = createFileRoute("/api/public/wa/webapp")({
+  staticData: { sitemap: false },
   server: {
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: cors }),
