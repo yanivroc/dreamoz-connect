@@ -85,7 +85,10 @@ export const Route = createFileRoute("/sitemap.xml")({
                   hash: "",
                 });
                 const path = sitemapPathForLocation(router, location, communityRouteId);
-                if (path) entries.push({ path, lastmod: isoDate(r["updated_at"]) });
+                if (path) {
+                  const lastmod = isoDate(r["updated_at"]);
+                  entries.push(lastmod ? { path, lastmod } : { path });
+                }
               }
               lastId = Number(rows[rows.length - 1]!["id"]);
               if (rows.length < pageSize) break;
