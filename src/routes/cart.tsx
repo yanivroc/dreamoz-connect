@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { QuantityInput } from "@/components/site/QuantityInput";
 
 export const Route = createFileRoute("/cart")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Your cart — DreamozTech" },

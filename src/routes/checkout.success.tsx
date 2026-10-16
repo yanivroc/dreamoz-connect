@@ -8,6 +8,7 @@ const searchSchema = z.object({
 });
 
 export const Route = createFileRoute("/checkout/success")({
+  staticData: { sitemap: false },
   validateSearch: searchSchema,
   head: () => ({
     meta: [

@@ -16,6 +16,7 @@ const feedQuery = queryOptions({
 });
 
 export const Route = createFileRoute("/community/")({
+  staticData: { sitemap: true },
   loader: ({ context }) => context.queryClient.ensureQueryData(feedQuery),
   head: () => {
     const title = "Community — DreamozTech";

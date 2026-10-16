@@ -5,6 +5,7 @@ import { ContactForm } from "@/components/ContactForm";
 import { me } from "@/lib/auth.functions";
 
 export const Route = createFileRoute("/contact")({
+  staticData: { sitemap: true },
   loader: async ({ context }) => {
     const [content, user] = await Promise.all([
       context.queryClient.ensureQueryData(siteContentQuery),

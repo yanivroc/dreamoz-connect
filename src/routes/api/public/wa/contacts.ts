@@ -26,6 +26,7 @@ const json = (body: unknown, status = 200) =>
   Response.json(body, { status, headers: { ...cors, "Cache-Control": "no-store" } });
 
 export const Route = createFileRoute("/api/public/wa/contacts")({
+  staticData: { sitemap: false },
   server: {
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: cors }),

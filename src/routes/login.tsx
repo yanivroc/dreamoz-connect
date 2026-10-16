@@ -5,6 +5,7 @@ import { LoginForm } from "@/components/LoginForm";
 import { getPublicPlanOffer } from "@/lib/billing.functions";
 
 export const Route = createFileRoute("/login")({
+  staticData: { sitemap: true },
   validateSearch: (search: Record<string, unknown>): { redirect?: string } => {
     const r = search["redirect"];
     return typeof r === "string" ? { redirect: r } : {};

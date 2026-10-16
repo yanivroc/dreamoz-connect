@@ -12,6 +12,7 @@ const REQUIRED_VARS = [
 ] as const;
 
 export const Route = createFileRoute("/api/public/health")({
+  staticData: { sitemap: false },
   server: {
     handlers: {
       GET: async () => {

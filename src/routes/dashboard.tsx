@@ -22,6 +22,7 @@ const tabIds = [
 type Tab = (typeof tabIds)[number];
 
 export const Route = createFileRoute("/dashboard")({
+  staticData: { sitemap: false },
   validateSearch: (search: Record<string, unknown>) =>
     z.object({ tab: z.enum(tabIds).optional() }).parse({
       tab: tabIds.includes(search["tab"] as Tab) ? search["tab"] : undefined,

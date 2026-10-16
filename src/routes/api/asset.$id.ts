@@ -36,6 +36,7 @@ async function canReadContactAsset(request: Request, id: string): Promise<boolea
 }
 
 export const Route = createFileRoute("/api/asset/$id")({
+  staticData: { sitemap: false },
   server: {
     handlers: {
       GET: async ({ params, request }) => {

@@ -14,6 +14,7 @@ import {
 
 
 export const Route = createFileRoute("/signup")({
+  staticData: { sitemap: true },
   loader: async ({ context }) => {
     const [result, offer] = await Promise.all([
       context.queryClient.ensureQueryData(siteContentQuery),

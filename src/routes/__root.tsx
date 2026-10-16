@@ -101,6 +101,7 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  staticData: { sitemap: false },
   loader: async ({ context }) => {
     try {
       const result = await context.queryClient.ensureQueryData(siteContentQuery);
