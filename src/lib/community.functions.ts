@@ -139,7 +139,7 @@ export const listCommunityFeed = createServerFn({ method: "GET" }).handler(
           LEFT JOIN web_app_settings s ON s.app_id = a.id
          WHERE p.enabled = 1 AND p.deleted_at IS NULL AND p.feed_enabled = 1 AND a.enabled = 1 AND u.deleted_at IS NULL
            AND ${OWNER_ACTIVE_SQL}
-         ORDER BY p.updated_at DESC
+         ORDER BY p.created_at DESC, p.id DESC
          LIMIT 60`,
         args: [nowIso, nowIso],
       });

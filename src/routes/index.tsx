@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { siteContentQuery } from "@/lib/content-query";
-import { siteCurrency, slugify, sortPages } from "@/lib/content-types";
+import { BLOG_SLUG, latestPages, siteCurrency, slugify, sortPages } from "@/lib/content-types";
 import { HeroSlider } from "@/components/site/HeroSlider";
 import { RichText } from "@/components/site/RichText";
 import { PageEmbed, PageMedia } from "@/components/site/PageMedia";
@@ -73,7 +73,9 @@ function Index() {
       ) : null}
 
       {(() => { let splitIndex = 0; return rest.map((page, i) => {
-        const children = sortPages(page.children ?? []);
+        const isBlog = slugify(page.title) === BLOG_SLUG;
+        const allChildren = isBlog ? latestPages(page.children ?? []) : sortPages(page.children ?? []);
+        const children = isBlog ? allChildren.slice(0, 9) : allChildren;
         const wideMedia = (page.images?.length ?? 0) > 1;
         const compactMedia = false;
         const flipped = !wideMedia && splitIndex++ % 2 === 1;
@@ -123,7 +125,18 @@ function Index() {
 
               </div>
               {children.length > 0 ? (
-                <PageCardGrid pages={children} currency={currency} seller={seller} />
+                <PageCardGrid pages={children} currency={currency} seller={seller} keepOrder={isBlog} />
+              ) : null}
+              {isBlog && allChildren.length > 0 ? (
+                <div className="mt-10 text-center">
+                  <Link
+                    to="/page/$slug"
+                    params={{ slug: BLOG_SLUG }}
+                    className="inline-flex items-center rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
+                  >
+                    Read more
+                  </Link>
+                </div>
               ) : null}
             </div>
           </section>

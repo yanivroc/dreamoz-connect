@@ -34,12 +34,14 @@ export function PageCardGrid({
   pages,
   currency,
   seller,
+  keepOrder = false,
 }: {
   pages: WaPage[];
   currency: string;
   seller: { appId: number; sellerName: string };
+  keepOrder?: boolean;
 }) {
-  const visible = sortPages(pages);
+  const visible = keepOrder ? pages.filter((p) => p.enabled) : sortPages(pages);
   if (visible.length === 0) return null;
 
   return (

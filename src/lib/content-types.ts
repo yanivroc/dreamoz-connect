@@ -43,6 +43,7 @@ export interface WaPage {
   hyperlink: string | null;
   product: WaProduct;
   images: WaImage[];
+  createdAt?: string;
   children: WaPage[];
 }
 
@@ -110,6 +111,13 @@ export function plainExcerpt(html: string, max = 160): string {
 export function sortPages(pages: WaPage[]): WaPage[] {
   return [...pages].filter((p) => p.enabled).sort((a, b) => a.orderNo - b.orderNo);
 }
+
+/** Enabled pages, newest first by creation date. */
+export function latestPages(pages: WaPage[]): WaPage[] {
+  return [...pages].filter((p) => p.enabled).sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? "") || b.id - a.id);
+}
+
+export const BLOG_SLUG = "published-blog-posts";
 
 export function sortImages(images: WaImage[]): WaImage[] {
   return [...images].sort((a, b) => a.orderNo - b.orderNo);
