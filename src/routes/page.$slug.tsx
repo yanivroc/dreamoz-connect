@@ -12,6 +12,8 @@ import {
   sortPages,
   sortImages,
   plainExcerpt,
+  latestPages,
+  BLOG_SLUG,
 } from "@/lib/content-types";
 import { RichText } from "@/components/site/RichText";
 import { PageMedia, PageEmbed } from "@/components/site/PageMedia";
@@ -119,7 +121,8 @@ function PageDetail() {
 
   const parent = findParent(content.pages, page);
   const canFloatMedia = (page.images?.length ?? 0) >= 1;
-  const children = sortPages(page.children ?? []);
+  const isBlog = slugify(page.title) === BLOG_SLUG;
+  const children = isBlog ? latestPages(page.children ?? []) : sortPages(page.children ?? []);
   const currency = siteCurrency(content);
   const seller = {
     appId: content.webApp.id,
@@ -213,7 +216,7 @@ function PageDetail() {
       {children.length > 0 ? (
         <section className="mt-16">
           <h2 className="text-2xl font-semibold text-foreground">Explore</h2>
-          <PageCardGrid pages={children} currency={currency} seller={seller} />
+          <PageCardGrid pages={children} currency={currency} seller={seller} keepOrder={isBlog} />
         </section>
       ) : null}
     </article>
